@@ -1,0 +1,2115 @@
+% v2-acmsmall-sample.tex, dated March 6 2012
+% This is a sample file for ACM small trim journals
+%
+% Compilation using 'acmsmall.cls' - version 1.3 (March 2012), Aptara Inc.
+% (c) 2010 Association for Computing Machinery (ACM)
+%
+% Questions/Suggestions/Feedback should be addressed to => "acmtexsupport@aptaracorp.com".
+% Users can also go through the FAQs available on the journal's submission webpage.
+%
+% Steps to compile: latex, bibtex, latex latex
+%
+% For tracking purposes => this is v1.3 - March 2012
+
+\documentclass[prodmode,acmtecs]{acmsmall} % Aptara syntax
+
+\usepackage{amsmath}
+\usepackage{dsfont}
+\usepackage{mathtools}
+\everymath{\displaystyle}
+
+\usepackage{verbatim}
+\usepackage{xspace}
+\newcommand{\CEU}{\textsc{C\'{e}u}\xspace}
+\newcommand{\code}[1] {{\small{\texttt{#1}}}}
+\newcommand{\MM}[1] {\textcircled{\tiny{\textsf{#1}}}}
+
+\newcommand{\ST}{\1\xrightarrow[~n~]{}\1}
+\newcommand{\BT}{\xRightarrow[(i,E)]{}}
+\newcommand{\LL}{\langle}
+\newcommand{\RR}{\rangle}
+\newcommand{\DS}{\displaystyle}
+\newcommand{\rr}[1] {{\textbf{\scriptsize{#1}}}}
+
+\newcommand{\1}{\;}
+\newcommand{\2}{\;\;}
+\newcommand{\3}{\;\;\;}
+\newcommand{\5}{\;\;\;\;\;}
+\newcommand{\ten}{\5\5}
+\newcommand{\twenty}{\ten\ten}
+
+\usepackage{color}
+\definecolor{light}{gray}{0.87}
+\definecolor{dark}{gray}{0.30}
+%\definecolor{light}{rgb}{.90,.90,.90}
+\definecolor{darkgreen}{rgb}{0,.50,0}
+\definecolor{darkblue}{rgb}{0,0,.50}
+\definecolor{darkred}{rgb}{.50,0,0}
+\definecolor{darkpur}{rgb}{.50,0,.50}
+
+\usepackage{listings}
+%\usepackage{textcomp}
+\usepackage{url}
+\lstset{
+%columns=fullflexible,
+%basicstyle=\ttfamily,
+escapeinside={||},
+    %mathescape=true,
+    language=C, % choose the language of the code
+    basicstyle=\fontfamily{pcr}\selectfont\scriptsize\color{black},
+    keywordstyle=\color{black}\bfseries, % style for keywords
+    numbers=none, % where to put the line-numbers
+    numberstyle=\tiny, % the size of the fonts that are used for the line-numbers
+    backgroundcolor=\color{light},
+    showspaces=false, % show spaces adding particular underscores
+    showstringspaces=false, % underline spaces within strings
+    showtabs=false, % show tabs within strings adding particular underscores
+    %frame=single, % adds a frame around the code
+    tabsize=2, % sets default tabsize to 2 spaces
+    %rulesepcolor=\color{gray}
+    captionpos=b, % sets the caption-position to bottom
+    breaklines=false, % sets automatic line breaking
+    %breakatwhitespace=false,
+    numbersep=2em,
+    % C was used in the blocksworld example to refer to block C and nowhere else
+    emph={par,or,hor,do,end,loop,await,emit,input,event,call,with,%
+          var,and,then,else,return,pure,deterministic,nohold,finalize,%
+          class, every, FOREVER, this, spawn, in, pool, watching, until, 
+          interface, each, abort, when, signal, PROC, CHAN, SIGNAL, PAR, not,
+          bool, data, tag, escape, new, traverse},
+    emphstyle={\bfseries},
+    commentstyle=\color{dark}\scriptsize,
+    %xleftmargin=20pt,
+    %xrightmargin=20pt,
+    framesep=20pt,
+    %upquote=true,
+    %aboveskip={1.5\baselineskip},
+}
+
+% Metadata Information
+%\acmVolume{9}
+%\acmNumber{4}
+%\acmArticle{39}
+%\acmYear{2010}
+%\acmMonth{3}
+
+% Copyright
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+%\setcopyright{usgov}
+%\setcopyright{usgovmixed}
+%\setcopyright{cagov}
+%\setcopyright{cagovmixed}
+
+% DOI
+%\doi{0000001.0000001}
+
+%ISSN
+%\issn{1234-56789}
+
+% Document starts
+\begin{document}
+
+% Page heads
+%\markboth{G. Zhou et al.}{A Multifrequency MAC Specially Designed for WSN 
+%Applications}
+
+% Title portion
+\title{The Semantics and Implementation of \CEU: a Synchronous Reactive Language based on Esterel}
+
+\author{
+Francisco Sant'Anna
+\affil{PUC--Rio}
+Adriano Branco
+\affil{PUC--Rio}
+Roberto Ierusalimschy
+\affil{PUC--Rio}
+Noemi Rodriguez
+\affil{PUC--Rio}
+Silvana Rossetto
+\affil{UFRJ}
+}
+
+% NOTE! Affiliations placed here should be for the institution where the
+%       BULK of the research was done. If the author has gone to a new
+%       institution, before publication, the (above) affiliation should NOT be changed.
+%       The authors 'current' address may be given in the "Author's addresses:" block (below).
+%       So for example, Mr. Abdelzaher, the bulk of the research was done at UIUC, and he is
+%       currently affiliated with NASA.
+
+\begin{abstract}
+\CEU is a reactive language based on Esterel that targets constrained embedded 
+platforms.
+%
+Its synchronous programming model allows for a simple reasoning about 
+shared-memory concurrency.
+Furthermore, its restricted semantics enables deterministic and memory-safe 
+programs.
+
+In this work, we propose a formal semantics for \CEU focusing on its particular 
+control mechanisms, such as parallel compositions, finalization, and 
+stack-based internal events.
+%
+We also present an implementation with two backends:
+one aiming for resource efficiency and interoperability with C, and another for 
+code dissemination in sensor networks.
+\end{abstract}
+
+
+%
+% The code below should be generated by the tool at
+% http://dl.acm.org/ccs.cfm
+% Please copy and paste the code instead of the example below. 
+%
+%\begin{CCSXML}
+%<ccs2012>
+ %<concept>
+  %<concept_id>10010520.10010553.10010562</concept_id>
+  %<concept_desc>Computer systems organization~Embedded systems</concept_desc>
+  %<concept_significance>500</concept_significance>
+ %</concept>
+ %<concept>
+  %<concept_id>10010520.10010575.10010755</concept_id>
+  %<concept_desc>Computer systems organization~Redundancy</concept_desc>
+  %<concept_significance>300</concept_significance>
+ %</concept>
+ %<concept>
+  %<concept_id>10010520.10010553.10010554</concept_id>
+  %<concept_desc>Computer systems organization~Robotics</concept_desc>
+  %<concept_significance>100</concept_significance>
+ %</concept>
+ %<concept>
+  %<concept_id>10003033.10003083.10003095</concept_id>
+  %<concept_desc>Networks~Network reliability</concept_desc>
+  %<concept_significance>100</concept_significance>
+ %</concept>
+%</ccs2012>
+%\end{CCSXML}
+
+%\ccsdesc[500]{Computer systems organization~Embedded systems}
+%\ccsdesc[300]{Computer systems organization~Redundancy}
+%\ccsdesc{Computer systems organization~Robotics}
+%\ccsdesc[100]{Networks~Network reliability}
+
+%
+% End generated code
+%
+
+% We no longer use \terms command
+%\terms{Design, Algorithms, Performance}
+
+\keywords{
+Concurrency, Determinism, Embedded Systems,
+Esterel, Synchronous, Reactivity
+}
+
+%\acmformat{Gang Zhou, Yafeng Wu, Ting Yan, Tian He, Chengdu Huang, John A.  
+%Stankovic,
+%and Tarek F. Abdelzaher, 2010. A multifrequency MAC specially
+%designed for  wireless sensor network applications.}
+% At a minimum you need to supply the author names, year and a title.
+% IMPORTANT:
+% Full first names whenever they are known, surname last, followed by a period.
+% In the case of two authors, 'and' is placed between them.
+% In the case of three or more authors, the serial comma is used, that is, all author names
+% except the last one but including the penultimate author's name are followed by a comma,
+% and then 'and' is placed before the final author's name.
+% If only first and middle initials are known, then each initial
+% is followed by a period and they are separated by a space.
+% The remaining information (journal title, volume, article number, date, etc.) is 'auto-generated'.
+
+%\begin{bottomstuff}
+%This work is supported by the National Science Foundation, under
+%grant CNS-0435060, grant CCR-0325197 and grant EN-CS-0329609.
+
+%Author's addresses: G. Zhou, Computer Science Department,
+%College of William and Mary; Y. Wu  {and} J. A. Stankovic,
+%Computer Science Department, University of Virginia; T. Yan,
+%Eaton Innovation Center; T. He, Computer Science Department,
+%University of Minnesota; C. Huang, Google; T. F. Abdelzaher,
+%(Current address) NASA Ames Research Center, Moffett Field, California 94035.
+%\end{bottomstuff}
+
+\maketitle
+
+\section{Introduction}
+
+- Esterel
+
+- Ceu
+    - first WSN
+    - other domains, such as games
+    - here, only static semantics
+    - uses, classes, gsoc,
+
+- synchronous limitations
+
+%As a trade-off, our design imposes limitations on the language expressiveness, 
+%such as doing computationally-intensive operations and meeting hard real-time 
+%responsiveness.
+
+\section{Overview of \CEU}
+\label{sec.ceu}
+
+\CEU is a synchronous reactive language based on Esterel~\cite{esterel.ieee91} 
+with support for multiple concurrent lines of execution known as \emph{trails}.
+By reactive, we mean that programs are stimulated by the environment through 
+input events that are broadcast to all awaiting trails.
+By synchronous, we mean that all trails at any given time are either reacting 
+to the current event or are awaiting another event;
+in other words, trails are never reacting to different events.
+
+Figure~\ref{lst.abro} shows side-by-side the implementations in Esterel and 
+\CEU for the following control specification~\cite{esterel.primer}:
+%
+\emph{``Emit an output O as soon as two inputs A and B have occurred.
+Reset this behavior each time the input R occurs''.}
+%
+The first phrase of the specification is translated almost identically in the 
+two languages, as Esterel's `$\|$' and \CEU's \code{par/and} constructs are 
+equivalent (lines 4--9).
+%
+For the second phrase (i.e., the reset behavior), the Esterel version uses a 
+\code{abort-when}, which serves the same purpose of \CEU's \code{par/or}:
+the occurrence of event \code{R} aborts the awaiting statements in parallel and 
+restarts the \code{loop}.
+
+\begin{figure}[t]
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}[mathescape=true]
+// ESTEREL
+loop
+   abort
+      [
+         await A
+      $\|$
+         await B
+      ];
+      emit O
+   when R
+end
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em]
+// CEU
+loop do
+   par/or do
+      par/and do
+         await A;
+      with
+         await B;
+      end
+      emit O;
+   with
+      await R;
+   end
+end
+\end{lstlisting}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{ The same specification in Esterel and \CEU. %\newline
+{\small
+%TODO.
+}
+\label{lst.abro}
+}
+\end{figure}
+
+\CEU (like Esterel) has a strong imperative flavor, with explicit control flow 
+through sequences, loops, and also assignments.
+Being designed for control-intensive applications, it provides support for 
+concurrent lines of execution and broadcast communication through events.
+%
+Programs advance in sequence of discrete reactions to external events.
+Internal computations within a reaction (e.g. expressions, assignments, and 
+native calls) are considered to take no time in accordance with the synchronous 
+hypothesis~\cite{rp.hypothesis}.
+The \code{await} statements are the only ones that halt a running reaction and 
+allow a program to advance in this notion of time.
+%
+To ensure that reactions run in bounded time and programs always progress, 
+loops are statically required to contain at least one \code{await} statement in 
+all possible paths~\cite{ceu.sensys13,esterel.primer}.
+
+In the sections that follow, we discuss the four basic differences between \CEU 
+and Esterel: deterministic execution for operations with side-effects
+(Section~\ref{sec.ceu.det}), safe abortion for lines of execution 
+(Section~\ref{sec.ceu.abrt}), first-class timers 
+(Section~\ref{sec.ceu.timers}), and stack-based execution for internal events 
+(Section~\ref{sec.ceu.ints}).
+
+%\newpage %TTT
+\subsection{Deterministic Execution}
+\label{sec.ceu.det}
+
+Esterel is deterministic with respect to reactive control: ``the same sequence 
+of inputs always produces the same sequence of outputs''~\cite{esterel.primer}.
+However, the execution order for operations with side-effects within a reaction 
+is non-deterministic: ``if there is no control dependency, as in ``\code{call 
+f1() || call f2()}'', the order is unspecified and it would be an error to rely 
+on it''~\cite{esterel.primer}.
+%
+In \CEU, when multiple trails are active at a time, as in
+``\code{par/and~do~\_f1()~with~\_f2()~end}'', they are scheduled in the order 
+they appear in the program source code (i.e., \code{\_f1} executes first).
+%
+This way, \CEU is deterministic also with respect to the order of execution of 
+side effects within a reaction.
+
+On the one hand, enforcing an execution order for concurrent operations may 
+seen arbitrary and also precludes true parallelism.
+On the other hand, it provides a priority scheme for trails, and makes 
+shared-memory concurrency possible.
+In contrast, Esterel does not support shared memory: \emph{``if a variable is 
+written by some thread, then it can neither be read nor be written by 
+concurrent threads''}~\cite{esterel.primer}.
+%
+For embedded development, we believe that deterministic shared-memory 
+concurrency is beneficial, given the extensive use of memory mapped ports for 
+I/O and lack of hardware support for real parallelism.
+Other embedded languages made a similar design choice~\cite{wsn.sol,pret}.
+%For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
+%parallelism is inherent.
+
+\begin{figure}[t]
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}[mathescape=true]
+// ESTEREL
+[
+    call f1();
+$\|$
+    call f2();
+];
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em]
+// CEU
+par/and do
+    _f1();
+with
+    _f2();
+end
+\end{lstlisting}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{ The execution order between \code{f1} and \code{f2} is unspecified in 
+Esterel, whereas in \CEU, \code{\_f1} always executes before \code{\_f2}.
+{\small
+%TODO.
+}
+\label{lst.abro}
+}
+\end{figure}
+
+\subsection{Safe Abortion}
+\label{sec.ceu.abrt}
+
+The introductory example of Figure~\ref{lst.abro} illustrates how synchronous 
+languages can abort awaiting lines of execution (i.e., awaiting \code{A} and 
+\code{B}) without tweaking them with synchronization primitives.
+In contrast, traditional (asynchronous) multi-threaded languages cannot express 
+thread termination safely~\cite{esterel.preemption,sync_async.threadsstop}.
+
+The code fragments of Figure~\ref{lst.abortion} shows a corner case for 
+abortion: when the event \code{A} occurs, the program behavior seems ambiguous.
+%
+For instance, it is not clear in \emph{code~a} in Esterel if the call to 
+\code{f} should execute or not after \code{A}, given that the body and abortion 
+events are the same.
+%
+For this reason, Esterel provides \emph{weak} and \emph{strong} variations for 
+the \code{abort} statement.
+With \emph{strong} abortion (the default), the body is aborted immediately and 
+the call does not execute.
+%
+In \CEU, given the deterministic scheduling rules, strong and weak abortions 
+can be chosen by reordering trails inside a \code{par/or}, e.g., in 
+\emph{code~b}, the second trail is strongly aborted by the first trail and the 
+call to \code{\_f} never executes.
+
+\begin{figure}[t]
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}
+// ESTEREL
+abort
+    await A;
+    call f();
+when A;
+
+
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}
+// CEU
+par/or do
+    await A;
+with
+    await A;
+    _f();
+end
+\end{lstlisting}
+\end{minipage}
+%
+\end{lstlisting}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{ Thread abortion in Esterel and \CEU. %\newline
+\label{lst.abortion}
+}
+\end{figure}
+
+\subsection{First-class Timers}
+\label{sec.ceu.timers}
+
+% TODO: ana
+
+Activities that involve reactions to \emph{wall-clock time}%
+\footnote{
+By wall-clock time we mean the passage of time from the real world, measured in 
+hours, minutes, etc.
+}
+appear in typical patterns of WSNs, such as timeouts and sensor sampling.
+However, support for wall-clock time is somewhat low-level in existing 
+languages, usually through timer callbacks or blocking calls with ``sleep''.
+%
+In any concrete system implementation, however, a requested timeout does not 
+expire precisely with zero-delay, a fact that is usually ignored in the 
+development process.
+We define the difference between the requested timeout and the actual expiring 
+time as the \emph{residual delta time (delta)}.
+Without explicit manipulation, the recurrent use of timed activities in 
+sequence (or in a loop) may accumulate a considerable amount of deltas that can 
+lead to incorrect behavior in programs.
+
+The \code{await} statement of \CEU supports wall-clock time and handles deltas 
+automatically, resulting in more robust applications.
+As an example, consider the following program:
+
+\nopagebreak
+\noindent
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[xleftmargin=2em]
+var int v;
+await 10ms;
+v = 1;
+await 1ms;
+v = 2;
+\end{lstlisting}
+\end{minipage}
+
+Suppose that after the first \code{await} request, the underlying system gets 
+busy and takes 15ms to check for expiring awaits.
+The \CEU scheduler will notice that the \code{await 10ms} has not only already 
+expired, but delayed with \code{delta=5ms}.
+Then, the awaiting trail awakes, sets \code{v=1}, and invokes \code{await 1ms}.
+As the current delta is higher than the requested timeout (i.e. $5ms > 1ms$), 
+the trail is rescheduled for execution, now with \code{delta=4ms}.
+
+\CEU also takes into account the fact that time is a physical quantity that can 
+be added and compared.
+For instance, for the program that follows, although the scheduler cannot 
+guarantee that the first trail terminates exactly in 11ms, it can at least 
+ensure that the program always terminates with \code{v=1}:
+
+\nopagebreak
+\noindent
+%\begin{figure}[t]
+%\rule{8.5cm}{0.37pt}
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[xleftmargin=2em]
+par/or do
+    await 10ms;
+    <...>         // any non-awaiting sequence
+    await  1ms;
+    v = 1;
+with
+    await 12ms;
+    v = 2;
+end
+\end{lstlisting}
+\end{minipage}
+%\rule{8.5cm}{0.37pt}
+%\caption{ The first trail always terminates the program.
+%\label{lst.time}
+%}
+%\end{figure}
+
+Remember that any non-awaiting sequence is considered to take no time in the 
+synchronous model.
+Hence, the first trail is guaranteed to terminate before the second trail, 
+because $10+1 < 12$.
+A similar program in a language without first-class support for timers, would 
+depend on the execution timings for the code marked as \code{<...>}, making the 
+reasoning about the execution behavior more difficult.
+%
+The importance of synchronized timers becomes more evident in the presence of 
+loops, like in the introductory example of Figure~\ref{lst.all} in which the 
+first trail is guaranteed to execute exactly 21 times before being aborted by 
+the timer in the second trail.
+
+Note that in extreme scenarios, small timers in sequence (or in a loop) may 
+never ``catch up'' with the external clock, resulting in a \emph{delta} that
+increases indefinitely.
+%There is nothing \CEU can do about that, as it is do
+To deal with such cases, the current \emph{delta} is always returned from an 
+\code{await} and can be used in programs:
+
+\begin{lstlisting}
+loop do
+    var int late = await 1ms;
+    if late < 1000 then
+        <...>   // normal behavior
+    else
+        <...>   // abnormal behavior
+    end
+end
+\end{lstlisting}
+
+% TODO: uses in ports
+% trickle?
+
+\subsection{Internal Events}
+\label{sec.ceu.ints}
+
+Esterel makes no semantic distinctions between internal and external signals, 
+both having only the notion of either presence or absence during the entire 
+reaction~\cite{esterel.preemption}.
+%
+In \CEU, however, internal events follow a stack-based execution policy, 
+similar to subroutine calls in typical programming languages.
+%
+Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
+Esterel and \CEU.
+%
+For the version in Esterel, given that there is no control dependency between 
+the calls to \code{f}, they may execute in any order after \code{A} and 
+\code{B} (internally emitted).
+%
+For the version in \CEU, the occurrence of \code{A} makes the program behave as 
+follows (with the stack contents in italics):
+%
+{\small
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\item 1st trail awakes (line 5), emits \code{b}, and pauses.\\
+    \emph{stack: [1st]}
+\item 2nd trail awakes (line 9), calls \code{\_f(1)}, and terminates.\\
+    \emph{stack: [1st]}
+\item 1st trail (on top of the stack) resumes, calls \code{\_f(2)}, and 
+    terminates.\\
+    \emph{stack: []}
+\item Both trails have terminated, so the \code{par/and} rejoins, and the 
+program also terminates;
+\end{enumerate}
+}
+
+\begin{figure}[!t]
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}[mathescape=true]
+// ESTEREL
+input A;    // external
+signal B;   // internal
+[[
+    await A;
+    emit B;
+    call f("2");
+$\|$
+    await B;
+    call f("1");
+]]
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.1em]
+// CEU
+input void A;  // external
+event void b;  // internal
+par/and do
+    await A;
+    emit b;
+    _f("2");
+with
+    await b;
+    _f("1");
+end
+\end{lstlisting}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{ Internal signals (events) in Esterel and \CEU. \newline
+\label{lst.prints}
+}
+\end{figure}
+
+Internal events bring support for a limited form of subroutines, as depicted in 
+Figure~\ref{lst.sub}.
+The subroutine \code{inc} is defined as a loop (lines 3-6) that continuously 
+awaits its identifying event (line 4), incrementing the value passed as 
+reference (line 5).
+A trail in parallel (lines 8-11) invokes the subroutine in reaction to event 
+\code{A} through an \code{emit} (line 10).
+Given the stacked execution for internal events, the calling trail pauses, the 
+subroutine awakes (line 4), runs its body (yielding \code{v=2}), loops, and 
+awaits the next ``call'' (line 4, again).
+Only after this sequence that the calling trail resumes and passes the 
+assertion test.
+ 
+\begin{figure}
+\begin{lstlisting}[numbers=left,xleftmargin=2em]
+event int* inc; // subroutine `inc'
+par/or do
+    loop do     // definitions are loops
+        var int* p = await inc;
+        *p = *p + 1;
+    end
+with
+    var int v = 1;
+    await A;
+    emit inc => &v; // call `inc'
+    _assert(v==2);  // after return
+end
+\end{lstlisting}
+\caption{ Subroutine \code{inc} is defined in a loop (lines 3-6), in parallel 
+with the caller (lines 8-11).
+\label{lst.sub}
+}
+\end{figure}
+
+On the one hand, this form of subroutines has a significant limitation that it 
+cannot express recursive calls: an \code{emit} to itself will always be 
+ignored, given that a running body cannot be awaiting itself.
+%
+On the other hand, this very same limitation brings some important safety 
+properties to subroutines:
+first, they are guaranteed to react in bounded time;
+second, memory for locals is also bounded, not requiring runtime stacks.
+%
+Also, this form of subroutines can use the other primitives of \CEU, such as 
+parallel compositions and the \code{await} statement.
+In particular, they await keeping context information such as locals and the 
+program counter, just like coroutines~\cite{lua.coroutines}.
+%In Section~\ref{sec.adv.excpt} we show how to use them to implement 
+%exceptions.
+%
+In Section~\ref{sec.adv.frp}, we take advantage of the lack of recursion to 
+properly describe mutual dependency among trails in parallel.
+
+\begin{comment}
+\vspace{5pt}
+\CEU provides no support for standard functions for a number of reasons:
+\begin{itemize}
+\item The interaction with other \CEU control primitives is not obvious (e.g., 
+executing an $await$ or a $par/or$ inside a function).
+\item They would still be restricted in some ways given the embedded context 
+(e.g.  no recursion or closures).
+\item Programs can always recur to $C$ functions for low-level operations.
+%\item A dedicated primitive would behave just as described, being a matter of 
+%syntactic sugar.
+\end{itemize}
+
+Regardless of the limitations, this form of subroutines is widely adopted in 
+\CEU programs, given that they were designed to work with the other control 
+mechanisms.
+Keep in mind that the typical reactive organization of programs (awaiting an 
+external stimulus, reacting to it, and going back to awaiting) does not demand 
+unrestricted subroutines.
+\end{comment}
+
+\section{Formal Semantics}
+
+%\begin{document}
+
+The disciplined synchronous execution of \CEU, together with broadcast 
+communication and stacked execution for internal events, may raise doubts about 
+the precise execution of programs.
+%
+In this chapter, we introduce a reduced syntax of \CEU and propose an 
+operational semantics in order to formally describe the language, eliminating 
+imprecisions with regard to how a program reacts to an external event.
+%
+For the sake of simplicity, we focus on the control aspects of the language, 
+leaving out side effects and $C$ calls (which behave like in any conventional 
+imperative language).
+
+%The full syntax and semantic rules can be obtained in 
+%Appendix~\ref{app.formal}.
+
+%In section~\ref{sec.formal.ceu}, we show how to translate \CEU statements into
+
+\subsection{Abstract Syntax}
+\label{sec.sem.syntax}
+
+\begin{figure}[h]
+%\rule{8.5cm}{0.37pt}
+{\small
+\begin{verbatim}
+                                   // primary expressions
+  p ::= mem(id)                    (any memory access to `id')
+      | await(id)                  (await event `id')
+      | emit(id)                   (emit event `id')
+      | break                      (loop escape)
+                                   // compound expressions
+      | if mem(id) then p else p   (conditional)
+      | p ; p                      (sequence)
+      | loop p                     (repetition)
+      | p and p                    (par/and)
+      | p or p                     (par/or)
+      | fin p                      (finalization)
+                                   // derived by semantic rules
+      | awaiting(id,n)             (awaiting `id' since sequence number `n')
+      | emitting(n)                (emitting on stack level `n')
+      | p @ loop p                 (unwinded loop)
+\end{verbatim}
+}%
+\caption{
+    Reduced syntax of \CEU.
+\label{lst.formal.syntax}
+}
+\end{figure}
+
+Figure~\ref{lst.formal.syntax} shows the BNF-like syntax for a subset of \CEU 
+that is sufficient to describe all semantic peculiarities of the language.
+%
+The $mem(id)$ primitive represents all accesses, assignments, and $C$ function 
+calls that affect a memory location identified by $id$.
+As the challenging parts of \CEU reside on its control structures, we are not 
+concerned here with a precise semantics for side effects, but only with their 
+occurrences in programs.
+%In accordance with the zero-delay hypothesis of \CEU, $mem$ expressions are 
+%considered to be atomic and instantaneous
+%
+The special notation $nop$ is used to represent an innocuous $mem$ expression 
+(it can be thought as a synonym for $mem(\epsilon)$, where $\epsilon$ is an 
+unused identifier).
+%
+Except for the $fin$ and semantic-derived expressions, which are discussed 
+further, the other expressions map to their counterparts in the concrete 
+language in Figure~\ref{lst.syntax}.
+%
+Note that $mem$ expressions cannot share identifiers with $await$/$emit$ 
+expressions.
+
+\subsection{Operational Semantics}
+\label{sec.sem}
+
+The core of our semantics is a relation that, given a sequence number $n$ 
+identifying the current reaction chain, maps a program $p$ and a stack of 
+events $S$ in a single step to a modified program and stack:
+%
+$$
+\LL S, p \RR
+    \xrightarrow[~~n~~]{}
+\LL S', p' \RR
+$$
+%
+where
+%
+\begin{align*}
+S, S' &\in id^*
+    &&(sequence~of~event~identifiers: [id_{top}, ..., id_1]) \\
+p, p' &\in P
+    && (as~described~in~Figure~\ref{lst.formal.syntax}) \\
+n     &\in \mathds{N}
+    && (univocally~identifies~a~reaction~chain)
+\end{align*}
+
+At the beginning of a reaction chain, the stack is initialized with the 
+occurring external event $ext$ ($S=[ext]$), but $emit$ expressions can push new 
+events on top of it (we discuss how they are popped further).
+
+%Therefore, there is a single order of execution for side effects (represented 
+%by \code{mem} operations), thus, reaction chains are always deterministic.
+%
+% TODO
+%\footnote{We could extend the semantics to describe the full execution of a 
+%program by holding new incoming external events in a queue and processing them 
+%in consecutive reaction chains that never overlap.}
+%
+%The semantics requires an explicit stack to properly nest the emission of 
+%internal events.
+%to prevent that $awaiting$ expressions awake in the same reaction they are 
+%reached.
+
+We describe this relation with a set of \emph{small-step} structural semantics 
+rules, which are built in such a way that at most one transition is possible at 
+any time, resulting in deterministic reaction chains.
+%
+The transition rules for the primary expressions are as follows:
+%
+{ \setlength{\jot}{20pt}
+\begin{align*}
+\LL S,\1await(id) \RR &\ST
+\LL S,\1awaiting(id,n) \RR
+    & \textbf{(await)}      \\
+%%%
+\LL id:S,\1awaiting(id,m) \RR &\ST
+\LL id:S,\1nop \RR, \2m<n
+    & \textbf{(awaiting)}   \\
+%%%
+\LL S,\1emit(id) \RR &\ST
+\LL id:S,\1emitting(|S|) \RR
+    & \textbf{(emit)}       \\
+%%%
+\LL S,\1emitting(|S|) \RR &\ST
+\LL S,\1nop \RR
+    & \textbf{(emitting)}
+\end{align*}
+}
+
+An $await$ is simply transformed into an $awaiting$ that remembers the current 
+external sequence number $n$ (rule \textbf{await}).
+An $awaiting$ can only transit to a $nop$ (rule \textbf{awaiting}) if its 
+referred event $id$ matches the top of the stack and its sequence number is 
+smaller than the current one ($m<n$).
+%
+%Remember that in \CEU, the \code{await} statement returns the value associated 
+%with the corresponding event: the yielded $mem$ represents the operation to 
+%query that value.
+%
+An $emit$ transits to an $emitting$ holding the current stack level ($|S|$ 
+stands for the stack length), and pushing the referred event on the stack (in 
+rule \textbf{emit}).
+With the new stack level $|S|+1$, the $emitting(|S|)$ itself cannot transit, as 
+rule \textbf{emitting} expects its parameter to match the current stack level.
+This trick provides the desired stack-based semantics for internal events.
+
+Proceeding to compound expressions, the rules for conditionals and sequences 
+are straightforward:
+
+{ \setlength{\jot}{20pt}
+\begin{eqnarray*}
+& \frac
+    { \DS val(id,n) \neq 0 }
+%   -----------------------------------------------------------
+    { \DS \LL S, (if~mem(id)~then~p~else~q) \RR \ST
+          \LL S, p \RR }
+    & \textbf{(if-true)}       \\
+%%%
+& \frac
+    { \DS val(id,n) = 0 }
+%   -----------------------------------------------------------
+    { \DS \LL S, (if~mem(id)~then~p~else~q) \RR \ST
+          \LL S, q \RR }
+    & \textbf{(if-false)}       \\
+%%%
+& \frac
+    {\DS \LL S,p \RR \ST \LL S',p' \RR }
+%   -----------------------------------------------------------
+    {\DS \LL S, (p~;~q) \RR \ST \LL S', (p'~;~q) \RR }
+    & \textbf{(seq-adv)}      \\
+%%%
+& \LL S, (mem(id)~;~q) \RR \ST  \LL S, q \RR
+    & \textbf{(seq-nop)}      \\
+%%%
+& \LL S, (break~;~q) \RR \ST \LL S, break \RR
+    & \textbf{(seq-brk)}
+\end{eqnarray*}
+}
+
+Given that our semantics focuses on control, rules \textbf{if-true} and 
+\textbf{if-false} are the only to query $mem$ expressions.
+%
+The ``magical'' function $val$ receives the memory identifier and current 
+reaction sequence number, returning the current memory value.
+%
+Although the value is arbitrary, it is unique in a reaction chain, because a 
+given expression can execute only once within it (remember that $loops$ must 
+contain $awaits$ which, from rule \textbf{await}, cannot awake in the same 
+reaction they are reached).
+%For all other rules, we omit these values (e.g., \textbf{seq-nop}).
+
+The rules for loops are analogous to sequences, but use \code{`@'} as 
+separators to properly bind breaks to their enclosing loops:
+
+{ \setlength{\jot}{20pt}
+\begin{eqnarray*}
+& \LL S, (loop~p) \RR \ST \LL S, (p~@~loop~p) \RR
+    & \textbf{(loop-expd)}       \\
+%%%
+& \frac
+    {\DS \LL S,p \RR \ST \LL S',p' \RR }
+% -----------------------------------------------------------
+    {\DS \LL S, (p~@~loop~q) \RR \ST \LL S', (p'~@~loop~q) \RR }
+    & \textbf{(loop-adv)}    \\
+%%%
+& \LL S, (mem(id)~@~loop~p) \RR \ST \LL S, loop~p \RR
+    & \textbf{(loop-nop)}    \\
+%%%
+& \LL S, (break~@~loop~p) \RR \ST \LL S, nop \RR
+    & \textbf{(loop-brk)}
+\end{eqnarray*}
+}
+
+When a program first encounters a $loop$, it first expands its body in sequence 
+with itself (rule \textbf{loop-expd}).
+Rules \textbf{loop-adv} and \textbf{loop-nop} are similar to rules 
+\textbf{seq-adv} and \textbf{seq-nop}, advancing the loop until they reach a 
+$mem(id)$.
+However, what follows the loop is the loop itself (rule \textbf{loop-nop}).
+Note that if we used \code{`;'} as a separator in loops, rules 
+\textbf{loop-brk} and \textbf{seq-brk} would conflict.
+%
+Rule \textbf{loop-brk} escapes the enclosing loop, transforming everything into 
+a $nop$.
+%Rule \textbf{loop-brk} escapes the enclosing loop, transforming everything 
+%into a $clear(p)$.
+%We cannot simply transform the loop into a $nop$ because its body may be a 
+%parallel composition containing finalization blocks.
+
+The rules for parallel $and$ compositions force transitions on the left branch 
+$p$ to occur before transitions on the right branch $q$ (rules 
+\textbf{and-adv1} and \textbf{and-adv2}).
+Then, if one of the sides terminates, the composition is simply substituted by 
+the other side (rules \textbf{and-nop1} and \textbf{and-nop2}):
+
+{ \setlength{\jot}{20pt}
+\begin{eqnarray*}
+& \frac
+    {\DS \LL S,p \RR \ST \LL S',p' \RR }
+%   -----------------------------------------------------------
+    {\DS \LL S, (p~and~q) \RR \ST \LL S', (p'~and~q) \RR }
+    & \textbf{(and-adv1)}      \\
+%%%
+& \frac
+    {\DS isBlocked(n,S,p) \1,\2 \LL S,q \RR \ST \LL S',q' \RR }
+%   -----------------------------------------------------------
+    {\DS \LL S, (p~and~q) \RR \ST \LL S', (p~and~q') \RR }
+    & \textbf{(and-adv2)}      \\
+%%%
+& \LL S, (mem(id)~and~q) \RR \ST \LL S, q \RR
+    & \textbf{(and-nop1)}   \\
+%%%
+& \LL S, (p~and~mem(id)) \RR \ST \LL S, p \RR
+    & \textbf{(and-nop2)}   \\
+%%%
+& \LL S, (break~and~q) \RR \ST \LL S, (clear(q)~;~break) \RR
+    & \textbf{(and-brk1)}   \\
+%%%
+& \frac
+    {\DS isBlocked(n,S,p) }
+%   -----------------------------------------------------------
+    {\DS \LL S, (p~and~break) \RR \ST \LL S, (clear(p)~;~break) \RR }
+    & \textbf{(and-brk2)}   \\
+\end{eqnarray*}
+}
+
+The deterministic behavior of the semantics relies on the \emph{isBlocked} 
+predicate, defined in Figure~\ref{fig.isBlocked} and used in rule 
+\textbf{and-adv2}, requiring the left branch $p$ to be blocked in order to 
+allow the right transition from $q$ to $q'$.
+%
+An expression becomes blocked when all of its trails in parallel hang in 
+$awaiting$ and $emitting$ expressions.
+
+\begin{figure}[t]
+{\small
+\begin{align*}
+  isBlocked(n,a:S, awaiting(b,m)) &= (a \neq b \1\vee\1 m = n)   \\
+  isBlocked(n,S, emitting(s))    &= (|S| \neq s)                     \\
+  isBlocked(n,S, (p~;~q))        &= isBlocked(n,S,p)             \\
+  isBlocked(n,S, (p~@~loop~q))   &= isBlocked(n,S,p)             \\
+  isBlocked(n,S, (p~and~q))      &= isBlocked(n,S,p) \wedge
+                                    isBlocked(n,S,q)             \\
+  isBlocked(n,S, (p~or~q))       &= isBlocked(n,S,p) \wedge
+                                    isBlocked(n,S,q)             \\
+  isBlocked(n,S, \_)             &= false \2  (mem,await,      \\
+                                  &    \5\5\5\2 emit,break,if,loop)   %\\
+\end{align*}
+}%
+\rule{14cm}{0.37pt}
+\caption{
+The recursive predicate $isBlocked$ is true only if all branches in parallel 
+are hanged in $awaiting$ or $emitting$ expressions that cannot transit.
+\label{fig.isBlocked}
+}
+\end{figure}
+
+\begin{figure}[t]
+{\small
+\begin{align*}
+  clear( fin~p )       &= p                   \\
+  clear( p~;~q )       &= clear(p)            \\
+  clear( p~@~loop~q) ) &= clear(p)            \\
+  clear( p~and~q )     &= clear(p)~;~clear(q) \\
+  clear( p~or~q )      &= clear(p)~;~clear(q) \\
+  clear( \_ )          &= mem(id)
+\end{align*}
+}%
+\rule{14cm}{0.37pt}
+\caption{
+The function $clear$ extracts $fin$ expressions in parallel and put their 
+bodies in sequence.
+\label{fig.formal.clear}
+}
+\end{figure}
+
+The last two rules \textbf{and-brk1} and \textbf{and-brk2} deal with a $break$ 
+in each of the sides in parallel.
+A $break$ should terminate the whole composition in order to escape the 
+innermost loop (\emph{aborting} the other side).
+%
+The $clear$ function in the rules, defined in Figure~\ref{fig.formal.clear}, 
+concatenates all active $fin$ bodies of the side being aborted (to execute 
+before the $and$ rejoins).
+Note that there are no transition rules for $fin$ expressions.
+This is because once reached, an $fin$ expression only executes when it is 
+aborted by a trail in parallel.
+In Section~\ref{sec.formal.fins}, we show how an $fin$ is mapped to a 
+finalization block in the concrete language.
+%
+Note that there is a syntactic restriction that an $fin$ body cannot $emit$ or 
+$await$---they are guaranteed to completely execute within a reaction chain.
+
+Most rules for parallel $or$ compositions are similar to $and$ compositions:
+
+{ \setlength{\jot}{20pt}
+\begin{eqnarray*}
+& \frac
+    {\DS \LL S,p \RR \ST \LL S',p' \RR }
+%   -----------------------------------------------------------
+    {\DS \LL S, (p~or~q) \RR \ST \LL S', (p'~or~q) \RR }
+    & \textbf{(or-adv1)}   \\
+%%%
+& \frac
+    {\DS isBlocked(n,S,p) \1,\2 \LL S,q \RR \ST \LL S',q' \RR }
+%   -----------------------------------------------------------
+    {\DS \LL S (p~or~q) \RR \ST \LL S', (p~or~q') \RR }
+    & \textbf{(or-adv2)}   \\
+%%%
+& \LL S, (mem(id)~or~q) \RR \ST \LL S, clear(q) \RR
+    & \textbf{(or-nop1)}   \\
+%%%
+& \frac
+    {\DS isBlocked(n,S,p) }
+%   -----------------------------------------------------------
+    {\DS \LL S, (p~or~mem(id)) \RR \ST \LL S, clear(p) \RR }
+    & \textbf{(or-nop2)}   \\
+%%%
+& \LL S, (break~or~q) \ST \LL S, (clear(q)~;~break) \RR
+    & \textbf{(or-brk1)}   \\
+%%%
+& \frac
+    {\DS isBlocked(n,S,p) }
+%   -----------------------------------------------------------
+    {\DS \LL S, (p~or~break) \RR \ST \LL S, (clear(p)~;~break) \RR }
+    & \textbf{(or-brk2)}   %\\
+\end{eqnarray*}
+}
+
+For a parallel $or$, the rules \textbf{or-nop1} and \textbf{or-nop2} must 
+terminate the composition, and also apply the function $clear$ to the aborted 
+side, in order to properly finalize it.
+
+A reaction chain eventually blocks in $awaiting$ and $emitting$ expressions in 
+parallel trails.
+%
+If all trails hangs only in $awaiting$ expressions, it means that the program 
+cannot advance in the current reaction chain.
+%
+However, $emitting$ expressions should resume their continuations of previous 
+$emit$ in the ongoing reaction, they are just hanged in lower stack indexes 
+(see rule \textbf{emit}).
+%
+Therefore, we define another relation that behaves as the previous if the 
+program is not blocked, and, otherwise, pops the stack:
+%
+$$
+\frac
+    { \DS \LL S,p \RR \ST                   \LL S',p' \RR }
+%   -----------------------------------------------------------
+    {     \LL S,p \RR \xRightarrow[~~n~~]{} \LL S',p' \RR }
+%
+\5\5\5
+%
+\frac
+    { \DS isBlocked(n,\1s:S,\1p) }
+%   -----------------------------------------------------------
+    { \LL s:S,p \RR \xRightarrow[~~n~~]{} \LL S,p \RR }
+$$
+%
+To describe a \emph{reaction chain} in \CEU, i.e., how a program behaves in 
+reaction to a single external event, we use the reflexive transitive closure of 
+this relation:
+%
+$$
+    \LL S,p \RR \xRightarrow[~~n~~]{*} \LL S',p' \RR
+$$
+%
+Finally, to describe the complete execution of a program, we need multiple 
+``invocations'' of reaction chains, incrementing the sequence number:
+%
+\begin{align*}
+\LL [e1], p \RR
+    & \xRightarrow[~~1~~]{*}
+\LL [  ], p' \RR
+\\
+\LL [e2], p' \RR
+    & \xRightarrow[~~2~~]{*}
+\LL [  ], p'' \RR
+\\
+& ...
+\end{align*}
+%
+Each invocation starts with an external event at the top of the stack and 
+finishes with a modified program and an empty stack.
+After each invocation, the sequence number is incremented.
+
+\subsection{Concrete Language Mapping}
+
+Although the reduced syntax presented in Figure~\ref{lst.formal.syntax} is 
+similar to the concrete language in Figure~\ref{lst.syntax}, there are some 
+significant mismatches between \CEU and the formal semantics that require some 
+clarification.
+In this section, we describe an informal mapping between the two.
+
+Most statements from \CEU map directly to the formal semantics, e.g.,
+$
+    \code{if}      \mapsto if   ,\2
+    \code{';'}     \mapsto ~';' ,\2
+    \code{loop}    \mapsto loop ,\2
+    \code{par/and} \mapsto and  ,\2
+    \code{par/or}  \mapsto or
+$.
+(Again, we are not considering side-effects, which are all mapped to the $mem$ 
+semantic construct.)
+
+\subsubsection{await and emit}
+
+The \code{await} and \code{emit} primitives of \CEU are slightly more complex 
+in comparison to the formal semantics, as they support communication of values 
+between emits and awaits.
+In the two-step translation below, we start with the program in \CEU, which 
+communicates the value $1$ between the \code{emit} and \code{await} in parallel 
+(left-most code).
+In the intermediate translation, we include the shared variable \code{e\_} to 
+hold the value being communicated between the two trails in order to simplify 
+the \code{emit}.
+Finally, we convert the program into the equivalent in the formal semantics, 
+translating side-effect statements into $mem$ expressions:
+
+\begin{figure}[h!]
+\begin{minipage}[t]{0.32\linewidth}
+\begin{lstlisting}
+par/or do
+  <...>
+  emit e => 1;
+with
+  v = await e;
+  _printf("%d\n",v);
+end
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.32\linewidth}
+\begin{lstlisting}
+par/or do
+  <...>
+  e_ = 1;
+  emit e;
+with
+  await e;
+  v = e_;
+  _printf("%d\n",v);
+end
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.34\linewidth}
+\begin{lstlisting}
+<...> ; mem ; emit(e)
+        or
+await(e) ; mem ; mem
+\end{lstlisting}
+\end{minipage}
+\end{figure}
+
+Note that a similar translation is required for external events, i.e., each 
+external event has a corresponding variable that is explicitly set by the 
+environment before each reaction chain.
+
+\subsubsection{First-class Timers}
+
+To encompass first-class timers, we need a special \code{TICK} event that 
+should be intercalated with each other event occurrence in an application (e.g.  
+\emph{e1, e2}):
+
+\begin{align*}
+\LL [TICK], p \RR
+    & \xRightarrow[~~1~~]{*}
+\LL [    ], p' \RR
+\\
+\LL [e1], p' \RR
+    & \xRightarrow[~~2~~]{*}
+\LL [  ], p'' \RR
+\\
+\LL [TICK], p'' \RR
+    & \xRightarrow[~~3~~]{*}
+\LL [    ], p''' \RR
+\\
+\LL [e2], p''' \RR
+    & \xRightarrow[~~4~~]{*}
+\LL [  ], p'''' \RR
+\\
+& ...
+\end{align*}
+
+The \code{TICK} event has an associated variable \code{TICK\_} (as illustrated 
+in the previous section) with the time elapsed between the two occurrences of 
+external events.
+
+The translation in two steps from a timer await to the semantics is as follows:
+
+\noindent
+\begin{minipage}[t]{0.30\linewidth}
+\begin{lstlisting}
+dt = await 10ms;
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.37\linewidth}
+\begin{lstlisting}
+var int tot = 10000;
+loop do
+    await TICK;
+    tot = tot - TICK_;
+    if tot <= 0 then
+        dt = tot;
+        break;
+    end
+end
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.30\linewidth}
+\begin{lstlisting}
+mem;
+loop(
+    await(TICK);
+    mem;
+    if mem then
+        mem;
+        break
+    else
+        nop
+)
+\end{lstlisting}
+\end{minipage}
+
+\subsubsection{Finalization Blocks}
+\label{sec.formal.fins}
+
+The biggest mismatch between \CEU and the formal semantics is regarding 
+finalization blocks, which require more complex modifications in the program
+for a proper mapping using the $fin$ semantic construct.
+The code that follows uses a \code{finalize} to safely \code{\_release} the 
+reference to \code{ptr} kept after the call to \code{\_hold}:
+
+\begin{lstlisting}
+do
+    var int* ptr = <...>;
+    await A;
+    finalize
+        _hold(ptr);
+    with
+        _release(ptr);
+    end
+    await B;
+end
+\end{lstlisting}
+
+In the translation to the semantics, the first required modification is to 
+catch the \code{do-end} termination to run the finalization code.
+For this, we translate the block into a \code{par/or} with the original body in 
+parallel with a $fin$ to run the finalization code:
+
+\begin{lstlisting}
+par/or do
+    var int* ptr = <...>;
+    await A;
+    _hold(ptr);
+    await B;
+with
+    { fin
+        _release(ptr); }
+end
+\end{lstlisting}
+
+In this intermediate code (mixing the syntaxes), the $fin$ body will execute
+whenever the \code{par/or} terminates, either normally (after the \code{await 
+B}) or aborted from an outer composition (rules \textbf{and-brk1}, 
+\textbf{and-brk2}, \textbf{or-nop1}, \textbf{or-nop2}, \textbf{or-brk1}, and 
+\textbf{or-brk2} in the semantics).
+%
+%Note the choice for a \code{par/or} which terminates only with the first 
+%trail.
+%
+However, the $fin$ will also (incorrectly) execute even if the call to 
+\code{\_hold} is not reached in the body due to an abort before awaking from 
+the \code{await A}.
+%It may happen that the call to \code{\_release} occurs without a previous call 
+%to \code{\_hold}.
+%
+To deal with this issue, for each $fin$ we need a corresponding flag to keep 
+track of code that needs to be finalized:
+
+\begin{lstlisting}[numbers=left,xleftmargin=2em]
+f_ = 0;
+par/or do
+    var int* ptr = <...>;
+    await A;
+    _hold(ptr);
+    f_ = 1;
+    await B;
+with
+    { fin
+        if f_ then
+            _release(ptr);
+        end }
+end
+\end{lstlisting}
+
+The flag is initially set to false (line 1), avoiding the finalization code to 
+execute (lines 9-12).
+Only after the call to \code{\_hold} (line 5) that we set the flag to true 
+(line 6) and enable the $fin$ body to execute.
+%
+The complete translation from the original example in \CEU is as follows:
+
+\begin{lstlisting}
+mem;    // f_ = 0
+(
+   mem;         // ptr = <...>
+   await(A);
+   mem;         // _hold(ptr)
+   mem;         // f_ = 1
+   await(B);
+or
+   fin
+     if mem then    // if f_
+        mem         // release _ptr
+     else
+        nop
+)
+\end{lstlisting}
+
+\begin{comment}
+
+There are also some restriction on valid programs in \CEU, which the semantic 
+allows:
+- loops
+- awaits in fins
+- local scopes
+
+handled in separate, in a parsing phase that is not related to the execution
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The semantic rules are continuously applied (note the `$*$' klenee operator) 
+until
+consider only the top of the stack and continuously apply transformations to 
+the program until it blocks and no rules can be applied.
+The \emph{isBlocked} predicate of Figure~\ref{fig.isBlocked} identifies a 
+blocked program based on its structure and event at the top of the stack.
+xxx
+A program becomes blocked when all parallel branches are hanged in $awaiting$, 
+$stacked$, and/or $emitting$ primitives, as defined in 
+Figure~\ref{fig:isBlocked}.
+an \code{awaiting} is unblocked only if its event matches the top of the stack
+the \code{emitting} primitive only proceeds once its stack level is restored.
+
+\begin{itemize}
+\item The program is awaiting in all trails, i.e., function $pop$ returns 
+$(0,\{\})$.
+\item The program terminates, i.e., the small-step rules transform the whole 
+program into a $mem(id)$.
+\end{itemize}
+%
+In Section~\ref{XXX} we show that by imposing syntactic restrictions to 
+programs, reaction chains always reach one of these conditions in a finite 
+number of steps, meaning that reactions to the environment always execute in 
+bounded time.
+
+To be compliant with the reactive nature of \CEU, we assume that all programs 
+start awaiting the main event ``$\$$'', which is emitted once by the 
+environment on startup, i.e., $(i,E)=(1,\{\$\})$ for the very first big step.
+
+As briefly introduced, small-step rules continuously apply transformations to 
+unblocked trails.
+A program becomes blocked when all parallel branches are hanged in $awaiting$, 
+$stacked$, and/or $emitting$ primitives, as defined in 
+Figure~\ref{fig:isBlocked}.
+
+All small-step rules are associated with the current (deepest) stack depth 
+level $i$ acquired from the previous big step.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{comment}
+\section{Implementation}
+
+\begin{comment}
+As a static language, much of the complexity in the implementation of \CEU{} 
+resides in the compile phase.
+Nonetheless, some complexity is left to the runtime phase, which has to manage 
+first-class timers, finalization blocks, and all bookkeeping related to trails.
+\end{comment}
+
+The compilation process of a program in \CEU is composed of three main phases, 
+as illustrated in Figure~\ref{fig.impl}:
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.20]{impl}
+\caption{ Compilation process: from the source code in \CEU to the final 
+binary.
+\label{fig.impl}
+}
+\end{figure}
+
+\begin{comment}
+The program below is used as our guiding example for this chapter:
+
+\begin{lstlisting}[numbers=left,xleftmargin=2em]
+input int A, B, C;
+var int ret;
+loop do
+   par/or do
+      do                            // 1st trail
+          var int a = await A;
+          ret = ret + a;
+      end
+      do
+          var int b = await B;
+          ret = ret + b;
+      end
+      break;
+   with
+      par/and do                    // 2nd trail
+         finalize with
+            ret = ret + 10;
+         end
+         await C;
+      with
+         await A;
+      end
+   end
+end
+...                                 // code after the loop
+\end{lstlisting}
+\end{comment}
+
+\begin{description}
+
+\item[Parsing]
+
+The parser of \CEU is written in \emph{LPeg}~\cite{lua.lpeg}, a pattern 
+matching library that also recognize grammars, making it possible to write the 
+tokenizer and grammar with the same tool.
+%
+The source code is then converted to an \emph{abstract syntax tree (AST)} to be 
+used in further phases.
+%
+This phase may be aborted due to syntax errors in the \CEU source file.
+
+\item[Temporal analysis]
+
+This phase detects inconsistencies in \CEU programs, such as unbounded loops 
+and the forms of non-determinism.
+%
+It also makes some ``classical'' semantic analysis, such as building a symbol 
+table for checking variable declarations.
+However, most of type checking is delayed to the last phase to take advantage 
+of GCC's error handling.
+Therefore, this phase needs to annotate the $C$ output with \code{\#line} 
+pragmas that match the original file in \CEU.
+%
+This phase must output code in $C$, given how tied \CEU is to $C$ by design.
+
+\item[Final generation]
+
+The final phase packs the generated $C$ file with the \CEU runtime and 
+platform-dependent functionality, compiling them with \emph{gcc} and generating 
+the final binary.
+%
+The \CEU runtime includes the scheduler, timer management, and the external $C$ 
+API.
+%
+The platform files include libraries for I/O and bindings to invoke the \CEU 
+scheduler on external events.
+
+\end{description}
+
+In the sections that follow, we discuss the most sensible parts of the compiler 
+considering our design, such as the temporal analysis, runtime scheduler, and 
+the external API.
+
+\subsection{Temporal Analysis}
+
+As introduced, the \emph{temporal analysis} phase detects inconsistencies in 
+\CEU programs.
+Here, we focus on the algorithm that detects non-deterministic access to 
+variables, as presented in Section~\ref{sec.ceu.shared}.
+
+For each node representing a statement in the program AST, we keep the set of 
+events $I$ (for \emph{incoming}) that can lead to the execution of the node, 
+and also the set of events $O$ (for \emph{outgoing}) that can terminate the 
+node.
+
+A node inherits the set $I$ from its direct parent and calculates $O$ according 
+to its type:
+%
+\begin{itemize}
+%
+\item Nodes that represent expressions, assignments, $C$ calls, and 
+declarations simply reproduce $O=I$, as they do not await;
+%
+\item An \code{await e} statement has $O=\{e\}$.
+%
+\item A \code{break} statement has $O=\{\}$ as it escapes the innermost 
+\code{loop} and never terminate, i.e., never proceeds to the statement 
+immediately following it (see also \code{loop} below);
+%
+\item A \emph{sequence node (;)} modifies each of its children to have 
+$I_n=O_{n-1}$.
+The first child inherits $I$ from the sequence parent, and the set $O$ for the 
+sequence node is copied from its last child, i.e., $O=O_n$.
+%
+\item A \code{loop} node includes its body's $O$ on its own $I$ ($I=I \cup 
+O_{body}$), as the loop is also reached from its own body.
+The union of all \code{break} statements' $O$ forms the set $O$ for a 
+\code{loop}.
+%
+\item An \code{if} node has $O=O_{true} \cup O_{false}$.
+%
+\item A parallel composition (\code{par/and} / \code{par/or}) may terminate 
+from any of its branches, hence $O = O_1 \cup ... \cup O_n$.
+\end{itemize}
+
+With all sets calculated, any two nodes that perform side effects and are in 
+parallel branches can have their $I$ sets compared for intersections.
+If the intersection is not the empty set, they are marked as suspicious (see 
+Section~\ref{sec.ceu.shared}).
+
+Figure~\ref{lst.impl.ast} reproduces the second code of Figure~\ref{lst.det} 
+and shows the corresponding $AST$ with the sets $I$ and $O$ for each node.
+The event $.$ (dot) represents the ``boot'' reaction.
+The assignments to \code{y} in parallel (lines 5,8 in the code) have an empty 
+intersection of $I$ (lines 6,9 in the AST), hence, they do not conflict.
+Note that although the accesses in lines 5, 11 in the code (lines 6,11 in the 
+AST) do have an intersection, they are not in parallel and are also safe.
+
+\begin{figure}[h]
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}
+input void A, B;
+var int y;
+par/or do
+  await A;
+  y = 1;
+with
+  await B;
+  y = 2;
+end
+await A;
+y = 3;
+\end{lstlisting}
+\end{minipage}
+%
+%
+\begin{minipage}[t]{0.55\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=2.5em]
+Stmts I={.} O={A}
+    Dcl_y I={.} O={.}
+    ParOr I={.} O={A,B}
+        Stmts I={.} O={A}
+            Await_A I={.} O={A}
+            Set_y I={A} O={A}
+        Stmts I={.} O={B}
+            Await_B I={.} O={B}
+            Set_y I={B} O={B}
+    Await_A I={A,B} O={A}
+    Set_y I={A} O={A}
+\end{lstlisting}
+\end{minipage}
+%
+\rule{14cm}{0.37pt}
+\caption{ A program with a corresponding AST describing the sets $I$ and $O$.
+%{\small %\textmd{
+The program is safe because accesses to \code{y} in parallel have no 
+intersections for $I$.
+%}%}
+\label{lst.impl.ast}
+}
+\end{figure}
+
+
+\begin{comment}
+It is also responsible for setting the priorities for trails (see further) and 
+determining the sizes of the queues that are used during runtime.
+
+The program AST is first converted into a graph that represents the execution 
+flow.
+Figure~\ref{fig:nfa} shows the corresponding graph for our example.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.40]{nfa.png}
+\caption{ Flow graph for our guiding example
+\label{fig:nfa}
+}
+\end{figure}
+
+By default, all nodes in a flow graph have priority $0$ (highest).
+However, as the figure shows, nodes that represent the termination of 
+\emph{par/ors} and loops have lower priorities (the outer, the lower).
+The priority scheme is needed to avoid glitches during runtime, and is 
+equivalent to traversing a dependency graph in topological order, as employed 
+in functional reactive programming implementations.~\cite{frtime.embedding}
+
+The flow graph is then converted to a DFA, as exemplified in 
+Section~\ref{sec:ceu:det}.
+
+From its starting node, the flow graph is traversed until reaching await 
+nodes---every visited node is inserted into a new DFA state.
+Then, every set of awaiting nodes for a given external event starts another DFA 
+state.
+\end{comment}
+
+\subsection{Memory Layout}
+\label{sec:impl:memory}
+
+\CEU{} favors a fine-grained use of trails, being common the use of trails that 
+await a single event.
+For this reason, \CEU{} does not allocate per-trail stacks; instead, all data 
+resides in fixed memory slots---this is true for the program variables as well 
+as for temporary values and flags needed during runtime.
+%For instance, the first trail in the guiding example requires temporary slots 
+%to hold the locals \code{a} and \code{b}, while the second trail must keep 
+%flags to remember which sides of the \code{par/and} have already terminated.
+%
+Memory for trails in parallel must coexist, while statements in sequence can 
+reuse it.
+%In the example, the code following the loop (identified as \code{...}) reuses 
+%all memory from the loop.
+%
+\CEU reserves a single static block of memory to hold all memory slots, whose 
+size is the maximum the program uses at a given time.
+A given position in the memory may hold different data (with variable sizes) 
+during runtime.
+
+\begin{figure}[t]
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}
+input int A, B, C;
+do
+    var int a = await A;
+end
+do
+    var int b = await B;
+end
+par/and do
+    await B;
+with
+    await C;
+end
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.55\linewidth}
+\begin{lstlisting}
+union {             // sequence
+    int a_1;        //   do_1
+    int b_2;        //   do_2
+    struct {        //   par/and
+        u8 _and_3: 1;
+        u8 _and_4: 1;
+    };
+} MEM ;
+\end{lstlisting}
+\end{minipage}
+\rule{14cm}{0.37pt}
+\caption{
+A program with blocks in sequence and in parallel, with corresponding memory 
+layout.
+{\small %\textmd{
+}%}
+\label{lst.impl.mem}
+}
+\end{figure}
+
+Translating this idea to $C$ is straightforward~\cite{wsn.osm,wsn.ocram}: 
+memory for blocks in sequence are packed in a \code{struct}, while blocks in 
+parallel, in a \code{union}.
+%
+As an example, Figure~\ref{lst.impl.mem} shows a program with corresponding 
+memory layout.
+%
+Each variable is assigned a unique $id$ (e.g. \code{a\_1}) so that variables 
+with the same name can be distinguished.
+%
+The \code{do-end} blocks in sequence are packed in a \code{union}, given that 
+their variables cannot be in scope at the same time, e.g., \code{MEM.a\_1} and 
+\code{MEM.b\_2} can safely share the same memory address.
+%
+The example also illustrates the presence of runtime flags related to the 
+parallel composition, which also reside in reusable slots in the static memory.
+
+\subsection{Trail Allocation}
+\label{sec:impl:gates}
+
+The compiler extracts the maximum number of trails a program can have at the 
+same time and creates a static vector to hold runtime information about them.
+Again, trails that cannot be active at the same time can share memory slots in 
+the static vector.
+
+At any given moment, a trail can be awaiting in one of the following states: 
+\code{INACTIVE}, \code{STACKED}, \code{FIN}, or in any event defined in the 
+program:
+
+\begin{lstlisting}
+enum {
+    INACTIVE = 0,
+    STACKED,
+    FIN,
+    EVT_A,      // input void A;
+    EVT_e,      // event int e;
+    <...>       // other events
+}
+\end{lstlisting}
+
+All terminated or not-yet-started trails stay in the \code{INACTIVE} state and 
+are ignored by the scheduler.
+%
+A \code{STACKED} trail holds its associated stack level and is delayed until 
+the scheduler runtime level reaches that value again.
+%
+A \code{FIN} trail represents a hanged finalization block which is only 
+scheduled when its corresponding block goes out of scope.
+%
+A trail waiting for an event stays in the state of the corresponding event, 
+also holding the sequence number (\emph{seqno}) in which it started awaiting.
+%
+A trail is represented by the following \code{struct}:
+
+\begin{lstlisting}
+struct trail_t {
+    state_t evt;
+    label_t lbl;
+    union {
+        unsigned char seqno;
+        stack_t       stk;
+    };
+};
+\end{lstlisting}
+
+The field \code{evt} holds the state of the trail (or the event it is 
+awaiting); the field \code{lbl} holds the entry point in the code to execute 
+when the trail is scheduled; the third field depends on the \code{evt} field 
+and may hold the \code{seqno} for an event, or the stack level \code{stk} for a
+\code{STACKED} state.
+
+The size of \code{state\_t} depends on the number of events in the application;
+for an application with less than 253 events (plus the 3 states), one byte is 
+enough.
+%
+The size of \code{label\_t} depends primarily on the number of \code{await} 
+statements in the application---each \code{await} splits the code in two and 
+requires a unique entry point in the code for its continuation.
+Additionally, split \& join points for parallel compositions, \code{emit} 
+continuations, and finalization blocks also require labels.
+%
+The \code{seqno} will eventually overflow during execution (every 256 
+reactions).
+However, given that the scheduler traverses all trails in each reaction, it can 
+adjust them to properly handle overflows (actually 2 bits to hold the 
+\code{seqno} would be already enough).
+%
+The stack size depends on the maximum depth of nested emissions and is bounded 
+to the maximum number of trails, e.g., a trail emits an event that awakes 
+another trail, which emits an event that awakes another trail, and so on---the 
+last trail cannot awake any trail, because they will be all hanged in a 
+\code{STACKED} state.
+%
+In WSNs applications, the size of \code{trail\_t} is typically only 3 bytes (1 
+byte for each field).
+
+\subsubsection{Code Generation}
+
+\begin{figure}[t]
+\begin{minipage}[t]{0.55\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=2em]
+input void A;
+event void e;
+// TRAIL 0 - lbl Main
+par/and do
+  // TRAIL 0 - lbl Main
+  await e;
+  // TRAIL 0 - lbl Awake_e
+  // TRAIL 0 - lbl ParAnd_chk
+with
+  // TRAIL 1 - lbl ParAnd_sub_2
+  await A;
+  // TRAIL 1 - lbl Awake_A_1
+  emit e;
+  // TRAIL 1 - lbl Emit_e_cont
+  // TRAIL 1 - lbl ParAnd_chk
+end
+// TRAIL 0 - lbl ParAnd_out
+await A;
+// TRAIL 0 - lbl Awake_A_2
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}
+enum {
+  Main = 1,     // ln  3
+  Awake_e,      // ln  7
+  ParAnd_chk,   // ln  8, 15
+  ParAnd_sub_2, // ln 10
+  Awake_A_1,    // ln 12
+  Emit_e_cont,  // ln 14
+  ParAnd_out,   // ln 17
+  Awake_A_2     // ln 19
+};
+\end{lstlisting}
+\end{minipage}
+\rule{14cm}{0.37pt}
+\caption{
+%{\small %\textmd{
+Static allocation of trails and entry-point labels.
+%}%}
+\label{lst.impl.trails}
+}
+\end{figure}
+
+The example in Figure~\ref{lst.impl.trails} illustrates how trails and labels 
+are statically allocated in a program.
+%
+The program has a maximum of 2 trails, because the \code{par/and} (line 4) can 
+reuse \emph{TRAIL 0}, and the join point (line 16) can reuse both \emph{TRAIL 
+0} and \emph{TRAIL 1}.
+%
+Each label is associated with a unique identifier in the \code{enum}.
+%
+The static vector to hold the two trails in the example is defined as
+
+\begin{lstlisting}
+trail_t TRLS[2];
+\end{lstlisting}
+
+In the final generated $C$ code, each label becomes a \emph{switch case} 
+working as the entry point to execute its associated code.
+%
+Figure~\ref{lst.impl.code} shows the corresponding code for the program of 
+Figure~\ref{lst.impl.trails}.
+%
+The program is initialized with all trails set to \code{INACTIVE}.
+Then, the scheduler executes the \emph{Main} label in the first trail.
+%
+When the \emph{Main} label reaches the \code{par/and}, it ``stacks'' the 2nd 
+trail of the \code{par/and} to run on \emph{TRAIL 1} (line 5-8) and proceeds to 
+the code in the 1st trail (lines 10-15), respecting the deterministic execution 
+order.
+%
+The code sets the running \emph{TRAIL 0} to await \code{EVT\_e} on label 
+\code{Awake\_e}, and then halts with a \code{break}.
+%
+The next iteration of the scheduler takes \emph{TRAIL 1} and executes its 
+registered label \code{ParAnd\_sub\_2} (lines 17-22), which sets \emph{TRAIL 1} 
+to await \code{EVT\_A} and also halts.
+
+
+\begin{figure}[t]
+\begin{lstlisting}[numbers=left,xleftmargin=2em]
+while (<...>) {             // scheduler main loop
+   trail_t* trail = <...>   // choose next trail
+   switch (trail->lbl) {
+      case Main:
+         // activate TRAIL 1 to run next
+         TRLS[1].evt = STACKED;
+         TRLS[1].lbl = ParAnd_sub_2;  // 2nd trail of par/and
+         TRLS[1].stk = current_stack;
+
+         // code in the 1st trail of par/and
+         // await e;
+         TRLS[0].evt = EVT_e;
+         TRLS[0].lbl = Awake_e;
+         TRLS[0].seq = current_seqno;
+         break;
+
+      case ParAnd_sub_2:
+         // await A;
+         TRLS[1].evt = EVT_A;
+         TRLS[1].lbl = Awake_A_1;
+         TRLS[1].seq = current_seqno;
+            break;
+
+        <...>   // other labels
+    }
+}
+\end{lstlisting}
+\rule{14cm}{0.37pt}
+\caption{
+%{\small %\textmd{
+Generated code for the program of Figure~\ref{lst.impl.trails}.
+%}%}
+\label{lst.impl.code}
+}
+\end{figure}
+
+Regarding cancellation, trails in parallel are always allocated in subsequent 
+slots in the static vector \code{TRLS}.
+Therefore, when a \code{par/or} terminates, the scheduler sequentially searches 
+and executes \code{FIN} trails within the range of the \code{par/or}, and then 
+clears all of them to \code{INACTIVE} at once.
+Given that finalization blocks cannot contain \code{await} statements, the 
+whole process is guaranteed to terminate in bounded time.
+Escaping a \code{loop} that contains parallel compositions also trigger the 
+same process.
+
+\subsection{The External $C$ API}
+
+As a reactive language, the execution of a program in \CEU is guided entirely 
+by the occurrence of external events.
+From the implementation perspective, there are three external sources of input 
+into programs, which are all exposed as functions in a $C$ API:
+
+\begin{description}
+\item[{\textbf\code{ceu\_go\_init()}}:] initializes the program (e.g. trails) 
+and executes the ``boot'' reaction (i.e., the \code{Main} label).
+
+\item[{\textbf\code{ceu\_go\_event(id,param)}}:] executes the reaction for the 
+received event id and associated parameter.
+
+\item[{\textbf\code{ceu\_go\_wclock(us)}}:] increments the current time in 
+microseconds and runs a reaction if any timer expires.
+
+%\item[{\textbf\code{ceu\_go\_async}}:] executes a single loop iteration for 
+%the next \code{async}, switching among them in a \emph{round robin} policy.
+\end{description}
+
+Given the semantics of \CEU, the functions are guaranteed to take a bounded 
+time to execute.
+They also return a status code that says if the \CEU{} program has terminated 
+after the reactions.
+Further calls to the API have no effect on terminated programs.
+
+\begin{comment}
+Note that \CEU{} code running from a call to \code{ceu\_go\_async} may emit an 
+input event or the passage of time.
+In this case, the $C$ implementation makes a tail call to the corresponding 
+handler (i.e.  \code{ceu\_go\_event} or \code{ceu\_go\_time}), as synchronous 
+code has higher priority.
+
+The API reflects the \emph{global asynchronous} part of \CEU{}, as discussed in 
+Section~\ref{sec:ceu:gals}.
+A simple and opaque API hides local state from the environment, suggesting that 
+the execution varies entirely according to the sequence (and parameters) of API 
+calls.
+\end{comment}
+
+The bindings for the specific platforms are responsible for calling the 
+functions in the API in the order that better suit their requirements.
+As an example, it is possible to set different priorities for events that occur 
+concurrently (i.e. while a reaction chain is running).
+However, a binding must never interleave or run multiple functions in parallel.
+This would break the \CEU sequential/discrete semantics of time.
+%, as discussed in Section~\ref{sec:ceu}.
+
+% TODO:, allowing \CEU{} to be easily embedded in platforms:
+
+\begin{figure}[t]
+\begin{lstlisting}[numbers=left,xleftmargin=2em]
+implementation
+{
+    #include "ceu.h"
+    #include "ceu.c"
+
+    event void Boot.booted () {
+        ceu_go_init();
+#ifdef CEU_WCLOCKS
+        call Timer.startPeriodic(10);
+#endif
+    }
+    
+#ifdef CEU_WCLOCKS
+    event void Timer.fired () {
+        ceu_go_wclock(10000);
+    }
+#endif
+
+#ifdef _EVT_PHOTO_READDONE
+    event void Photo.readDone (uint16_t val) {
+        ceu_go_event(EVT_PHOTO_READDONE, (void*)val);
+    }
+#endif
+
+#ifdef _EVT_RADIO_SENDDONE
+    event void RadioSend.sendDone (message_t* msg) {
+        ceu_go_event(EVT_RADIO_SENDDONE, msg);
+    }
+#endif
+
+#ifdef _EVT_RADIO_RECEIVE
+    event message_t* RadioReceive.receive (message_t* msg) {
+        ceu_go_event(EVT_RADIO_RECEIVE, msg);
+        return msg;
+    }
+#endif
+
+    <...>   // other events
+}
+\end{lstlisting}
+\rule{14cm}{0.37pt}
+\caption{
+%{\small %\textmd{
+The \emph{TinyOS} binding for \CEU.
+%}%}
+\label{lst.impl.tinyos}
+}
+\end{figure}
+
+As an example, Figure~\ref{lst.impl.tinyos} shows our binding for \emph{TinyOS} 
+which maps \emph{nesC} callbacks to input events in \CEU.
+%
+The file \code{ceu.h} (included in line 3) contains all definitions for the 
+compiled \CEU program, which are further queried through \code{\#ifdef}'s.
+The file \code{ceu.c} (included in line 4) contains the main loop of \CEU 
+pointing to the labels defined in the program.
+The callback \code{Boot.booted} (lines 6-11) is called by TinyOS on mote 
+startup, so we initialize \CEU inside it (line 7).
+If the \CEU program uses timers, we also start a periodic timer (lines 8-10) 
+that triggers callback \code{Timer.fired} (lines 13-17) every 10 milliseconds 
+and advances the wall-clock time of \CEU (line 15)%
+\footnote{We also offer a mechanism to start the underlying timer on demand to
+avoid the ``battery unfriendly'' 10ms polling.}.
+The remaining lines map pre-defined TinyOS events that can be used in \CEU 
+programs, such as the light sensor (lines 19-23) and the radio transceiver 
+(lines 25-36).
+
+% Bibliography
+\bibliographystyle{ACM-Reference-Format-Journals}
+\bibliography{my,other}
+                             % Sample .bib file with references that match those in
+                             % the 'Specifications Document (V1.5)' as well containing
+                             % 'legacy' bibs and bibs with 'alternate codings'.
+                             % Gerry Murray - March 2012
+
+% History dates
+%\received{February 2007}{March 2009}{June 2009}
+
+% Electronic Appendix
+%\elecappendix
+
+%\medskip
+
+\end{document}
+% End of v2-acmsmall-sample.tex (March 2012) - Gerry Murray, ACM

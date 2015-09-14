@@ -1,0 +1,6 @@
+old/
+OLD/
+*.bbl
+*.aux
+*.log
+*.blg
