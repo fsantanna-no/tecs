@@ -120,15 +120,15 @@ escapeinside={||},
 
 \author{
 Francisco Sant'Anna
-\affil{PUC--Rio}
+\affil{Departamento de Inform\'atica, PUC--Rio}
 Adriano Branco
-\affil{PUC--Rio}
+\affil{Departamento de Inform\'atica, PUC--Rio}
 Roberto Ierusalimschy
-\affil{PUC--Rio}
+\affil{Departamento de Inform\'atica, PUC--Rio}
 Noemi Rodriguez
-\affil{PUC--Rio}
+\affil{Departamento de Inform\'atica, PUC--Rio}
 Silvana Rossetto
-\affil{UFRJ}
+\affil{Departamento de Ci\^encia da Computa\c{c}\~ao, UFRJ}
 }
 
 % NOTE! Affiliations placed here should be for the institution where the
@@ -142,11 +142,13 @@ Silvana Rossetto
 \CEU is a reactive language based on Esterel that targets constrained embedded 
 platforms.
 %
-Its synchronous programming model allows for a simple reasoning about 
-shared-memory concurrency.
+Employing the synchronous programming model, it allows for a simple reasoning 
+about shared-memory concurrency.
 Furthermore, its restricted semantics enables deterministic and memory-safe 
 programs.
-
+%
+% TODO: some uses?
+%
 In this work, we propose a formal semantics for \CEU focusing on its particular 
 control mechanisms, such as parallel compositions, finalization, and 
 stack-based internal events.
@@ -235,15 +237,17 @@ Esterel, Synchronous, Reactivity
 
 \section{Introduction}
 
-- Esterel
-
-- Ceu
-    - first WSN
-    - other domains, such as games
-    - here, only static semantics
-    - uses, classes, gsoc,
-
-- synchronous limitations
+\begin{itemize}
+\item Relevancia de Esterel
+\item Ceu
+    \begin{itemize}
+        \item Foco inicial em "constrained WSNs"
+        \item Movendo para outros dominios? (jogos, artigo Mod'15)
+        \item Usos: SenSys, Terra, sala de aula, GSoC
+    \end{itemize}
+\item Limitacoes do modelo sincrono
+\item Semantica e Implementacao (nesse artigo, somente subset estatico)
+\end{itemize}
 
 %As a trade-off, our design imposes limitations on the language expressiveness, 
 %such as doing computationally-intensive operations and meeting hard real-time 
@@ -266,18 +270,20 @@ Figure~\ref{lst.abro} shows side-by-side the implementations in Esterel and
 \emph{``Emit an output O as soon as two inputs A and B have occurred.
 Reset this behavior each time the input R occurs''.}
 %
-The first phrase of the specification is translated almost identically in the 
-two languages, as Esterel's `$\|$' and \CEU's \code{par/and} constructs are 
-equivalent (lines 4--9).
+The first phrase of the specification, awaiting and emitting the events, is 
+translated almost identically in the two languages (lines 4--9, in both 
+implementations), as Esterel's `$\|$' and \CEU's \code{par/and} constructs are 
+equivalent.
 %
-For the second phrase (i.e., the reset behavior), the Esterel version uses a 
-\code{abort-when}, which serves the same purpose of \CEU's \code{par/or}:
+For the second phrase, the reset behavior, the Esterel version uses a 
+\code{abort-when} (lines 3--10), which serves the same purpose of \CEU's 
+\code{par/or} (lines 3--12):
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
 restarts the \code{loop}.
 
 \begin{figure}[t]
-\begin{minipage}[t]{0.45\linewidth}
-\begin{lstlisting}[mathescape=true]
+\begin{minipage}[t]{0.48\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 // ESTEREL
 loop
    abort
@@ -292,7 +298,7 @@ end
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.45\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em]
 // CEU
 loop do
@@ -310,7 +316,9 @@ end
 \end{lstlisting}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
-\caption{ The same specification in Esterel and \CEU. %\newline
+\caption{ A control specification implemented in Esterel and \CEU:
+\emph{``Emit \code{O} after \code{A} and \code{B}, resetting each \code{R}.''}
+%\newline
 {\small
 %TODO.
 }
@@ -318,12 +326,14 @@ end
 }
 \end{figure}
 
-\CEU (like Esterel) has a strong imperative flavor, with explicit control flow 
-through sequences, loops, and also assignments.
+\CEU, following the Esterel mindset, has a strong imperative flavor, with 
+explicit control flow through sequences, loops, parallels, and also 
+assignments.
 Being designed for control-intensive applications, it provides support for 
 concurrent lines of execution and broadcast communication through events.
 %
-Programs advance in sequence of discrete reactions to external events.
+In the synchronous model, programs advance in a sequence of discrete reactions 
+to external events.
 Internal computations within a reaction (e.g. expressions, assignments, and 
 native calls) are considered to take no time in accordance with the synchronous 
 hypothesis~\cite{rp.hypothesis}.
@@ -334,49 +344,53 @@ To ensure that reactions run in bounded time and programs always progress,
 loops are statically required to contain at least one \code{await} statement in 
 all possible paths~\cite{ceu.sensys13,esterel.primer}.
 
-In the sections that follow, we discuss the four basic differences between \CEU 
-and Esterel: deterministic execution for operations with side-effects
-(Section~\ref{sec.ceu.det}), safe abortion for lines of execution 
+In the sections that follow, we review the main differences between \CEU and 
+Esterel~\cite{ceu.sensys13}: deterministic execution 
+(Section~\ref{sec.ceu.det}), safe abortion with finalization 
 (Section~\ref{sec.ceu.abrt}), first-class timers 
-(Section~\ref{sec.ceu.timers}), and stack-based execution for internal events 
+(Section~\ref{sec.ceu.timers}), and stack-based internal events 
 (Section~\ref{sec.ceu.ints}).
 
 %\newpage %TTT
 \subsection{Deterministic Execution}
 \label{sec.ceu.det}
 
-Esterel is deterministic with respect to reactive control: ``the same sequence 
-of inputs always produces the same sequence of outputs''~\cite{esterel.primer}.
+Esterel is only deterministic with respect to reactive control: ``the same 
+sequence of inputs always produces the same sequence of 
+outputs''~\cite{esterel.primer}.
 However, the execution order for operations with side-effects within a reaction 
-is non-deterministic: ``if there is no control dependency, as in ``\code{call 
-f1() || call f2()}'', the order is unspecified and it would be an error to rely 
+is non-deterministic: ``if there is no control dependency, as in \code{"call 
+f1() || call f2()"}, the order is unspecified and it would be an error to rely 
 on it''~\cite{esterel.primer}.
 %
-In \CEU, when multiple trails are active at a time, as in
-``\code{par/and~do~\_f1()~with~\_f2()~end}'', they are scheduled in the order 
-they appear in the program source code (i.e., \code{\_f1} executes first).
+In \CEU, when multiple trails are active at a time, they are scheduled in the 
+order they appear in the program source code.
 %
-This way, \CEU is deterministic also with respect to the order of execution of 
+Hence, \CEU is deterministic also with respect to the order of execution of 
 side effects within a reaction.
+%
+Figure~\ref{lst.det} compares the two syntactically equivalent code fragments 
+in Esterel and \CEU to illustrate the semantic difference regarding 
+(non-)determinism.
 
 On the one hand, enforcing an execution order for concurrent operations may 
 seen arbitrary and also precludes true parallelism.
 On the other hand, it provides a priority scheme for trails, and makes 
-shared-memory concurrency possible.
-In contrast, Esterel does not support shared memory: \emph{``if a variable is 
-written by some thread, then it can neither be read nor be written by 
+shared-memory concurrency more tractable.
+In contrast, Esterel precludes support for shared memory: \emph{``if a variable 
+is written by some thread, then it can neither be read nor be written by 
 concurrent threads''}~\cite{esterel.primer}.
 %
-For embedded development, we believe that deterministic shared-memory 
-concurrency is beneficial, given the extensive use of memory mapped ports for 
-I/O and lack of hardware support for real parallelism.
+For constrained embedded development, we believe that deterministic 
+shared-memory concurrency is beneficial, given the extensive use of memory 
+mapped ports for I/O and the lack of hardware support for real parallelism.
 Other embedded languages made a similar design choice~\cite{wsn.sol,pret}.
 %For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
 %parallelism is inherent.
 
-\begin{figure}[t]
-\begin{minipage}[t]{0.45\linewidth}
-\begin{lstlisting}[mathescape=true]
+\begin{figure}[b]
+\begin{minipage}[t]{0.48\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 // ESTEREL
 [
     call f1();
@@ -386,7 +400,7 @@ $\|$
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.45\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em]
 // CEU
 par/and do
@@ -397,30 +411,143 @@ end
 \end{lstlisting}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
-\caption{ The execution order between \code{f1} and \code{f2} is unspecified in 
-Esterel, whereas in \CEU, \code{\_f1} always executes before \code{\_f2}.
+\caption{ In Esterel, the execution order between \code{f1} and \code{f2} is 
+unspecified, whereas in \CEU, \code{\_f1} executes before \code{\_f2}.
 {\small
 %TODO.
 }
-\label{lst.abro}
+\label{lst.det}
 }
 \end{figure}
 
-\subsection{Safe Abortion}
+\subsection{Safe Abortion with Finalization}
 \label{sec.ceu.abrt}
 
 The introductory example of Figure~\ref{lst.abro} illustrates how synchronous 
-languages can abort awaiting lines of execution (i.e., awaiting \code{A} and 
-\code{B}) without tweaking them with synchronization primitives.
+languages can abort awaiting lines of execution without tweaking them with 
+synchronization primitives.
 In contrast, traditional (asynchronous) multi-threaded languages cannot express 
 thread termination safely~\cite{esterel.preemption,sync_async.threadsstop}.
+However, handling abortion when dealing with external resources can be 
+challenging, given that external entities are not subject to the same 
+synchronous execution discipline.
 
-The code fragments of Figure~\ref{lst.abortion} shows a corner case for 
+\begin{figure}[t]
+\begin{minipage}[t]{0.55\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3em]
+input void STOP, RETRANSMIT, SENDACK;
+par/or do
+    await STOP;
+with
+    loop do
+        par/or do
+            await RETRANSMIT;
+        with
+            par/and do
+                await 1min;
+            with
+                var _pkt_t buffer;
+                <fill-buffer-info>
+                _send_enqueue(&buffer);
+                await SENDACK;
+            end
+        end
+    end
+end
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.41\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3em,firstnumber=11]
+<...>
+    var _pkt_t buffer;
+    <fill-buffer-info>
+    finalize
+        _send_enqueue(&buffer);
+    with
+        _send_cancel(&buffer);
+    end
+    await SENDACK;
+\end{lstlisting}
+\end{minipage}
+%\rule{8.5cm}{0.37pt}
+\caption{A network protocol in \CEU extended with a finalization clause to 
+cancel a transmission.
+%\caption{ Parallel compositions can describe complex state machines.
+\label{lst.fin}
+}
+\end{figure}
+
+The example in the left of Figure~\ref{lst.fin} relies on hierarchical 
+\code{par/or} and \code{par/and} compositions to describe the state machine of 
+a data collection protocol for sensor networks~\cite{wsn.ctp,ceu.sensys13}.
+%
+The input events \code{STOP}, \code{RETRANSMIT}, and \code{SENDACK} (line 1) 
+represent the external interface of the protocol with a client application.
+%
+The protocol has two trails:
+one monitors the stopping event (line 3);
+the other periodically transmits a packet (lines 5--18).
+%
+The periodic transmission is a loop that starts two other trails (lines 6--17):
+one handles an immediate retransmission request (line 7);
+the other transmits the packet awaiting for a confirmation (lines 9--16).
+%
+The actual transmission (lines 12--15) is enclosed with a \code{par/and} that 
+takes at least one minute before looping, to avoid flooding the network with 
+packets.
+%
+At any time, the client may request a retransmission (line 7), which terminates 
+the \code{par/or} (line 6), aborts the ongoing transmission (line 14, if not 
+idle), and restarts the loop (line 5).
+%
+The client may also request to stop the whole protocol at any time (line 3).
+%
+Note that the \code{buffer} packet (line 12) is a local variable whose address 
+is passed to function \code{\_send\_enqueue} for transmission.
+The call enqueues the pointer in the radio driver, which holds it up to the 
+emission of \code{SENDACK} acknowledging the packet transmission.
+%
+In the meantime, if the sending trail is be aborted by the \code{STOP} or 
+\code{RETRANSMIT} requests, the packet buffer goes out of scope, leaving behind 
+a \emph{dangling pointer} in the radio driver.
+%
+%\subsubsection{Finalization}
+%\label{sec.ceu.fin}
+
+%Programs in \CEU can access \emph{C} libraries available in the underlying 
+%platform by prefixing symbols with an underscore (e.g., 
+%\code{\_printf(<...>)}).
+%
+The \CEU compiler tracks the interaction of \code{par/or} compositions with 
+local variables and stateful \emph{C} functions (e.g., device drivers) in order 
+to preserve safe abortion of trails.
+%
+%Finalization clauses are fundamental to preserve the orthogonality of 
+%\code{par/or} compositions in SSRP.
+%
+For instance, \CEU refuses to compile the program in the left of 
+Figure~\ref{lst.fin}, enforcing the programmer to write a \emph{finalization} 
+clause to accompany the stateful \emph{C} call~\cite{ceu.sensys13}.
+The code in the right of Figure~\ref{lst.fin} properly cancels the packet 
+transmission when the block of \code{buffer} goes out of scope, i.e., the 
+finalization clause (after the \code{with}) executes automatically on external 
+abortion.%
+\footnote{
+Note that the compiler only enforces the programmer to write the finalization 
+clause, but cannot check if it actually handles the resource properly.
+}
+%
+%Note also that \CEU environments rely on \emph{C} libraries that only provide 
+%asynchronous I/O and non-blocking functions~\cite{ceu.sensys13}.
+
+\begin{comment}
+The code fragments of Figure~\ref{lst.abortion} shows a corner case regarding
 abortion: when the event \code{A} occurs, the program behavior seems ambiguous.
 %
-For instance, it is not clear in \emph{code~a} in Esterel if the call to 
-\code{f} should execute or not after \code{A}, given that the body and abortion 
-events are the same.
+For instance, it is not clear in the code in Esterel if the call to \code{f} 
+should execute or not after \code{A}, given that the body and abortion events 
+are the same.
 %
 For this reason, Esterel provides \emph{weak} and \emph{strong} variations for 
 the \code{abort} statement.
@@ -429,11 +556,11 @@ the call does not execute.
 %
 In \CEU, given the deterministic scheduling rules, strong and weak abortions 
 can be chosen by reordering trails inside a \code{par/or}, e.g., in 
-\emph{code~b}, the second trail is strongly aborted by the first trail and the 
-call to \code{\_f} never executes.
+Figure~\ref{lst.abortion}, the second trail is strongly aborted by the first 
+trail and the call to \code{\_f} never executes.
 
 \begin{figure}[t]
-\begin{minipage}[t]{0.45\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
 // ESTEREL
 abort
@@ -445,7 +572,7 @@ when A;
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.45\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
 // CEU
 par/or do
@@ -457,29 +584,27 @@ end
 \end{lstlisting}
 \end{minipage}
 %
-\end{lstlisting}
-\end{minipage}
 %\rule{8.4cm}{0.37pt}
-\caption{ Thread abortion in Esterel and \CEU. %\newline
+\caption{ Strong abortion in Esterel and \CEU. %\newline
 \label{lst.abortion}
 }
 \end{figure}
+\end{comment}
 
 \subsection{First-class Timers}
 \label{sec.ceu.timers}
-
-% TODO: ana
 
 Activities that involve reactions to \emph{wall-clock time}%
 \footnote{
 By wall-clock time we mean the passage of time from the real world, measured in 
 hours, minutes, etc.
 }
-appear in typical patterns of WSNs, such as timeouts and sensor sampling.
+appear in typical patterns of embedded development, such as timeouts and sensor 
+sampling.
 However, support for wall-clock time is somewhat low-level in existing 
-languages, usually through timer callbacks or blocking calls with ``sleep''.
+languages, usually through timer callbacks or ``sleep'' blocking calls.
 %
-In any concrete system implementation, however, a requested timeout does not 
+However, in any concrete system implementation, a requested timeout does not 
 expire precisely with zero-delay, a fact that is usually ignored in the 
 development process.
 We define the difference between the requested timeout and the actual expiring 
@@ -490,12 +615,18 @@ lead to incorrect behavior in programs.
 
 The \code{await} statement of \CEU supports wall-clock time and handles deltas 
 automatically, resulting in more robust applications.
-As an example, consider the following program:
+For the example in the left of Figure~\ref{lst.timers}, suppose that after the 
+first \code{await} request, the underlying system gets busy and takes 15ms to 
+check for expiring awaits.
+The \CEU scheduler will notice that the \code{await 10ms} has not only already 
+expired, but is delayed with \code{delta=5ms}.
+Then, the awaiting trail awakes, sets \code{v=1}, and invokes \code{await 1ms}.
+As the current delta is higher than the requested timeout (i.e. $5ms > 1ms$), 
+the trail is rescheduled for execution, now with \code{delta=4ms}.
 
-\nopagebreak
-\noindent
-\begin{minipage}{\linewidth}
-\begin{lstlisting}[xleftmargin=2em]
+\begin{figure}[t]
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}
 var int v;
 await 10ms;
 v = 1;
@@ -503,27 +634,9 @@ await 1ms;
 v = 2;
 \end{lstlisting}
 \end{minipage}
-
-Suppose that after the first \code{await} request, the underlying system gets 
-busy and takes 15ms to check for expiring awaits.
-The \CEU scheduler will notice that the \code{await 10ms} has not only already 
-expired, but delayed with \code{delta=5ms}.
-Then, the awaiting trail awakes, sets \code{v=1}, and invokes \code{await 1ms}.
-As the current delta is higher than the requested timeout (i.e. $5ms > 1ms$), 
-the trail is rescheduled for execution, now with \code{delta=4ms}.
-
-\CEU also takes into account the fact that time is a physical quantity that can 
-be added and compared.
-For instance, for the program that follows, although the scheduler cannot 
-guarantee that the first trail terminates exactly in 11ms, it can at least 
-ensure that the program always terminates with \code{v=1}:
-
-\nopagebreak
-\noindent
-%\begin{figure}[t]
-%\rule{8.5cm}{0.37pt}
-\begin{minipage}{\linewidth}
-\begin{lstlisting}[xleftmargin=2em]
+%
+\begin{minipage}[t]{0.51\linewidth}
+\begin{lstlisting}
 par/or do
     await 10ms;
     <...>         // any non-awaiting sequence
@@ -536,44 +649,24 @@ end
 \end{lstlisting}
 \end{minipage}
 %\rule{8.5cm}{0.37pt}
-%\caption{ The first trail always terminates the program.
-%\label{lst.time}
-%}
-%\end{figure}
+\caption{ First-class timers in \CEU.
+\label{lst.timers}
+}
+\end{figure}
 
-Remember that any non-awaiting sequence is considered to take no time in the 
-synchronous model.
-Hence, the first trail is guaranteed to terminate before the second trail, 
-because $10+1 < 12$.
+\CEU also takes into account the fact that time is a physical quantity that can 
+be added and compared.
+For instance, for the program in the right of Figure~\ref{lst.timers}, although 
+the scheduler cannot guarantee that the first trail terminates exactly in 11ms, 
+it can at least ensure that the program always terminates with \code{v=1}:
+%
+Given that any non-awaiting sequence is considered to take no time in the 
+synchronous model, the first trail is guaranteed to terminate before the second 
+trail, because $10+1 < 12$.
+%
 A similar program in a language without first-class support for timers, would 
 depend on the execution timings for the code marked as \code{<...>}, making the 
 reasoning about the execution behavior more difficult.
-%
-The importance of synchronized timers becomes more evident in the presence of 
-loops, like in the introductory example of Figure~\ref{lst.all} in which the 
-first trail is guaranteed to execute exactly 21 times before being aborted by 
-the timer in the second trail.
-
-Note that in extreme scenarios, small timers in sequence (or in a loop) may 
-never ``catch up'' with the external clock, resulting in a \emph{delta} that
-increases indefinitely.
-%There is nothing \CEU can do about that, as it is do
-To deal with such cases, the current \emph{delta} is always returned from an 
-\code{await} and can be used in programs:
-
-\begin{lstlisting}
-loop do
-    var int late = await 1ms;
-    if late < 1000 then
-        <...>   // normal behavior
-    else
-        <...>   // abnormal behavior
-    end
-end
-\end{lstlisting}
-
-% TODO: uses in ports
-% trickle?
 
 \subsection{Internal Events}
 \label{sec.ceu.ints}
@@ -588,11 +681,11 @@ similar to subroutine calls in typical programming languages.
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
 Esterel and \CEU.
 %
-For the version in Esterel, given that there is no control dependency between 
-the calls to \code{f}, they may execute in any order after \code{A} and 
-\code{B} (internally emitted).
+In the version in Esterel, on the occurrence of \code{A}, \code{B} is emitted 
+and they are both become active, resulting in the invocation of \code{f()} and 
+\code{g()} in no particular order.
 %
-For the version in \CEU, the occurrence of \code{A} makes the program behave as 
+In the version in \CEU, the occurrence of \code{A} makes the program behave as 
 follows (with the stack contents in italics):
 %
 {\small
@@ -610,8 +703,8 @@ program also terminates;
 \end{enumerate}
 }
 
-\begin{figure}[!t]
-\begin{minipage}[t]{0.45\linewidth}
+\begin{figure}[b]
+\begin{minipage}[t]{0.43\linewidth}
 \begin{lstlisting}[mathescape=true]
 // ESTEREL
 input A;    // external
@@ -619,26 +712,26 @@ signal B;   // internal
 [[
     await A;
     emit B;
-    call f("2");
+    call f();
 $\|$
     await B;
-    call f("1");
+    call g();
 ]]
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.45\linewidth}
+\begin{minipage}[t]{0.53\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.1em]
 // CEU
-input void A;  // external
-event void b;  // internal
+input void A;  // external (in uppercase)
+event void b;  // internal (in lowercase)
 par/and do
     await A;
     emit b;
-    _f("2");
+    _f();
 with
     await b;
-    _f("1");
+    _g();
 end
 \end{lstlisting}
 \end{minipage}
@@ -683,13 +776,13 @@ with the caller (lines 8-11).
 \end{figure}
 
 On the one hand, this form of subroutines has a significant limitation that it 
-cannot express recursive calls: an \code{emit} to itself will always be 
-ignored, given that a running body cannot be awaiting itself.
+cannot express recursive calls: an \code{emit} to itself is always ignored, 
+given that a running body cannot be awaiting itself.
 %
 On the other hand, this very same limitation brings some important safety 
 properties to subroutines:
 first, they are guaranteed to react in bounded time;
-second, memory for locals is also bounded, not requiring runtime stacks.
+second, memory for locals is also bounded, not requiring data stacks.
 %
 Also, this form of subroutines can use the other primitives of \CEU, such as 
 parallel compositions and the \code{await} statement.
@@ -697,9 +790,6 @@ In particular, they await keeping context information such as locals and the
 program counter, just like coroutines~\cite{lua.coroutines}.
 %In Section~\ref{sec.adv.excpt} we show how to use them to implement 
 %exceptions.
-%
-In Section~\ref{sec.adv.frp}, we take advantage of the lack of recursion to 
-properly describe mutual dependency among trails in parallel.
 
 \begin{comment}
 \vspace{5pt}
@@ -726,13 +816,14 @@ unrestricted subroutines.
 
 %\begin{document}
 
-The disciplined synchronous execution of \CEU, together with broadcast 
-communication and stacked execution for internal events, may raise doubts about 
-the precise execution of programs.
+%The disciplined synchronous execution of \CEU, together with broadcast 
+%communication and stacked execution for internal events, may raise doubts 
+%%about the precise execution of programs.
 %
-In this chapter, we introduce a reduced syntax of \CEU and propose an 
-operational semantics in order to formally describe the language, eliminating 
-imprecisions with regard to how a program reacts to an external event.
+In this section, we introduce a reduced syntax of \CEU and propose an 
+operational semantics in order to formally describe the language.
+%, eliminating imprecisions with regard to how a program reacts to an external 
+%event.
 %
 For the sake of simplicity, we focus on the control aspects of the language, 
 leaving out side effects and $C$ calls (which behave like in any conventional 
@@ -1606,8 +1697,8 @@ Note that although the accesses in lines 5, 11 in the code (lines 6,11 in the
 AST) do have an intersection, they are not in parallel and are also safe.
 
 \begin{figure}[h]
-\begin{minipage}[t]{0.45\linewidth}
-\begin{lstlisting}
+\begin{minipage}[t]{0.48\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=2.5em]
 input void A, B;
 var int y;
 par/or do
@@ -1623,7 +1714,7 @@ y = 3;
 \end{minipage}
 %
 %
-\begin{minipage}[t]{0.55\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=2.5em]
 Stmts I={.} O={A}
     Dcl_y I={.} O={.}
@@ -1705,7 +1796,7 @@ A given position in the memory may hold different data (with variable sizes)
 during runtime.
 
 \begin{figure}[t]
-\begin{minipage}[t]{0.45\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
 input int A, B, C;
 do
@@ -1722,7 +1813,7 @@ end
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.55\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
 union {             // sequence
     int a_1;        //   do_1
@@ -1843,7 +1934,7 @@ byte for each field).
 \subsubsection{Code Generation}
 
 \begin{figure}[t]
-\begin{minipage}[t]{0.55\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
 input void A;
 event void e;
@@ -1867,7 +1958,7 @@ await A;
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.45\linewidth}
+\begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
 enum {
   Main = 1,     // ln  3
