@@ -389,6 +389,8 @@ Other embedded languages made a similar design choice~\cite{wsn.sol,pret}.
 %For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
 %parallelism is inherent.
 
+TODO: names (other embedded languages)
+
 \begin{figure}[b]
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
@@ -750,10 +752,10 @@ end
 
 Internal events bring support for a limited form of subroutines, as depicted in 
 Figure~\ref{lst.sub}.
-The subroutine \code{inc} is defined as a loop (lines 3-6) that continuously 
+The subroutine \code{inc} is defined as a loop (lines 3--6) that continuously 
 awaits its identifying event (line 4), incrementing the value passed as 
 reference (line 5).
-A trail in parallel (lines 8-11) invokes the subroutine in reaction to event 
+A trail in parallel (lines 8--11) invokes the subroutine in reaction to event 
 \code{A} through an \code{emit} (line 10).
 Given the stacked execution for internal events, the calling trail pauses, the 
 subroutine awakes (line 4), runs its body (yielding \code{v=2}), loops, and 
@@ -776,8 +778,8 @@ with
     _assert(v==2);  // after return
 end
 \end{lstlisting}
-\caption{ Subroutine \code{inc} is defined in a loop (lines 3-6), in parallel 
-with the caller (lines 8-11).
+\caption{ Subroutine \code{inc} is defined in a loop (lines 3--6), in parallel 
+with the caller (lines 8--11).
 \label{lst.sub}
 }
 \end{figure}
@@ -1976,13 +1978,17 @@ to the maximum number of trails, e.g., a trail emits an event that awakes
 another trail, which emits an event that awakes another trail, and so on---the 
 last trail cannot awake any trail, because they will be all hanged in a 
 \code{STACKED} state.
-%
-In general, in constrained sensor network applications, the size of 
-\code{trail\_t} is typically only 3 bytes (1 byte for each field), imposing a 
-negligible overhead even for trails that only await a single event and 
-terminate.
 
-\subsubsection{Code Generation}
+In the context of embedded systems, the size of \code{trail\_t} is typically 
+only 3 bytes (1 byte for each field), imposing a negligible memory overhead 
+even for trails that only await a single event and terminate.
+%
+For instance, the \emph{CTP} collection protocol ported to \CEU has at most 
+eight simultaneous lines of execution with an overhead of 2\% in comparison to 
+the original version in \emph{nesC} (a dialect of \emph{C} for event-driven 
+programming)~\cite{ceu.sensys13}.
+
+\subsection{Code Generation and Scheduling}
 
 \begin{figure}[t]
 \begin{minipage}[t]{0.31\linewidth}
@@ -2006,49 +2012,69 @@ end
 // TRAIL 0 - lbl And_out
 await A;
 // TRAIL 0 - lbl Awake_A_2
+
+
+
+
+
+.
 \end{lstlisting}
 \end{minipage}
 %
 \begin{minipage}[t]{0.31\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=2.5em]
 enum {
-  Main = 1,  // ln  3
-  Awake_e,   // ln  7
-  And_chk,   // ln  8,15
+  Main = 1,  // ln 3
+  Awake_e,   // ln 7
+  And_chk,   // ln 8,15
   And_sub_2, // ln 10
   Awake_A_1, // ln 12
   Emit_cont, // ln 14
   And_out,   // ln 17
   Awake_A_2  // ln 19
 };
+
+trail_t TRLS[2] = {
+  { STACKED,  Main, 0 };
+  { INACTIVE, 0,    0 };
+};
+
+
+
+
+
+
+
+
+
+.
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.36\linewidth}
+\begin{minipage}[t]{0.37\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=2.5em]
-while (<...>) {
-  trail_t* trail = <...>
-  switch (trail->lbl) {
-  case Main:
-    // activate TRAIL 1
-    TRLS[1].evt = STACKED;
-    TRLS[1].lbl = And_sub_2;
-    TRLS[1].stk = cur_stack;
-
-    // code in the 1st trail
-    // await e;
-    TRLS[0].evt = EVT_e;
-    TRLS[0].lbl = Awake_e;
-    TRLS[0].seq = cur_seqno;
-    break;
-
-  case And_sub_2:
-    // await A;
-    TRLS[1].evt = EVT_A;
-    TRLS[1].lbl = Awake_A_1;
-    TRLS[1].seq = cur_seqno;
+void dispatch (trail_t* t) {
+  switch (t->lbl) {
+    case Main:
+      // activate TRAIL 1
+      TRLS[1].evt = STACKED;
+      TRLS[1].lbl = And_sub_2;
+      TRLS[1].stk = cur_stack;
+  
+      // code in the 1st trail
+      // await e;
+      TRLS[0].evt = EVT_e;
+      TRLS[0].lbl = Awake_e;
+      TRLS[0].seq = cur_seqno;
       break;
-
+  
+    case And_sub_2:
+      // await A;
+      TRLS[1].evt = EVT_A;
+      TRLS[1].lbl = Awake_A_1;
+      TRLS[1].seq = cur_seqno;
+      break;
+  
     <...>  // other labels
   }
 }
@@ -2056,58 +2082,71 @@ while (<...>) {
 \end{minipage}
 \caption{
 %{\small %\textmd{
-Static allocation of trails, entry-point labels, and generated code.
+Static allocation of trails, entry-point labels, and dispatch loop.
 %}%}
 \label{lst.impl.trails}
 }
 \end{figure}
 
-The example in Figure~\ref{lst.impl.trails} illustrates how trails and labels 
-are statically allocated in a program.
+In the final generated code in \emph{C}, each trail label representing an entry 
+point becomes a \emph{switch case} with the associated code to execute.
 %
-The program has a maximum of 2 trails, because the \code{par/and} (line 4) can 
-reuse \emph{TRAIL 0}, and the join point (line 16) can reuse both \emph{TRAIL 
-0} and \emph{TRAIL 1}.
+Figure~\ref{lst.impl.trails} illustrates the generation process.
+For the program in the left of the figure, the compiler extracts the entry 
+points and associated trails.
 %
-Each label is associated with a unique identifier in the \code{enum}.
-%
-The static vector to hold the two trails in the example is defined as
+The entry points translate to an \code{enum} in the generated code (lines 
+1--10, in the middle of the figure).
+The trails translate to a vector of \code{trail\_t} elements with the maximum 
+number of simultaneous trails (lines 12--16).
+Initially, \code{TRAIL-0} is set to execute the \code{Main} entry point, while 
+all others are set to \code{INACTIVE}.
 
-\begin{lstlisting}
-trail_t TRLS[2];
-\end{lstlisting}
+The scheduler executes in two passes:
+%
+In the \emph{broadcast} pass, the scheduler sets to \code{STACKED} all trails 
+that are waiting for the current event to execute in the current stack level.
+%
+In the \emph{dispatch} pass, the scheduler executes each trail that is 
+\code{STACKED} to run in the current level, setting it immediately to 
+\code{INACTIVE}.
 
-In the final generated $C$ code, each label becomes a \emph{switch case} 
-working as the entry point to execute its associated code.
+During the dispatch pass, if a trail executes and emits and internal event, the 
+scheduler increments the stack level and re-executes the two passes.
+After all trails are properly dispatched, the scheduler decrements the stack 
+level and resumes the previous execution.
+For the first reaction chain, the scheduler starts from the \emph{dispatch} 
+pass, given that the \code{Main} label is the only one that can be active at 
+the stack level 0 (line 13, in the middle of Figure~\ref{lst.impl.trails}).
+
+The code the right of the Figure~\ref{lst.impl.trails} dispatches a trail
+according to its current label to execute.
 %
-Figure~\ref{lst.impl.code} shows the corresponding code for the program of 
-Figure~\ref{lst.impl.trails}.
+For the first reaction, it executes the \code{Main} label in \code{TRAIL-0}.
 %
-The program is initialized with all trails set to \code{INACTIVE}.
-Then, the scheduler executes the \emph{Main} label in \code{TRAIL-0}.
-%
-When the \emph{Main} label reaches the \code{par/and}, it ``stacks'' 
-\code{TRAIL-1} (line 5--8) and proceeds to the code in \code{TRAIL-0} (lines 
-10--15), respecting the deterministic execution order.
+When the \code{Main} label reaches the \code{par/and}, it ``stacks'' 
+\code{TRAIL-1} (lines 4--8) and proceeds to the code in \code{TRAIL-0} (lines 
+9--14), respecting the deterministic execution order.
 %
 The code sets the running \code{TRAIL-0} to await \code{EVT\_e} on label 
 \code{Awake\_e}, and then halts with a \code{break}.
 %
-The next iteration of the scheduler takes \code{TRAIL-1} and executes its 
-registered label \code{ParAnd\_sub\_2} (lines 17-22), which sets \code{TRAIL-1} 
+The next iteration of \code{dispatch} takes \code{TRAIL-1} and executes its 
+registered label \code{And\_sub\_2} (lines 16--21), which sets \code{TRAIL-1} 
 to await \code{EVT\_A} and also halts.
 
-Regarding cancellation, trails in parallel are always allocated in subsequent 
-slots in the static vector \code{TRLS}.
-Therefore, when a \code{par/or} terminates, the scheduler sequentially searches 
-and executes \code{FIN} trails within the range of the \code{par/or}, and then 
-clears all of them to \code{INACTIVE} at once.
-Given that finalization blocks cannot contain \code{await} statements, the 
-whole process is guaranteed to terminate in bounded time.
+Regarding abortion and finalization, when a \code{par/or} terminates, the 
+scheduler makes a \emph{broadcast} pass for the \code{FIN} event, but limited 
+to the range of trails covered by the terminating \code{par/or}.
+Trails that do not match the \code{FIN} are set to \code{INACTIVE}, as they 
+have to be aborted.
+Given that trails in parallel are allocated in subsequent slots in the static 
+vector \code{TRLS}, this pass only aborts the desirable trails.
+The subsequent \emph{dispatch} pass executes the finalization code.
+%Given that finalization blocks cannot contain \code{await} statements, the 
+%whole process is guaranteed to terminate in bounded time.
 Escaping a \code{loop} that contains parallel compositions also trigger the 
-same finalization process.
-
-TODO internal emit?
+same abortion process.
 
 \subsection{The External $C$ API}
 
@@ -2211,6 +2250,8 @@ The \emph{TinyOS} binding for \CEU.
 }
 \end{figure}
 
+TODO: refs/cite WSNs
+
 As an example, Figure~\ref{lst.impl.tinyos} shows our binding for \emph{TinyOS} 
 which maps \emph{nesC} callbacks to input events in \CEU.
 %
@@ -2218,16 +2259,16 @@ The file \code{ceu.h} (included in line 3) contains all definitions for the
 compiled \CEU program, which are further queried through \code{\#ifdef}'s.
 The file \code{ceu.c} (included in line 4) contains the main loop of \CEU 
 pointing to the labels defined in the program.
-The callback \code{Boot.booted} (lines 6-11) is called by TinyOS on mote 
-startup, so we initialize \CEU inside it (line 7).
-If the \CEU program uses timers, we also start a periodic timer (lines 8-10) 
-that triggers callback \code{Timer.fired} (lines 13-17) every 10 milliseconds 
+The callback \code{Boot.booted} (lines 6--11) is called by TinyOS on startup, 
+so we initialize \CEU inside it (line 7).
+If the \CEU program uses timers, we also start a periodic timer (lines 8--10) 
+that triggers callback \code{Timer.fired} (lines 13--17) every 10 milliseconds 
 and advances the wall-clock time of \CEU (line 15)%
 \footnote{We also offer a mechanism to start the underlying timer on demand to
 avoid the ``battery unfriendly'' 10ms polling.}.
 The remaining lines map pre-defined TinyOS events that can be used in \CEU 
-programs, such as the light sensor (lines 19-23) and the radio transceiver 
-(lines 25-36).
+programs, such as the light sensor (lines 19--23) and the radio transceiver 
+(lines 25--36).
 
 \section{Related Work}
 
