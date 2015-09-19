@@ -265,8 +265,16 @@ By synchronous, we mean that all trails at any given time are either reacting
 to the current event or are awaiting another event;
 in other words, trails are never reacting to different events.
 
-Figure~\ref{lst.abro} shows side-by-side the implementations in Esterel and 
-\CEU for the following control specification~\cite{esterel.primer}:
+In the sections that follow, we review the main differences between \CEU and 
+Esterel~\cite{ceu.sensys13}:
+shared-memory concurrency (Section~\ref{sec.ceu.det}),
+safe abortion with finalization (Section~\ref{sec.ceu.abrt}),
+first-class timers (Section~\ref{sec.ceu.timers}),
+and stack-based internal events (Section~\ref{sec.ceu.ints}).
+
+Regarding the similarities, Figure~\ref{lst.abro} shows side-by-side the 
+implementations in Esterel and \CEU for the following control 
+specification~\cite{esterel.primer}:
 %
 \emph{``Emit an output O as soon as two inputs A and B have occurred.
 Reset this behavior each time the input R occurs''.}
@@ -282,7 +290,7 @@ For the second phrase, the reset behavior, the Esterel version uses a
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
 restarts the \code{loop}.
 
-\begin{figure}[t]
+\begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 // ESTEREL
@@ -333,7 +341,7 @@ assignments.
 Being designed for control-intensive applications, it provides support for 
 concurrent lines of execution and broadcast communication through events.
 %
-In addition, \CEU also employs the synchronous model, in whicn programs advance 
+In addition, \CEU also employs the synchronous model, in which programs advance 
 in a sequence of discrete reactions to external events.
 Internal computations within a reaction (e.g. expressions, assignments, and 
 native calls) are considered to take no time in accordance with the synchronous 
@@ -345,53 +353,126 @@ To ensure that reactions run in bounded time and programs always progress,
 loops are statically required to contain at least one \code{await} statement in 
 all possible paths~\cite{ceu.sensys13,esterel.primer}.
 
-In the sections that follow, we review the main differences between \CEU and 
-Esterel~\cite{ceu.sensys13}: deterministic execution 
-(Section~\ref{sec.ceu.det}), safe abortion with finalization 
-(Section~\ref{sec.ceu.abrt}), first-class timers 
-(Section~\ref{sec.ceu.timers}), and stack-based internal events 
-(Section~\ref{sec.ceu.ints}).
-
 %\newpage %TTT
-\subsection{Deterministic Execution}
+\subsection{Shared-Memory Concurrency}
 \label{sec.ceu.det}
 
+Embedded applications make extensive use of shared memory, such as for sharing 
+resources through memory-mapped registers.
+Hence, an important goal of \CEU is to ensure a reliable execution for 
+concurrent programs that share memory.
+%
 Esterel is only deterministic with respect to reactive control: ``the same 
 sequence of inputs always produces the same sequence of 
 outputs''~\cite{esterel.primer}.
+%
 However, the execution order for operations with side-effects within a reaction 
 is non-deterministic: ``if there is no control dependency, as in \code{"call 
 f1() || call f2()"}, the order is unspecified and it would be an error to rely 
 on it''~\cite{esterel.primer}.
 %
-In \CEU, when multiple trails are active at a time, they are scheduled in the 
-order they appear in the program source code.
-%
-Hence, \CEU is deterministic also with respect to the order of execution of 
-side effects within a reaction~\cite{ceu.sensys13}.
-%
-Figure~\ref{lst.det} compares the two syntactically equivalent code fragments 
-in Esterel and \CEU to illustrate the semantic difference regarding 
-(non-)determinism.
+Therefore, Esterel forbids sharing memory: \emph{``if a variable is written by 
+some thread, then it can neither be read nor be written by concurrent 
+threads''}~\cite{esterel.primer}.
 
+Concurrency in \CEU is characterized when two or more trail segments in 
+parallel execute during the same reaction chain.
+A trail segment is a sequence of statements followed by an \code{await} (or 
+termination).
+%
+In the program in the left of Figure~\ref{lst.shared}, the two assignments to 
+\code{x} can never run concurrently, because each trail segment reacts to a 
+different input event and, according to the synchronous model, each reaction is 
+atomic.
+%
+However, the program in the right is non-deterministic, because the two 
+assignments to \code{y} occur in the same reaction to input \code{A}.
+
+\begin{figure}
+\begin{minipage}[t]{0.50\linewidth}
+\begin{lstlisting}
+input void A, B;
+var int x = 1;
+par/and do
+    await A;
+    x = x + 1;
+with
+    await B;
+    x = x * 2;
+end
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.50\linewidth}
+\begin{lstlisting}
+input void A;
+var int y = 1;
+par/and do
+    await A;
+    y = y + 1;
+with
+    await A;
+    y = y * 2;
+end
+\end{lstlisting}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{ Shared-memory concurrency in \CEU:
+the code in the left is safe because the trails access \code{x} atomically in 
+different reactions;
+the code in the right is unsafe because both trails access \code{y} in the same 
+reaction.
+%\newline
+{\small
+%TODO.
+}
+\label{lst.shared}
+}
+\end{figure}
+
+\CEU performs a temporal analysis at compile time and detects concurrent 
+accesses to shared variables, as follows~\cite{ceu.sensys13}:
+\emph{if a variable is written in a trail segment, then a concurrent trail 
+segment cannot read or write to that variable, nor dereference a pointer of 
+that variable type.}
+An analogous policy is applied for pointers \emph{vs} variables and pointers 
+\emph{vs} pointers, as well as for system calls with side effects (e.g., 
+\code{printf}).
+The algorithm for the analysis holds the set of all events in preceding 
+\code{await} statements for each variable access.
+Then, the sets for all accesses in parallel trails are compared to assert that 
+no events are shared among them.
+Otherwise the compiler warns about the suspicious accesses.
+
+Regardless of the static analysis, when multiple trails are active at a time in 
+\CEU, they are scheduled in the order they appear in the program source code.
+%
+Therefore, even though the program in the right of Figure~\ref{lst.shared} is 
+suspicious, the assignments to \code{y} both atomic and deterministic, i.e., 
+after \code{A} occurs, \code{y} is $4$ (\code{(1+1)*2}).
+%
 On the one hand, enforcing an execution order for concurrent operations may 
 seen arbitrary and also precludes true parallelism.
 On the other hand, it provides a priority scheme for trails, and makes 
 shared-memory concurrency more tractable.
-In contrast, Esterel forbids sharing memory: \emph{``if a variable is written 
-by some thread, then it can neither be read nor be written by concurrent 
-threads''}~\cite{esterel.primer}.
 %
 For constrained embedded development, we believe that deterministic 
 shared-memory concurrency is beneficial, given the extensive use of memory 
 mapped ports for I/O and the lack of hardware support for real parallelism.
-Other embedded languages made a similar design choice~\cite{wsn.sol,pret}.
+Other synchronous embedded languages, such as SOL~\cite{wsn.sol} and 
+PRET-C\cite{rp.pretc}, made a similar design choice.
 %For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
 %parallelism is inherent.
 
-TODO: names (other embedded languages)
+Figure~\ref{lst.det} compares the two syntactically equivalent code fragments 
+in Esterel and \CEU to summarize the semantic difference regarding 
+(non-)determinism.
+%
+Even though the program in \CEU executes deterministically, the compiler still 
+issues a warning, because an apparently innocuous reordering of trails modifies 
+the semantics of the program.
 
-\begin{figure}[b]
+\begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 // ESTEREL
@@ -435,7 +516,7 @@ However, handling abortion when dealing with external resources can be
 challenging, given that external entities are not subject to the same 
 synchronous execution discipline.
 
-\begin{figure}[t]
+\begin{figure}
 \begin{minipage}[t]{0.55\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3em]
 input void STOP, RETRANSMIT, SENDACK;
@@ -475,27 +556,30 @@ end
 \end{lstlisting}
 \end{minipage}
 %\rule{8.5cm}{0.37pt}
-\caption{A network protocol in \CEU extended with a finalization clause to 
-cancel a transmission.
+\caption{The unsafe network protocol in the left is extended with a 
+finalization clause in the right to handle abortion properly.
 %\caption{ Parallel compositions can describe complex state machines.
 \label{lst.fin}
 }
 \end{figure}
 
-To illustrate threats related to abortion, consider the example in the left of 
-Figure~\ref{lst.fin} with hierarchical \code{par/or} and \code{par/and} 
-compositions describing the state machine of a data collection protocol for 
-sensor networks~\cite{wsn.ctp,ceu.sensys13}.
+To illustrate threats related to abortion, consider the unsafe example in the 
+left of Figure~\ref{lst.fin}, describing the state machine of a data collection 
+protocol for sensor networks~\cite{wsn.ctp,ceu.sensys13}.
 %
 The input events \code{STOP}, \code{RETRANSMIT}, and \code{SENDACK} (line 1) 
 represent the external interface of the protocol with a client application.
 %
-The protocol has two trails:
+The protocol has to transmit a packet every minute, unless it receives a 
+\code{RETRANSMIT} request to immediately re-transmit, or a \code{STOP} request 
+to terminate.
+%
+The protocol is composed of two main trails:
 one simply monitors the stopping event (line 3);
 the other periodically transmits a packet (lines 5--18).
 %
 The periodic transmission is a loop that starts two other trails (lines 6--17):
-one handles an immediate retransmission request (line 7);
+one handles the immediate retransmission request (line 7);
 the other transmits the packet%
 \footnote{
 The underline prefix marks (e.g., \code{\_send\_enqueue}) make interactions 
@@ -507,6 +591,11 @@ and waits for a confirmation (lines 9--16).
 The actual transmission (lines 12--15) is enclosed with a \code{par/and} that 
 takes at least one minute before looping, to avoid flooding the network with 
 packets.
+Note that the call to \code{\_send\_enqueue} is \emph{asynchronous}, handing to 
+the radio driver a pointer to the lexically-scoped packet.
+The driver will make the transmission in the background, holding the packet 
+until it signals the application with the \code{SENDACK} to acknowledge 
+completion.
 %
 At any time, the client may request a retransmission (line 7), which terminates 
 the \code{par/or} (line 6), aborts the ongoing transmission (line 14, if not 
@@ -514,14 +603,10 @@ idle), and restarts the loop (line 5).
 %
 The client may also request to stop the whole protocol at any time (line 3).
 %
-Note that the \code{buffer} packet (line 12) is a local variable whose address 
-is passed to function \code{\_send\_enqueue} for transmission.
-The call enqueues the pointer in the radio driver, which holds it up to the 
-emission of \code{SENDACK} acknowledging the packet transmission.
-%
 In the meantime, if the sending trail is be aborted by the \code{STOP} or 
 \code{RETRANSMIT} requests, the packet buffer goes out of scope, leaving behind 
-a \emph{dangling pointer} in the radio driver.
+a \emph{dangling pointer} in the radio driver, which will possibly transmit 
+wrong data.
 %
 %\subsubsection{Finalization}
 %\label{sec.ceu.fin}
@@ -566,7 +651,7 @@ can be chosen by reordering trails inside a \code{par/or}, e.g., in
 Figure~\ref{lst.abortion}, the second trail is strongly aborted by the first 
 trail and the call to \code{\_f} never executes.
 
-\begin{figure}[t]
+\begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
 // ESTEREL
@@ -631,7 +716,7 @@ Then, the awaiting trail awakes, sets \code{v=1}, and invokes \code{await 1ms}.
 As the current delta is higher than the requested timeout (i.e. $5ms > 1ms$), 
 the trail is rescheduled for execution, now with \code{delta=4ms}.
 
-\begin{figure}[t]
+\begin{figure}
 \begin{minipage}[t]{0.45\linewidth}
 \begin{lstlisting}
 var int v;
@@ -671,7 +756,7 @@ Given that any non-awaiting sequence is considered to take no time in the
 synchronous model, the first trail is guaranteed to terminate before the second 
 trail, because $10+1 < 12$.
 %
-A similar program in a language without first-class support for timers, would 
+A similar program in a language without first-class support for timers would 
 depend on the execution timings for the code marked as \code{<...>}, making the 
 reasoning about the execution behavior more difficult.
 
@@ -712,7 +797,7 @@ program also terminates;
 \end{enumerate}
 }
 
-\begin{figure}%[b]
+\begin{figure}
 \begin{minipage}[t]{0.43\linewidth}
 \begin{lstlisting}[mathescape=true]
 // ESTEREL
@@ -838,7 +923,7 @@ imperative language).
 \subsection{Abstract Syntax}
 \label{sec.sem.syntax}
 
-\begin{figure}[h]
+\begin{figure}
 \begin{lstlisting}[mathescape=true]
                                    // primary expressions
   p ::= mem(id)                   (any memory access to `id')
@@ -908,7 +993,7 @@ p, p' &\in P
 n     &\in \mathds{N}
     && (unique~identifier~for~the~reaction~chain)
 \end{align*}
-
+%
 At the beginning of a reaction chain, the stack is initialized with the 
 occurring external event $ext$ ($S=[ext]$), but $emit$ expressions can push new 
 events on top of it (we discuss how they are popped further).
@@ -954,7 +1039,7 @@ The transition rules for the primary expressions are as follows:
     & \textbf{(pop)}
 \end{align*}
 }
-
+%
 An $await$ is simply transformed into an $awaiting$ (rule \textbf{awaiting}) as 
 an artifact to remember the external sequence number $n$ it can awake.
 An $awaiting$ can only transit to a $nop$ (rule \textbf{awake}) if its referred 
@@ -974,7 +1059,7 @@ This trick provides the desired stack-based semantics for internal events.
 
 Proceeding to compound expressions, the rules for conditionals and sequences 
 are straightforward:
-
+%
 { \setlength{\jot}{20pt}
 \begin{eqnarray*}
 & \frac
@@ -1004,7 +1089,7 @@ are straightforward:
     & \textbf{(seq-brk)}
 \end{eqnarray*}
 }
-
+%
 Given that our semantics focuses on control, rules \textbf{if-true} and 
 \textbf{if-false} are the only to query $mem$ expressions.
 %
@@ -1019,7 +1104,7 @@ reaction they are reached).
 
 The rules for loops are analogous to sequences, but use \code{`@'} as 
 separators to properly bind breaks to their enclosing loops:
-
+%
 { \setlength{\jot}{20pt}
 \begin{eqnarray*}
 & \LL S, (loop~p) \RR \ST \LL S, (p~@~loop~p) \RR
@@ -1038,7 +1123,7 @@ separators to properly bind breaks to their enclosing loops:
     & \textbf{(loop-brk)}
 \end{eqnarray*}
 }
-
+%
 When a program encounters a $loop$, it first expands its body in sequence with 
 itself (rule \textbf{loop-expd}).
 Rules \textbf{loop-adv} and \textbf{loop-nop} are similar to rules 
@@ -1058,7 +1143,7 @@ a $nop$.
 Proceeding to parallel compositions, the semantic rules for $and$ and $or$ 
 always force transitions on their left branches $p$ to occur before their right 
 branches $q$:
-
+%
 { \setlength{\jot}{20pt}
 \begin{eqnarray*}
 & \frac
@@ -1086,7 +1171,7 @@ branches $q$:
     & \textbf{(or-adv2)}   \\
 \end{eqnarray*}
 }
-
+%
 The deterministic behavior of the semantics relies on the \emph{isBlocked} 
 predicate, defined in Figure~\ref{fig.isBlocked} and used in rules 
 \textbf{and-adv2} and \textbf{or-adv2}, requiring the left branch $p$ to be 
@@ -1096,7 +1181,7 @@ Basically, the \emph{isBlocked} predicate determines that an expression becomes
 blocked when all of its trails in parallel hang in $awaiting$ and $emitting$ 
 expressions.
 
-\begin{figure}[t]
+\begin{figure}
 {\small
 \begin{align*}
   isBlocked(n,a:S, awaiting(b,m)) &= (a \neq b \1\vee\1 m = n)   \\
@@ -1125,7 +1210,7 @@ The last two rules \textbf{and-brk1} and \textbf{and-brk2} deal with a $break$
 in each of the sides in parallel.
 A $break$ should terminate the whole composition in order to escape the 
 innermost loop (\emph{aborting} the other side):
-
+%
 { \setlength{\jot}{20pt}
 \begin{eqnarray*}
 & \LL S, (mem(id)~and~q) \RR \ST \LL S, q \RR
@@ -1144,7 +1229,6 @@ innermost loop (\emph{aborting} the other side):
     & \textbf{(and-brk2)}   \\
 \end{eqnarray*}
 }
-
 %
 The $clear$ function, defined in Figure~\ref{fig.formal.clear}, concatenates 
 all active $fin$ bodies of the side being aborted (to execute before the $and$ 
@@ -1160,7 +1244,7 @@ Note that there is a syntactic restriction that a $fin$ body can only contain
 $mem$ expressions, i.e., they are guaranteed to execute entirely within a 
 reaction chain.
 
-\begin{figure}[t]
+\begin{figure}
 {\small
 \begin{align*}
   clear( fin~p )       &= p                   \\
@@ -1184,7 +1268,7 @@ terminates and applies the function $clear$ to the aborted side in order to
 properly finalize it (rules \textbf{or-nop1} and \textbf{or-nop2}).
 Finally, a $break$ (rules \textbf{or-brk1} and \textbf{or-brk2}) behaves in the 
 same way as in a parallel $and$:
-
+%
 { \setlength{\jot}{20pt}
 \begin{eqnarray*}
 & \LL S, (mem(id)~or~q) \RR \ST \LL S, clear(q) \RR
@@ -1206,7 +1290,7 @@ same way as in a parallel $and$:
     & \textbf{(or-brk2)}   %\\
 \end{eqnarray*}
 }
-
+%
 A reaction chain eventually blocks in $awaiting$ and $emitting$ expressions in 
 parallel trails.
 %
@@ -1301,7 +1385,7 @@ External events require a similar translation, i.e., each external event has a
 corresponding variable that is explicitly set by the environment before each 
 reaction chain.
 
-\begin{figure}%[h!]
+\begin{figure}
 \begin{minipage}[t]{0.32\linewidth}
 \begin{lstlisting}
 par/or do
@@ -1374,7 +1458,7 @@ two-step translation of Figure~\ref{lst.map.timers.2}.
 
 TODO: continuar explicacao
 
-\begin{figure}%[h!]
+\begin{figure}
 \begin{minipage}[t]{0.30\linewidth}
 \begin{lstlisting}
 dt = await 10ms;
@@ -1446,7 +1530,7 @@ the $fin$ body to execute.
 The complete translation substitutes the side-effect operations with $mem$ 
 expressions (\code{CODE-4}).
 
-\begin{figure}%[h!]
+\begin{figure}
 \begin{minipage}[t]{0.26\linewidth}
 \begin{lstlisting}
 do
@@ -1599,7 +1683,7 @@ first-class timers, finalization blocks, and all bookkeeping related to trails.
 The compilation process of a program in \CEU is composed of three main phases, 
 as illustrated in Figure~\ref{fig.impl}:
 
-\begin{figure}[ht]
+\begin{figure}
 \centering
 \includegraphics[scale=0.20]{impl}
 \caption{ Compilation process: from the source code in \CEU to the final 
@@ -1741,7 +1825,7 @@ intersection of $I$ (lines 6,9 in the AST), hence, they do not conflict.
 Note that although the accesses in lines 5, 11 in the code (lines 6,11 in the 
 AST) do have an intersection, they are not in parallel and are also safe.
 
-\begin{figure}[h]
+\begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=2.5em]
 input void A, B;
@@ -1793,7 +1877,7 @@ The program AST is first converted into a graph that represents the execution
 flow.
 Figure~\ref{fig:nfa} shows the corresponding graph for our example.
 
-\begin{figure}[ht]
+\begin{figure}
 \centering
 \includegraphics[scale=0.40]{nfa.png}
 \caption{ Flow graph for our guiding example
@@ -1841,7 +1925,7 @@ size is the maximum the program uses at a given time.
 A given position in the memory may hold different data (with variable sizes) 
 during runtime.
 
-\begin{figure}[t]
+\begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
 input int A, B, C;
@@ -1990,7 +2074,7 @@ programming)~\cite{ceu.sensys13}.
 
 \subsection{Code Generation and Scheduling}
 
-\begin{figure}[t]
+\begin{figure}
 \begin{minipage}[t]{0.31\linewidth}
 \begin{lstlisting}
 input void A;
@@ -2199,7 +2283,7 @@ This would break the \CEU sequential/discrete semantics of time.
 
 % TODO:, allowing \CEU{} to be easily embedded in platforms:
 
-\begin{figure}[t]
+\begin{figure}
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
 implementation
 {
