@@ -353,6 +353,8 @@ To ensure that reactions run in bounded time and programs always progress,
 loops are statically required to contain at least one \code{await} statement in 
 all possible paths~\cite{ceu.sensys13,esterel.primer}.
 
+% TODO: par/or vs abort, strong/weak abortion
+
 \subsection{Stack-Based Internal Events}
 \label{sec.ceu.ints}
 
@@ -1737,11 +1739,11 @@ used in further phases.
 %
 This phase may be aborted due to syntax errors in the \CEU source file.
 
-\item[Analysis]
+\item[Temporal Analysis]
 
-This phase detects inconsistencies in \CEU programs, such as unbounded loops,
-and also makes ``classical'' semantic analysis, such as building a symbol table 
-for checking variable declarations.
+This phase detects inconsistencies in \CEU programs, such as unbounded loops, 
+suspicious accesses to shared memory, and also ``classical'' semantic analysis, 
+such as building a symbol table for checking variable declarations.
 %
 This phase outputs code in $C$, given the way \CEU is tied to $C$ by design.
 %
@@ -1769,13 +1771,12 @@ scheduler on external events.
 %compiler considering our design, such as the temporal analysis, runtime 
 %scheduler, and the external API.
 
-\begin{comment}
-\subsection{Temporal Analysis}
+\subsection{Temporal Analysis for Shared-Memory Concurrency}
 
-As introduced, the \emph{temporal analysis} phase detects inconsistencies in 
-\CEU programs.
-Here, we focus on the algorithm that detects non-deterministic access to 
-variables, as presented in Section~\ref{sec.ceu.shared}.
+The compile-time \emph{temporal analysis} phase detects inconsistencies in \CEU 
+programs.
+Here, we focus on the algorithm that detects suspicious access to shared 
+variables, as discussed in Section~\ref{sec.ceu.det}.
 
 For each node representing a statement in the program AST, we keep the set of 
 events $I$ (for \emph{incoming}) that can lead to the execution of the node, 
@@ -1793,7 +1794,7 @@ declarations simply reproduce $O=I$, as they do not await;
 \item An \code{await e} statement has $O=\{e\}$.
 %
 \item A \code{break} statement has $O=\{\}$ as it escapes the innermost 
-\code{loop} and never terminate, i.e., never proceeds to the statement 
+\code{loop} and never terminates, i.e., never proceeds to the statement 
 immediately following it (see also \code{loop} below);
 %
 \item A \emph{sequence node (;)} modifies each of its children to have 
@@ -1814,15 +1815,14 @@ from any of its branches, hence $O = O_1 \cup ... \cup O_n$.
 
 With all sets calculated, any two nodes that perform side effects and are in 
 parallel branches can have their $I$ sets compared for intersections.
-If the intersection is not the empty set, they are marked as suspicious (see 
-Section~\ref{sec.ceu.shared}).
+If the intersection is not the empty set, they are marked as suspicious.
 
-Figure~\ref{lst.impl.ast} reproduces the second code of Figure~\ref{lst.det} 
-and shows the corresponding $AST$ with the sets $I$ and $O$ for each node.
+The example in the left of Figure~\ref{lst.impl.ast} has a corresponding $AST$, 
+in the right of the figure, with the sets $I$ and $O$ for each node.
 The event $.$ (dot) represents the ``boot'' reaction.
 The assignments to \code{y} in parallel (lines 5,8 in the code) have an empty 
 intersection of $I$ (lines 6,9 in the AST), hence, they do not conflict.
-Note that although the accesses in lines 5, 11 in the code (lines 6,11 in the 
+Note that although the accesses in lines 5,11 in the code (lines 6,11 in the 
 AST) do have an intersection, they are not in parallel and are also safe.
 
 \begin{figure}
@@ -1869,7 +1869,7 @@ intersections for $I$.
 }
 \end{figure}
 
-begin{comment}
+\begin{comment}
 It is also responsible for setting the priorities for trails (see further) and 
 determining the sizes of the queues that are used during runtime.
 
@@ -1899,8 +1899,6 @@ From its starting node, the flow graph is traversed until reaching await
 nodes---every visited node is inserted into a new DFA state.
 Then, every set of awaiting nodes for a given external event starts another DFA 
 state.
-end{comment}
-
 \end{comment}
 
 \subsection{Memory Layout}
