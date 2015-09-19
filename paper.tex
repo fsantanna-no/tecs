@@ -267,10 +267,10 @@ in other words, trails are never reacting to different events.
 
 In the sections that follow, we review the main differences between \CEU and 
 Esterel~\cite{ceu.sensys13}:
+stack-based internal events (Section~\ref{sec.ceu.ints}),
 shared-memory concurrency (Section~\ref{sec.ceu.det}),
 safe abortion with finalization (Section~\ref{sec.ceu.abrt}),
-first-class timers (Section~\ref{sec.ceu.timers}),
-and stack-based internal events (Section~\ref{sec.ceu.ints}).
+and first-class timers (Section~\ref{sec.ceu.timers}).
 
 Regarding the similarities, Figure~\ref{lst.abro} shows side-by-side the 
 implementations in Esterel and \CEU for the following control 
@@ -352,6 +352,152 @@ allow a program to advance in this notion of time.
 To ensure that reactions run in bounded time and programs always progress, 
 loops are statically required to contain at least one \code{await} statement in 
 all possible paths~\cite{ceu.sensys13,esterel.primer}.
+
+\subsection{Stack-Based Internal Events}
+\label{sec.ceu.ints}
+
+Esterel makes no semantic distinctions between internal and external signals, 
+both having only the notion of either presence or absence during the entire 
+reaction~\cite{esterel.preemption}.
+%
+In \CEU, however, internal events follow a stack-based execution policy, 
+similar to subroutine calls in typical programming 
+languages~\cite{ceu.sensys13}, contrasting with queue-based event handling 
+adopted for external events.
+%
+Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
+Esterel and \CEU.
+%
+In the version in Esterel, on the occurrence of \code{A}, \code{B} is emitted 
+and they both become active, resulting in the invocation of \code{f()} and 
+\code{g()} in no particular order.
+%
+In the version in \CEU, the occurrence of \code{A} makes the program behave as 
+follows (with the stack contents in italics):
+%
+{\small
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\item 1st trail awakes (line 5), emits \code{b}, and pauses.\\
+    \emph{stack: [1st-trail]}
+\item 2nd trail awakes (line 9), calls \code{\_f()}, and terminates.\\
+    \emph{stack: [1st-trail]}
+\item 1st trail (on top of the stack) resumes, calls \code{\_g()}, and 
+    terminates.\\
+    \emph{stack: []}
+\item Both trails have terminated, so the \code{par/and} rejoins, and the 
+program also terminates;
+\end{enumerate}
+}
+
+\begin{figure}
+\begin{minipage}[t]{0.43\linewidth}
+\begin{lstlisting}[mathescape=true]
+// ESTEREL
+input A;    // external
+signal B;   // internal
+[[
+    await A;
+    emit B;
+    call f();
+$\|$
+    await B;
+    call g();
+]]
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.53\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.1em]
+// CEU
+input void A;  // external (in uppercase)
+event void b;  // internal (in lowercase)
+par/and do
+    await A;
+    emit b;
+    _f();
+with
+    await b;
+    _g();
+end
+\end{lstlisting}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{ Internal signals (events) in Esterel and \CEU. \newline
+\label{lst.prints}
+}
+\end{figure}
+
+Internal events bring support for a limited form of subroutines, as depicted in 
+Figure~\ref{lst.sub}.
+The subroutine \code{inc} is defined as a loop (lines 3--6) that continuously 
+awaits its identifying event (line 4), incrementing the value passed as 
+reference (line 5).
+A trail in parallel (lines 8--11) invokes the subroutine in reaction to event 
+\code{A} through an \code{emit} (line 10).
+Given the stacked execution for internal events, the calling trail pauses, the 
+subroutine awakes (line 4), runs its body (yielding \code{v=2}), loops, and 
+awaits the next ``call'' (line 4, again).
+Only after this sequence that the calling trail resumes and passes the 
+assertion test.
+ 
+\begin{figure}
+\begin{lstlisting}[numbers=left,xleftmargin=2em]
+event int* inc; // subroutine `inc'
+par/or do
+    loop do     // definitions are loops
+        var int* p = await inc;
+        *p = *p + 1;
+    end
+with
+    var int v = 1;
+    await A;
+    emit inc => &v; // call `inc'
+    _assert(v==2);  // after return
+end
+\end{lstlisting}
+\caption{ Subroutine \code{inc} is defined in a loop (lines 3--6), in parallel 
+with the caller (lines 8--11).
+\label{lst.sub}
+}
+\end{figure}
+
+On the one hand, this form of subroutines has a significant limitation that it 
+cannot express recursive calls: an \code{emit} to itself is always ignored, 
+given that a running body cannot be awaiting itself.
+%
+On the other hand, this very same limitation brings some important safety 
+properties to subroutines:
+first, they are guaranteed to react in bounded time;
+second, memory for locals is also bounded, not requiring data stacks.
+%
+Also, this form of subroutines can use the other primitives of \CEU, such as 
+parallel compositions and the \code{await} statement.
+In particular, they await keeping context information such as locals and the 
+program counter, similarly to coroutines~\cite{lua.coroutines}.
+%In Section~\ref{sec.adv.excpt} we show how to use them to implement 
+%exceptions.
+
+\begin{comment}
+\vspace{5pt}
+\CEU provides no support for standard functions for a number of reasons:
+\begin{itemize}
+\item The interaction with other \CEU control primitives is not obvious (e.g., 
+executing an $await$ or a $par/or$ inside a function).
+\item They would still be restricted in some ways given the embedded context 
+(e.g.  no recursion or closures).
+\item Programs can always recur to $C$ functions for low-level operations.
+%\item A dedicated primitive would behave just as described, being a matter of 
+%syntactic sugar.
+\end{itemize}
+
+Regardless of the limitations, this form of subroutines is widely adopted in 
+\CEU programs, given that they were designed to work with the other control 
+mechanisms.
+Keep in mind that the typical reactive organization of programs (awaiting an 
+external stimulus, reacting to it, and going back to awaiting) does not demand 
+unrestricted subroutines.
+\end{comment}
 
 %\newpage %TTT
 \subsection{Shared-Memory Concurrency}
@@ -683,7 +829,7 @@ end
 \end{figure}
 \end{comment}
 
-\subsection{First-class Timers}
+\subsection{First-Class Timers}
 \label{sec.ceu.timers}
 
 Activities that involve reactions to \emph{wall-clock time}%
@@ -759,152 +905,6 @@ trail, because $10+1 < 12$.
 A similar program in a language without first-class support for timers would 
 depend on the execution timings for the code marked as \code{<...>}, making the 
 reasoning about the execution behavior more difficult.
-
-\subsection{Internal Events}
-\label{sec.ceu.ints}
-
-Esterel makes no semantic distinctions between internal and external signals, 
-both having only the notion of either presence or absence during the entire 
-reaction~\cite{esterel.preemption}.
-%
-In \CEU, however, internal events follow a stack-based execution policy, 
-similar to subroutine calls in typical programming 
-languages~\cite{ceu.sensys13}, contrasting with queue-based event handling 
-adopted for external events.
-%
-Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
-Esterel and \CEU.
-%
-In the version in Esterel, on the occurrence of \code{A}, \code{B} is emitted 
-and they both become active, resulting in the invocation of \code{f()} and 
-\code{g()} in no particular order.
-%
-In the version in \CEU, the occurrence of \code{A} makes the program behave as 
-follows (with the stack contents in italics):
-%
-{\small
-\begin{enumerate}
-\setlength{\itemsep}{0pt}
-\item 1st trail awakes (line 5), emits \code{b}, and pauses.\\
-    \emph{stack: [1st]}
-\item 2nd trail awakes (line 9), calls \code{\_f()}, and terminates.\\
-    \emph{stack: [1st]}
-\item 1st trail (on top of the stack) resumes, calls \code{\_g()}, and 
-    terminates.\\
-    \emph{stack: []}
-\item Both trails have terminated, so the \code{par/and} rejoins, and the 
-program also terminates;
-\end{enumerate}
-}
-
-\begin{figure}
-\begin{minipage}[t]{0.43\linewidth}
-\begin{lstlisting}[mathescape=true]
-// ESTEREL
-input A;    // external
-signal B;   // internal
-[[
-    await A;
-    emit B;
-    call f();
-$\|$
-    await B;
-    call g();
-]]
-\end{lstlisting}
-\end{minipage}
-%
-\begin{minipage}[t]{0.53\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3.1em]
-// CEU
-input void A;  // external (in uppercase)
-event void b;  // internal (in lowercase)
-par/and do
-    await A;
-    emit b;
-    _f();
-with
-    await b;
-    _g();
-end
-\end{lstlisting}
-\end{minipage}
-%\rule{8.4cm}{0.37pt}
-\caption{ Internal signals (events) in Esterel and \CEU. \newline
-\label{lst.prints}
-}
-\end{figure}
-
-Internal events bring support for a limited form of subroutines, as depicted in 
-Figure~\ref{lst.sub}.
-The subroutine \code{inc} is defined as a loop (lines 3--6) that continuously 
-awaits its identifying event (line 4), incrementing the value passed as 
-reference (line 5).
-A trail in parallel (lines 8--11) invokes the subroutine in reaction to event 
-\code{A} through an \code{emit} (line 10).
-Given the stacked execution for internal events, the calling trail pauses, the 
-subroutine awakes (line 4), runs its body (yielding \code{v=2}), loops, and 
-awaits the next ``call'' (line 4, again).
-Only after this sequence that the calling trail resumes and passes the 
-assertion test.
- 
-\begin{figure}
-\begin{lstlisting}[numbers=left,xleftmargin=2em]
-event int* inc; // subroutine `inc'
-par/or do
-    loop do     // definitions are loops
-        var int* p = await inc;
-        *p = *p + 1;
-    end
-with
-    var int v = 1;
-    await A;
-    emit inc => &v; // call `inc'
-    _assert(v==2);  // after return
-end
-\end{lstlisting}
-\caption{ Subroutine \code{inc} is defined in a loop (lines 3--6), in parallel 
-with the caller (lines 8--11).
-\label{lst.sub}
-}
-\end{figure}
-
-On the one hand, this form of subroutines has a significant limitation that it 
-cannot express recursive calls: an \code{emit} to itself is always ignored, 
-given that a running body cannot be awaiting itself.
-%
-On the other hand, this very same limitation brings some important safety 
-properties to subroutines:
-first, they are guaranteed to react in bounded time;
-second, memory for locals is also bounded, not requiring data stacks.
-%
-Also, this form of subroutines can use the other primitives of \CEU, such as 
-parallel compositions and the \code{await} statement.
-In particular, they await keeping context information such as locals and the 
-program counter, similarly to coroutines~\cite{lua.coroutines}.
-%In Section~\ref{sec.adv.excpt} we show how to use them to implement 
-%exceptions.
-
-\begin{comment}
-\vspace{5pt}
-\CEU provides no support for standard functions for a number of reasons:
-\begin{itemize}
-\item The interaction with other \CEU control primitives is not obvious (e.g., 
-executing an $await$ or a $par/or$ inside a function).
-\item They would still be restricted in some ways given the embedded context 
-(e.g.  no recursion or closures).
-\item Programs can always recur to $C$ functions for low-level operations.
-%\item A dedicated primitive would behave just as described, being a matter of 
-%syntactic sugar.
-\end{itemize}
-
-Regardless of the limitations, this form of subroutines is widely adopted in 
-\CEU programs, given that they were designed to work with the other control 
-mechanisms.
-Keep in mind that the typical reactive organization of programs (awaiting an 
-external stimulus, reacting to it, and going back to awaiting) does not demand 
-unrestricted subroutines.
-\end{comment}
 
 \section{Formal Semantics}
 
