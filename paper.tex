@@ -268,7 +268,7 @@ in other words, trails are never reacting to different events.
 In the sections that follow, we review the main differences between \CEU and 
 Esterel~\cite{ceu.sensys13}:
 stack-based internal events (Section~\ref{sec.ceu.ints}),
-shared-memory concurrency (Section~\ref{sec.ceu.det}),
+shared-memory concurrency and determinism (Section~\ref{sec.ceu.det}),
 safe abortion with finalization (Section~\ref{sec.ceu.abrt}),
 and first-class timers (Section~\ref{sec.ceu.timers}).
 
@@ -500,7 +500,7 @@ unrestricted subroutines.
 \end{comment}
 
 %\newpage %TTT
-\subsection{Shared-Memory Concurrency}
+\subsection{Shared-Memory Concurrency and Determinism}
 \label{sec.ceu.det}
 
 Embedded applications make extensive use of shared memory, such as for sharing 
