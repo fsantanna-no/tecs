@@ -337,10 +337,6 @@ end
 %\rule{8.4cm}{0.37pt}
 \caption{ A control specification implemented in Esterel and \CEU:
 \emph{``Emit \code{O} after \code{A} and \code{B}, resetting each \code{R}.''}
-%\newline
-{\small
-%TODO.
-}
 \label{lst.abro}
 }
 \end{figure}
@@ -491,13 +487,13 @@ program counter, similarly to coroutines~\cite{lua.coroutines}.
 %In Section~\ref{sec.adv.excpt} we show how to use them to implement 
 %exceptions.
 
-Another distinction regarding event handling is that Esterel supports 
-same-cycle bi-directional communication~\cite{esterel.compiling}, i.e., two 
-threads can react to one another during the same cycle due to mutual signal 
-dependency.
+Another distinction regarding event handling in comparison to \CEU is that 
+Esterel supports same-cycle bi-directional 
+communication~\cite{esterel.compiling}, i.e., two threads can react to one 
+another during the same cycle due to mutual signal dependency.
 %
-\CEU imposes a restriction that an \code{await} is only valid for the next 
-reaction, i.e., if an \code{await} and \code{emit} for the same event occur 
+\CEU imposes a restriction that an \code{await} to an internal event is only 
+valid for the next reaction, i.e., if an \code{await} and \code{emit} occur 
 simultaneously in parallel trails, the \code{await} does not awake.
 %
 These \emph{delayed awaits} avoid corner cases of instantaneous termination and 
@@ -515,8 +511,8 @@ circumvented by manually copying or making some transformation in the code to
 execute on awake.
 %
 From our experience, in some cases we need to execute a block of code 
-periodically, \emph{including the current reaction}, from requests of an 
-internal event, as illustrated in the middle of Figure~\ref{lst.delay} 
+periodically, \emph{including the current reaction}, starting from requests of 
+an internal event, as illustrated in the middle of Figure~\ref{lst.delay} 
 (\code{CODE-2}).
 In this case, moving the \code{await} to the end of the loop suffices to 
 execute the periodic code immediately (and then in reaction to each \code{emit} 
@@ -1107,19 +1103,6 @@ events on top of it (we discuss how they are popped further).
 The ever-increasing sequence number $n$ prevents that awaiting expressions 
 awake in the same reaction they are reached (the \emph{delayed awaits} as 
 explained in Section~\ref{sec.ceu.ints}).
-
-%Therefore, there is a single order of execution for side effects (represented 
-%by \code{mem} operations), thus, reaction chains are always deterministic.
-%
-% TODO
-%\footnote{We could extend the semantics to describe the full execution of a 
-%program by holding new incoming external events in a queue and processing them 
-%in consecutive reaction chains that never overlap.}
-%
-%The semantics requires an explicit stack to properly nest the emission of 
-%internal events.
-%to prevent that $awaiting$ expressions awake in the same reaction they are 
-%reached.
 
 We describe this relation with a set of \emph{small-step} structural semantics 
 rules, which are built in such a way that at most one transition is possible at 
@@ -2390,8 +2373,6 @@ concurrently (i.e. while a reaction chain is running).
 However, a binding must never interleave or run multiple functions in parallel.
 This would break the \CEU sequential/discrete semantics of time.
 %, as discussed in Section~\ref{sec:ceu}.
-
-% TODO:, allowing \CEU{} to be easily embedded in platforms:
 
 \begin{figure}
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
