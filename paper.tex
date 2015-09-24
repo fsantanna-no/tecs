@@ -491,26 +491,46 @@ program counter, similarly to coroutines~\cite{lua.coroutines}.
 %In Section~\ref{sec.adv.excpt} we show how to use them to implement 
 %exceptions.
 
-\begin{comment}
-\vspace{5pt}
-\CEU provides no support for standard functions for a number of reasons:
-\begin{itemize}
-\item The interaction with other \CEU control primitives is not obvious (e.g., 
-executing an $await$ or a $par/or$ inside a function).
-\item They would still be restricted in some ways given the embedded context 
-(e.g.  no recursion or closures).
-\item Programs can always recur to $C$ functions for low-level operations.
-%\item A dedicated primitive would behave just as described, being a matter of 
-%syntactic sugar.
-\end{itemize}
+Another distinction regarding event handling is that Esterel supports 
+same-cycle bi-directional communication~\cite{esterel.compiling}, i.e., two 
+threads can react to one another during the same cycle due to mutual signal 
+dependency.
+%
+\CEU imposes a restriction that an \code{await} is only valid for the next 
+reaction, i.e., if an \code{await} and \code{emit} for the same event occur 
+simultaneously in parallel trails, the \code{await} does not awake.
+%
+These \emph{delayed awaits} avoid corner cases of instantaneous termination and 
+re-execution of statements in the same reaction inside loops (known as 
+\emph{schizophrenic statements})~\cite{esterel.schizo}.
+%
+The example of Figure~\ref{lst.delay} relies on this restriction to avoid 
+infinite execution:
+Although both sides of the \code{par/or} have an \code{await} statement, the 
+\code{loop} would restart instantaneously if the \code{await} could awake in 
+the same reaction that reaches it.
+%
+In an atypical scenario requiring immediate awake, delayed awaits can be 
+circumvented by judiciously copying the code to execute on awake.
 
-Regardless of the limitations, this form of subroutines is widely adopted in 
-\CEU programs, given that they were designed to work with the other control 
-mechanisms.
-Keep in mind that the typical reactive organization of programs (awaiting an 
-external stimulus, reacting to it, and going back to awaiting) does not demand 
-unrestricted subroutines.
-\end{comment}
+\begin{figure}
+\begin{lstlisting}
+event void e,f;
+loop do
+    par/or do
+        await e;
+    with
+        emit e;
+        await f;
+    end
+end
+\end{lstlisting}
+\caption{ The \code{await} occurs simultaneously with the \code{emit} and does 
+not awake, preventing the \code{par/or} to terminate and execute the 
+\code{loop} indefinitely.
+\label{lst.delay}
+}
+\end{figure}
 
 %\newpage %TTT
 \subsection{Shared-Memory Concurrency and Determinism}
@@ -581,10 +601,6 @@ the code in the left is safe because the trails access \code{x} atomically in
 different reactions;
 the code in the right is unsafe because both trails access \code{y} in the same 
 reaction.
-%\newline
-{\small
-%TODO.
-}
 \label{lst.shared}
 }
 \end{figure}
@@ -659,9 +675,6 @@ end
 %\rule{8.4cm}{0.37pt}
 \caption{ In Esterel, the execution order between \code{f1} and \code{f2} is 
 unspecified, whereas in \CEU, \code{\_f1} executes before \code{\_f2}.
-{\small
-%TODO.
-}
 \label{lst.det}
 }
 \end{figure}
@@ -1013,9 +1026,9 @@ n     &\in \mathds{N}
 At the beginning of a reaction chain, the stack is initialized with the 
 occurring external event $ext$ ($S=[ext]$), but $emit$ expressions can push new 
 events on top of it (we discuss how they are popped further).
-The ever-increasing sequence number $n$ will prevent that awaiting expressions 
-awake in the same reaction they are reached (ensuring that the program can 
-progress).
+The ever-increasing sequence number $n$ prevents that awaiting expressions 
+awake in the same reaction they are reached (the \emph{delayed awaits} as 
+explained in Section~\ref{sec.ceu.ints}).
 
 %Therefore, there is a single order of execution for side effects (represented 
 %by \code{mem} operations), thus, reaction chains are always deterministic.
