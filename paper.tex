@@ -589,21 +589,21 @@ copying the condition test (in the right).
 
 Embedded applications make extensive use of shared memory, such as for sharing 
 resources through memory-mapped registers.
-Hence, an important goal of \CEU is to ensure a reliable execution for 
-concurrent programs that share memory.
+Hence, an important goal of \CEU is to ensure a reliable behavior for programs 
+with concurrent lines of execution sharing memory.
 %
 Esterel is only deterministic with respect to reactive control: ``the same 
 sequence of inputs always produces the same sequence of 
 outputs''~\cite{esterel.primer}.
 %
 However, the execution order for operations with side-effects within a reaction 
-is non-deterministic: ``if there is no control dependency, as in \code{"call 
-f1() || call f2()"}, the order is unspecified and it would be an error to rely 
+is non-deterministic: ``if there is no control dependency, as in \code{<<call 
+f1() || call f2()>>}, the order is unspecified and it would be an error to rely 
 on it''~\cite{esterel.primer}.
 %
-Therefore, Esterel forbids sharing memory: \emph{``if a variable is written by 
-some thread, then it can neither be read nor be written by concurrent 
-threads''}~\cite{esterel.primer}.
+Therefore, Esterel forbids sharing memory between lines of execution: 
+\emph{``if a variable is written by some thread, then it can neither be read 
+nor be written by concurrent threads''}~\cite{esterel.primer}.
 
 Concurrency in \CEU is characterized when two or more trail segments in 
 parallel execute during the same reaction chain.
@@ -664,18 +664,20 @@ that variable type.}
 An analogous policy is applied for pointers \emph{vs} variables and pointers 
 \emph{vs} pointers, as well as for system calls with side effects (e.g., 
 \code{printf}).
-The algorithm for the analysis holds the set of all events in preceding 
-\code{await} statements for each variable access.
-Then, the sets for all accesses in parallel trails are compared to assert that 
-no events are shared among them.
-Otherwise the compiler warns about the suspicious accesses.
+%The algorithm for the analysis holds the set of all events in preceding 
+%\code{await} statements for each variable access.
+%Then, the sets for all accesses in parallel trails are compared to assert that 
+%no events are shared among them.
+%Otherwise the compiler warns about the suspicious accesses.
 
-Regardless of the static analysis, when multiple trails are active at a time in 
-\CEU, they are scheduled in the order they appear in the program source code.
+Regardless of the temporal analysis of \CEU, when multiple trails are active 
+during the same reaction, they are scheduled in the order they appear in the 
+program source code.
 %
 Therefore, even though the program in the right of Figure~\ref{lst.shared} is 
-suspicious, the assignments to \code{y} both atomic and deterministic, i.e., 
-after \code{A} occurs, \code{y} is $4$ (\code{(1+1)*2}).
+suspicious, the assignments to \code{y} are both atomic and deterministic, 
+i.e., after the reaction to \code{A} terminates, the value of \code{y} is $4$ 
+(\code{(1+1)*2}).
 %
 On the one hand, enforcing an execution order for concurrent operations may 
 seen arbitrary and also precludes true parallelism.
@@ -703,29 +705,36 @@ which disallows a similar temporal analysis.
 
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
+\begin{lstlisting}[mathescape=true]
 // ESTEREL
+input A;
 [
+    await A;
     call f1();
 $\|$
+    await A;
     call f2();
 ];
 \end{lstlisting}
 \end{minipage}
 %
 \begin{minipage}[t]{0.48\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3.5em]
+\begin{lstlisting}
 // CEU
+input void A;
 par/and do
+    await A;
     _f1();
 with
+    await A;
     _f2();
 end
 \end{lstlisting}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ In Esterel, the execution order between \code{f1} and \code{f2} is 
-unspecified, whereas in \CEU, \code{\_f1} executes before \code{\_f2}.
+unspecified, whereas in \CEU, \code{\_f1} executes before \code{\_f2} due to 
+deterministic scheduling based on lexical order.
 \label{lst.det}
 }
 \end{figure}
