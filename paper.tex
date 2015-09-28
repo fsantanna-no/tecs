@@ -271,13 +271,14 @@ Esterel, Synchronous, Reactivity
 with support for multiple concurrent lines of execution known as \emph{trails}.
 By reactive, we mean that programs are stimulated by the environment through 
 input events that are broadcast to all awaiting trails.
-By synchronous, we mean that all trails at any given time are either reacting 
+By synchronous, we mean that all trails at any given moment are either reacting 
 to the current event or are awaiting another event;
 in other words, trails are never reacting to different events.
 
 In the sections that follow, we review the main differences between \CEU and 
 Esterel~\cite{ceu.sensys13}:
-stack-based internal events (Section~\ref{sec.ceu.ints}),
+queue-based external events and stack-based internal events 
+(Section~\ref{sec.ceu.ints}),
 shared-memory concurrency and determinism (Section~\ref{sec.ceu.det}),
 safe abortion with finalization (Section~\ref{sec.ceu.abrt}),
 and first-class timers (Section~\ref{sec.ceu.timers}).
@@ -361,18 +362,19 @@ all possible paths~\cite{ceu.sensys13,esterel.primer}.
 
 % TODO: par/or vs abort, strong/weak abortion
 
-\subsection{Stack-Based Internal Events}
+\subsection{Queue-Based External Events and Stack-Based Internal Events}
 \label{sec.ceu.ints}
 
 Esterel makes no semantic distinctions between internal and external signals, 
 both having only the notion of either presence or absence during an entire 
 reaction~\cite{esterel.preemption}.
 %
-In \CEU, external input events are unique within reactions, with
-intrinsic queue-based handling, and programs cannot emit them.
+In \CEU, external input events are unique within reactions and programs cannot 
+emit them, resulting in an intrinsic queue-based handling.
 %
-In contrast, internal events follow a stack-based execution policy, similar to 
-subroutine calls in typical programming languages~\cite{ceu.sensys13}.
+In contrast, programs can emit internal events but these follow a stack-based 
+execution policy, similar to subroutine calls in typical programming 
+languages~\cite{ceu.sensys13}.
 %
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
 Esterel and \CEU.
@@ -389,9 +391,9 @@ follows (with the stack contents in italics):
 \setlength{\itemsep}{0pt}
 \item 1st trail awakes (line 5), emits \code{b}, and pauses.\\
     \emph{stack: [1st-trail]}
-\item 2nd trail awakes (line 9), calls \code{\_f()}, and terminates.\\
+\item 2nd trail awakes (line 9), calls \code{\_g()}, and terminates.\\
     \emph{stack: [1st-trail]}
-\item 1st trail (on top of the stack) resumes, calls \code{\_g()}, and 
+\item 1st trail (on top of the stack) resumes, calls \code{\_f()}, and 
     terminates.\\
     \emph{stack: []}
 \item Both trails have terminated, so the \code{par/and} rejoins, and the 
@@ -448,7 +450,7 @@ Given the stacked execution for internal events, the calling trail pauses, the
 subroutine awakes (line 4), runs its body (yielding \code{v=2}), loops, and 
 awaits the next ``call'' (line 4, again).
 Only after this sequence that the calling trail resumes and passes the 
-assertion test.
+assertion test (line 11).
  
 \begin{figure}
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
@@ -2461,17 +2463,23 @@ However, there are fundamental semantic differences that prevents the design of
 \CEU as pure extensions to Esterel (i.e., on top of its formal semantics).
 %
 In particular, Esterel has a notion of time similar to that of digital circuits 
-in which multiple signals can be active at a clock tick (Esterel is also used 
-in hardware design).
+in which multiple signals can be active at a clock tick.
+In fact, Esterel is also used in hardware design.
+%
 In \CEU, instead of clock ticks, the occurrence of a single external event that 
 defines a time unit.
-We believe that for software design, this approach simplifies the reasoning 
-about concurrency.
+The event-driven approach is popular in many 
+communities~\cite{TOS,games,GUI,callbacks,nodejs}, and is essentially 
+synchronous, even though it is not commonly/formally 
+noticed/acknowledged/recognized as such.
+%
+We believe that for software design, this approach is more familiar to 
+programmers and simplifies the reasoning about concurrency.
 For instance, the uniqueness of external events in \CEU is a prerequisite for 
 the temporal analysis that enables safe shared-memory concurrency.
 %
-Furthermore, \CEU also distinguishes external events from stack-based internal 
-events, which provides a limited form of subroutines that supports \CEU's 
+Finally, \CEU also distinguishes external events from stack-based internal 
+events, which provides a limited form of coroutines that supports \CEU's 
 reactive statements.
 
 A number of synchronous languages have been designed to interoperate with C, 
@@ -2479,14 +2487,14 @@ such as \emph{Reactive C}~\cite{rp.rc}, Protothreads \cite{wsn.protothreads},
 \emph{PRET-C}~\cite{rp.pretc} and \emph{SC}~\cite{rp.synchc}.
 %
 They offer Esterel-like parallel compositions with communication via shared 
-variables, relying on deterministic semantics to preserve determinism.
+variables, relying on deterministic scheduling to preserve determinism.
 %
 However, it is the responsibility of the programmer to specify the execution 
-order for threads, based on either explicit priorities or source code lexical 
+order for threads, based on either explicit priorities, or source code lexical 
 order (like \CEU).
 %
-These languages have a tick-based notion of time similar to Esterel, also 
-disallowing the event-based temporal analysis of \CEU.
+These languages have a tick-based notion of time similar to Esterel, which 
+prevents the event-based temporal analysis of \CEU.
 
 \emph{URBI}~\cite{rp.urbi} is a reactive scripting language with a rich set of 
 control constructs for time management, event-driven communication, and 
@@ -2533,7 +2541,8 @@ algorithmic-intensive problems.
 Esterel has different compilation backends that synthesizes to software and 
 also to hardware circuits~\cite{esterel.emperor,esterel.tutorial}.
 Among the software-based approaches, \emph{SAXO--RT}~\cite{esterel.saxort} is 
-the closest to our implementation for trail allocation and scheduling:
+the closest to our implementation with respect to trail allocation and 
+scheduling:
 The compiler slices programs into ``control points'' (analogous to our ``entry 
 points'') and rearranges them into a directed acyclic graph respecting the 
 constructive semantics of Esterel.
