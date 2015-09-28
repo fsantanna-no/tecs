@@ -1355,7 +1355,6 @@ reaction chain.
   clear( p~@~loop~q) ) &= clear(p)            \\
   clear( p~and~q )     &= clear(p)~;~clear(q) \\
   clear( p~or~q )      &= clear(p)~;~clear(q) \\
-  clear( mem(id) )     &= mem(id)             \\
   clear( \_ )          &= nop
 \end{align*}
 }%
@@ -1427,13 +1426,17 @@ After each invocation, we increment the sequence number.
 
 \subsection{Concrete Language Mapping}
 
-Most statements from \CEU map directly to those presented in the reduced syntax 
-of Figure~\ref{lst.formal.syntax}, namely, the \code{if}, \code{`;'}, 
-\code{loop}, \code{par/and}, and \code{par/or}.
+Most statements from \CEU (``concrete \CEU'') map directly to those presented 
+in the reduced syntax of Figure~\ref{lst.formal.syntax} (``abstract \CEU'').
+%, namely, the \code{if}, \code{`;'}, \code{loop}, \code{par/and}, and 
+%\code{par/or}.
 For instance, the \code{if} in the concrete language behaves exactly like the 
-$if$ in the described semantics.
-However, there are some significant mismatches between \CEU and the formal 
-semantics, which we provide a mapping in this section.
+$if$ in the formal semantics.
+However, there are some significant mismatches between the concrete and 
+abstract \CEU, and we discuss appropriate mappings in this section.
+%
+Again, we are not considering side-effects, which are all mapped to the $mem$ 
+semantic construct.
 
 \begin{comment}
 $
@@ -1444,20 +1447,18 @@ $
     \code{par/or}  \mapsto or
 $.
 \end{comment}
-Again, we are not considering side-effects, which are all mapped to the $mem$ 
-semantic construct.
 
 \subsubsection{await and emit}
 
-The concrete \code{await} and \code{emit} primitives of \CEU support 
-communication of values between them.
+The concrete \code{await} and \code{emit} primitives support communication of 
+values between them.
 In the two-step translation of Figure~\ref{lst.map.emit.await}, we start with 
 the concrete program in \CEU, which communicates the value $1$ between the 
 \code{emit} and \code{await} in parallel (left-most code).
 In the intermediate translation, we include the shared variable \code{e\_} to 
 hold the value being communicated between the two trails in order to simplify 
 the \code{emit}.
-Finally, we convert the program into the equivalent in the formal semantics, 
+Finally, we convert the program into the equivalent in the abstract syntax, 
 translating side-effect statements into $mem$ expressions.
 External events require a similar translation, i.e., each external event has a 
 corresponding variable that is explicitly set by the environment before each 
@@ -1508,7 +1509,7 @@ expressions.
 
 To encompass first-class timers, we introduce a special external \code{TICK} 
 event that is intercalated with each other event occurrence in an application 
-(e.g.  \emph{e1, e2}):
+(e.g. \emph{e1, e2}):
 
 \begin{align*}
 \LL [TICK], p \RR
@@ -1533,8 +1534,15 @@ event that is intercalated with each other event occurrence in an application
 The \code{TICK} event has an associated variable \code{TICK\_} carrying the 
 wall-clock time elapsed between the two occurrences, as depicted by the 
 two-step translation of Figure~\ref{lst.map.timers.2}.
-
-TODO: continuar explicacao
+In the concrete program in the left, the variable \code{dt} will hold the 
+residual delta time (as described in Section~\ref{sec.ceu.timers}) after 
+awaking from the timer.
+In the first step of the translation, we expand the \code{await 10ms} to a 
+\code{loop} that decrements the elapsed number of microseconds for each 
+occurrence of \code{TICK}.
+When the variable \code{tot} reaches zero, we escape the \code{loop} setting 
+the variable \code{dt} to contain the appropriate delta.
+In the last step, we convert the program to the abstract syntax.
 
 \begin{figure}
 \begin{minipage}[t]{0.30\linewidth}
@@ -1580,15 +1588,15 @@ Two-step translation from concrete to abstract timer.
 \subsubsection{Finalization Blocks}
 \label{sec.formal.fins}
 
-The biggest mismatch between \CEU and the formal semantics is regarding 
+The biggest mismatch between concrete and abstract \CEU is regarding 
 finalization blocks, which require more complex modifications in the program
-for a proper mapping using the $fin$ semantic construct.
+for a proper mapping using the $fin$ expressions.
 In the three-step translation of Figure~\ref{lst.map.fin}, we start with a 
 concrete program (\code{CODE-1}) that uses a \code{finalize} to safely 
 \code{\_release} the reference to \code{ptr} kept after the call to 
 \code{\_hold}.
-In the translation to the semantics, we first need to catch the \code{do-end} 
-termination to run the finalization code.
+In the translation, we first need to catch the \code{do-end} termination to run 
+the finalization code.
 For this, we translate the block into a \code{par/or} (\code{CODE-2}) with the 
 original body in parallel with a $fin$ to run the finalization code.
 This way, the $fin$ body executes whenever the \code{par/or} terminates, either 
@@ -1638,7 +1646,7 @@ par/or do
   await B;
 with
   { fin
-    _release(ptr); }
+      _release(ptr); }
 end
 
 
@@ -1660,9 +1668,9 @@ par/or do
   await B;
 with
   { fin
-    if f_ then
-      _release(ptr);
-    end }
+      if f_ then
+        _release(ptr);
+      end }
 end
 
 // CODE-3
@@ -1680,10 +1688,10 @@ mem;
    await(B);
 or
    fin
-   if mem then
-     mem
-   else
-     nop
+     if mem then
+       mem
+     else
+       nop
 )
 // CODE-4
 \end{lstlisting}
