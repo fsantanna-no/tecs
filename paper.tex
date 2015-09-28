@@ -1884,7 +1884,7 @@ immediately following it (see also \code{loop} below);
 %
 \item A \emph{sequence node (;)} modifies each of its children to have 
 $I_n=O_{n-1}$.
-The first child inherits $I$ from the sequence parent, and the set $O$ for the 
+The first child inherits $I$ from its parent node, and the set $O$ for the 
 sequence node is copied from its last child, i.e., $O=O_n$.
 %
 \item A \code{loop} node includes its body's $O$ on its own $I$ ($I=I \cup 
@@ -1894,13 +1894,14 @@ The union of all \code{break} statements' $O$ forms the set $O$ for a
 %
 \item An \code{if} node has $O=O_{true} \cup O_{false}$.
 %
-\item A parallel composition (\code{par/and} / \code{par/or}) may terminate 
-from any of its branches, hence $O = O_1 \cup ... \cup O_n$.
+\item A parallel composition may terminate from any of its branches, hence $O = 
+O_1 \cup ... \cup O_n$.
 \end{itemize}
 
-With all sets calculated, any two nodes that perform side effects and are in 
-parallel branches can have their $I$ sets compared for intersections.
-If the intersection is not the empty set, they are marked as suspicious.
+With all sets calculated, we take all pairs of nodes that perform side effects 
+and are in parallel branches, comparing their sets $I$ for intersections.
+For each pair, if the intersection is not the empty set, we mark both nodes as 
+suspicious.
 
 The example in the left of Figure~\ref{lst.impl.ast} has a corresponding $AST$, 
 in the right of the figure, with the sets $I$ and $O$ for each node.
@@ -1993,13 +1994,17 @@ state.
 await a single event.
 For this reason, \CEU{} does not allocate per-trail stacks; instead, all data 
 resides in fixed memory slots---this is true for the program variables as well 
-as for temporary values and flags needed during runtime.
+as for temporary values and runtime flags.
 %For instance, the first trail in the guiding example requires temporary slots 
 %to hold the locals \code{a} and \code{b}, while the second trail must keep 
 %flags to remember which sides of the \code{par/and} have already terminated.
 %
 Memory for trails in parallel must coexist, while statements in sequence can 
 reuse it.
+%
+Translating this idea to $C$ is straightforward~\cite{wsn.osm,wsn.ocram}: 
+memory for blocks in sequence are packed in a \code{struct}, while blocks in 
+parallel, in a \code{union}.
 %In the example, the code following the loop (identified as \code{...}) reuses 
 %all memory from the loop.
 %
@@ -2007,6 +2012,19 @@ reuse it.
 size is the maximum the program uses at a given time.
 A given position in the memory may hold different data (with variable sizes) 
 during runtime.
+%
+As an example, Figure~\ref{lst.impl.mem} shows a program with corresponding 
+memory layout.
+%
+Each variable is assigned a unique $id$ (e.g. \code{a\_1}) so that variables 
+with the same name can be distinguished.
+%
+The \code{do-end} blocks in sequence are packed in a \code{union}, given that 
+their variables cannot be in scope at the same time, e.g., \code{MEM.a\_1} and 
+\code{MEM.b\_2} can safely share the same memory slot.
+%
+The example also illustrates the presence of runtime flags related to the 
+parallel composition, which also reside in reusable slots in the static memory.
 
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
@@ -2032,8 +2050,8 @@ union {             // sequence
     int a_1;        //   do_1
     int b_2;        //   do_2
     struct {        //   par/and
-        u8 _and_3: 1;
-        u8 _and_4: 1;
+        int _and_3: 1;
+        int _and_4: 1;
     };
 } MEM ;
 \end{lstlisting}
@@ -2047,23 +2065,6 @@ layout.
 \label{lst.impl.mem}
 }
 \end{figure}
-
-Translating this idea to $C$ is straightforward~\cite{wsn.osm,wsn.ocram}: 
-memory for blocks in sequence are packed in a \code{struct}, while blocks in 
-parallel, in a \code{union}.
-%
-As an example, Figure~\ref{lst.impl.mem} shows a program with corresponding 
-memory layout.
-%
-Each variable is assigned a unique $id$ (e.g. \code{a\_1}) so that variables 
-with the same name can be distinguished.
-%
-The \code{do-end} blocks in sequence are packed in a \code{union}, given that 
-their variables cannot be in scope at the same time, e.g., \code{MEM.a\_1} and 
-\code{MEM.b\_2} can safely share the same memory slot.
-%
-The example also illustrates the presence of runtime flags related to the 
-parallel composition, which also reside in reusable slots in the static memory.
 
 \subsection{Trail Allocation}
 \label{sec:impl:gates}
@@ -2466,6 +2467,7 @@ The event-driven approach is popular in many
 communities~\cite{TOS,games,GUI,callbacks,nodejs}, and is essentially 
 synchronous, even though it is not commonly/formally 
 noticed/acknowledged/recognized as such.
+(TODO: rewrite)
 %
 We believe that for software design, this approach is more familiar to 
 programmers and simplifies the reasoning about concurrency.
