@@ -747,9 +747,8 @@ languages can abort awaiting lines of execution without tweaking them with
 synchronization primitives.
 In contrast, traditional (asynchronous) multi-threaded languages cannot express 
 thread termination safely~\cite{esterel.preemption,sync_async.threadsstop}.
-However, handling abortion when dealing with external resources can be 
-challenging, given that external entities are not subject to the same 
-synchronous execution discipline.
+Still, handling abortion when dealing with external resources is challenging 
+because they are not subject to the same synchronous execution discipline.
 
 \begin{figure}
 \begin{minipage}[t]{0.55\linewidth}
@@ -791,27 +790,28 @@ end
 \end{lstlisting}
 \end{minipage}
 %\rule{8.5cm}{0.37pt}
-\caption{The unsafe network protocol in the left is extended with a 
-finalization clause in the right to handle abortion properly.
+\caption{The unsafe network protocol in the left, which does not compile, is 
+extended with a finalization clause in the right to handle abortion properly.
 %\caption{ Parallel compositions can describe complex state machines.
 \label{lst.fin}
 }
 \end{figure}
 
-To illustrate threats related to abortion, consider the unsafe example in the 
-left of Figure~\ref{lst.fin}, describing the state machine of a data collection 
-protocol for sensor networks~\cite{wsn.ctp,ceu.sensys13}.
+To illustrate threats related to abortion, consider the unsafe example, which 
+does not compile, in the left of Figure~\ref{lst.fin}, describing the state 
+machine of a data collection protocol for sensor 
+networks~\cite{wsn.ctp,ceu.sensys13}.
 %
 The input events \code{STOP}, \code{RETRANSMIT}, and \code{SENDACK} (line 1) 
-represent the external interface of the protocol with a client application.
+represent the external interface of the protocol.
 %
 The protocol has to transmit a packet every minute, unless it receives a 
-\code{RETRANSMIT} request to immediately re-transmit, or a \code{STOP} request 
-to terminate.
+\code{RETRANSMIT} request to immediately re-transmit it, or a \code{STOP} 
+request to terminate.
 %
 The protocol is composed of two main trails:
 one simply monitors the stopping event (line 3);
-the other periodically transmits a packet (lines 5--18).
+the other periodically transmits the packet (lines 5--18).
 %
 The periodic transmission is a loop that starts two other trails (lines 6--17):
 one handles the immediate retransmission request (line 7);
@@ -824,13 +824,11 @@ and waits for a confirmation (lines 9--16).
 %
 %
 The actual transmission (lines 12--15) is enclosed with a \code{par/and} that 
-takes at least one minute before looping, to avoid flooding the network with 
-packets.
+takes at least one minute before looping, in accordance with the specification.
 Note that the call to \code{\_send\_enqueue} is \emph{asynchronous}, handing to 
 the radio driver a pointer to the lexically-scoped packet.
-The driver will make the transmission in the background, holding the packet 
-until it signals the application with the \code{SENDACK} to acknowledge 
-completion.
+The driver makes the transmission in the background, holding the packet until 
+it signals the application with the \code{SENDACK} to acknowledge completion.
 %
 At any time, the client may request a retransmission (line 7), which terminates 
 the \code{par/or} (line 6), aborts the ongoing transmission (line 14, if not 
@@ -838,24 +836,24 @@ idle), and restarts the loop (line 5).
 %
 The client may also request to stop the whole protocol at any time (line 3).
 %
-In the meantime, if the sending trail is be aborted by the \code{STOP} or 
+Therefore, if the sending trail is aborted by the \code{STOP} or 
 \code{RETRANSMIT} requests, the packet buffer goes out of scope, leaving behind 
 a \emph{dangling pointer} in the radio driver, which will possibly transmit 
-wrong data.
+corrupted data.
 %
 %\subsubsection{Finalization}
 %\label{sec.ceu.fin}
 
-The \CEU compiler tracks the interaction of \code{par/or} compositions with 
-local variables and stateful \emph{C} functions (e.g., device drivers) in order 
-to preserve safe abortion of trails~\cite{ceu.sensys13,ceu.mod15}.
+The unsafe example in the left of Figure~\ref{lst.fin} does not compile because 
+\CEU tracks the interaction of \code{par/or} compositions with local variables 
+and stateful \emph{C} functions (e.g., device drivers) in order to preserve 
+safe abortion of trails~\cite{ceu.sensys13,ceu.mod15}.
 %
 %Finalization clauses are fundamental to preserve the orthogonality of 
 %\code{par/or} compositions in SSRP.
 %
-For instance, \CEU refuses to compile the program in the left of 
-Figure~\ref{lst.fin}, enforcing the programmer to write a \emph{finalization} 
-clause to accompany the stateful \emph{C} call.
+In fact, \CEU enforces the programmer to write a \emph{finalization} clause to 
+accompany the stateful \emph{C} call.
 The code in the right of Figure~\ref{lst.fin} properly cancels the packet 
 transmission when the block of \code{buffer} goes out of scope, i.e., the 
 finalization clause (after the \code{with}) executes automatically on external 
