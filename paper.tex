@@ -2069,15 +2069,15 @@ layout.
 \subsection{Trail Allocation}
 \label{sec:impl:gates}
 
-Each line of execution in \CEU carries associated data, such as which event it 
-is awaiting and which code to execute when it awakes.
+Each line of execution in \CEU needs to carry associated data, such as which 
+event it is awaiting and which code to execute when it awakes.
 %
 The compiler statically infers the maximum number of trails a program can have 
 at the same time and creates a static vector to hold the runtime information 
 about them.
 %
-Trails that cannot be active at the same time can share memory slots in the 
-static vector.
+Like normal variables, trails that cannot be active at the same time can share 
+slots in the static memory vector.
 
 At any given moment, a trail can be awaiting in one of the following states: 
 \code{INACTIVE}, \code{STACKED}, \code{FIN}, or in any of the events defined in 
@@ -2097,8 +2097,8 @@ enum {
 All terminated or not-yet-started trails stay in the \code{INACTIVE} state and 
 are ignored by the scheduler.
 %
-A \code{STACKED} trail holds its associated stack level and is delayed until 
-the scheduler runtime level reaches that value again.
+A \code{STACKED} trail holds an associated stack level and is delayed until the 
+scheduler runtime reaches that level again.
 %
 A \code{FIN} trail represents a hanged finalization block which is only 
 scheduled when its corresponding block goes out of scope.
@@ -2106,7 +2106,7 @@ scheduled when its corresponding block goes out of scope.
 A trail waiting for an event stays in the state of the corresponding event, 
 also holding the minimum sequence number (\emph{seqno}) in which it can awake.
 %
-A trail is represented by the following \code{struct}:
+In concrete terms, a trail is represented by the following \code{struct}:
 
 \begin{lstlisting}
 struct trail_t {
@@ -2130,30 +2130,31 @@ for an application with less than 253 events (plus the 3 states), one byte is
 enough.
 %
 The size of \code{label\_t} depends primarily on the number of \code{await} 
-statements in the application---each \code{await} splits the code in two and 
-requires a unique entry point in the code for its continuation.
+statements in the application---each \code{await} splits the code in two 
+segments and requires a unique entry point in the code for its continuation.
 Additionally, split \& join points for parallel compositions, \code{emit} 
 continuations, and finalization blocks also require labels.
 %
-The \code{seqno} will eventually overflow during execution (every 256 
+The \code{seqno} could eventually overflow during execution (i.e., every 256 
 reactions).
-However, given that the scheduler traverses all trails in each reaction, it can 
-adjust them to properly handle overflows (actually 2 bits to hold the 
+However, given that the scheduler traverses all trails on every reaction, it 
+can adjust them to properly handle overflows (actually, 2 bits to hold the 
 \code{seqno} is already enough).
 %
-The stack size depends on the maximum depth of nested emissions and is bounded 
-to the maximum number of trails, e.g., a trail emits an event that awakes 
-another trail, which emits an event that awakes another trail, and so on---the 
-last trail cannot awake any trail, because they will be all hanged in a 
+The size of \code{stack\_t} depends on the maximum depth of nested emissions 
+and is bounded to the maximum number of trails.
+In the worst case, a trail emits an event that awakes another trail, which 
+emits an event that awakes another trail, and so on.
+The last trail cannot awake any trail, because they are all hanged in the 
 \code{STACKED} state.
 
 In the context of embedded systems, the size of \code{trail\_t} is typically 
 only 3 bytes (1 byte for each field), imposing a negligible memory overhead 
 even for trails that only await a single event and terminate.
 %
-For instance, the \emph{CTP} collection protocol ported to \CEU has at most 
-eight simultaneous lines of execution with an overhead of 2\% in comparison to 
-the original version in \emph{nesC} (a dialect of \emph{C} for event-driven 
+For instance, the \emph{CTP} collection protocol ported to \CEU reaches eight 
+simultaneous lines of execution with an overhead of 2\% in comparison to the 
+original version in \emph{nesC} (a dialect of \emph{C} for event-driven 
 programming)~\cite{ceu.sensys13}.
 
 \subsection{Code Generation and Scheduling}
@@ -2264,28 +2265,29 @@ For the program in the left of the figure, the compiler extracts the entry
 points and associated trails, e.g., the label \code{Awake\_e} will execute on 
 \code{TRAIL-0} (line 7).
 %
-For each statement that yields (\code{emit} and \code{await}), resumes 
+For each statement that pauses (\code{emit} and \code{await}), resumes 
 (\code{par/and}, \code{par/or}, and \code{finalize}), or aborts (\code{par/or} 
 and \code{break}), the compiler splits the trail into segments with associated 
 entry points.
 %
 The entry points translate to an \code{enum} in the generated code (lines 
 1--10, in the middle of the figure).
-The trails translate to a vector of \code{trail\_t} elements with the maximum 
-number of simultaneous trails (lines 12--16).
-Initially, \code{TRAIL-0} is set to execute the \code{Main} entry point, while 
-all others are set to \code{INACTIVE}.
+The state of trails translate to a vector of type \code{trail\_t} with the 
+maximum number of simultaneous trails (lines 12--15).
+On initialization, \code{TRAIL-0} is set to execute the \code{Main} entry point 
+(line 13), while all others are set to \code{INACTIVE} (in the example, only 
+one, in line 14).
 
 The scheduler executes in two passes:
 %
-In the \emph{broadcast} pass, the scheduler sets to \code{STACKED} all trails 
-that are waiting for the current event to execute in the current stack level.
+In the \emph{broadcast} pass, the scheduler sets all trails that are waiting 
+for the current event to \code{STACKED} in the current stack level.
 %
 In the \emph{dispatch} pass, the scheduler executes each trail that is 
 \code{STACKED} to run in the current level, setting it immediately to 
 \code{INACTIVE}.
 
-During the dispatch pass, if a trail executes and emits and internal event, the 
+During the dispatch pass, if a trail executes and emits an internal event, the 
 scheduler increments the stack level and re-executes the two passes.
 After all trails are properly dispatched, the scheduler decrements the stack 
 level and resumes the previous execution.
@@ -2294,13 +2296,13 @@ pass, given that the \code{Main} label is the only one that can be active at
 the stack level 0 (line 13, in the middle of Figure~\ref{lst.impl.trails}).
 
 The code the right of the Figure~\ref{lst.impl.trails} dispatches a trail
-according to its current label to execute.
+according to the current label to execute.
 %
 For the first reaction, it executes the \code{Main} label in \code{TRAIL-0}.
 %
-When the \code{Main} label reaches the \code{par/and}, it ``stacks'' 
-\code{TRAIL-1} (lines 4--8) and proceeds to the code in \code{TRAIL-0} (lines 
-9--14), respecting the deterministic execution order.
+When the \code{Main} label reaches the \code{par/and}, it stacks \code{TRAIL-1} 
+(lines 4--7) and proceeds to the code in \code{TRAIL-0} (lines 9--14), 
+respecting the deterministic execution order.
 %
 The code sets the running \code{TRAIL-0} to await \code{EVT\_e} on label 
 \code{Awake\_e}, and then halts with a \code{break}.
@@ -2319,7 +2321,7 @@ vector \code{TRLS}, this pass only aborts the desirable trails.
 The subsequent \emph{dispatch} pass executes the finalization code.
 %Given that finalization blocks cannot contain \code{await} statements, the 
 %whole process is guaranteed to terminate in bounded time.
-Escaping a \code{loop} that contains parallel compositions also trigger the 
+Escaping a \code{loop} that contains parallel compositions also triggers the 
 same abortion process.
 
 \subsection{The External $C$ API}
