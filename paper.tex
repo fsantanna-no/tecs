@@ -1004,8 +1004,8 @@ highlighting the main differences to Esterel, in particular the stack-based
 execution for internal events.
 %
 For the sake of simplicity, we focus on the control aspects of the language, 
-leaving out side effects and $C$ calls (which behave like in any conventional 
-imperative language).
+leaving out side effects and $C$ calls (which behave like in conventional 
+imperative languages).
 
 \subsection{Abstract Syntax}
 \label{sec.sem.syntax}
@@ -1088,9 +1088,9 @@ The ever-increasing sequence number $n$ prevents that awaiting expressions
 awake in the same reaction they are reached (the \emph{delayed awaits} as 
 explained in Section~\ref{sec.ceu.ints}).
 
-We describe this relation with a set of \emph{small-step} structural semantics 
-rules, which are built in such a way that at most one transition is possible at 
-any time, resulting in deterministic reaction chains.
+We describe this relation with a set of small-step structural semantics rules, 
+which are built in such a way that at most one transition is possible at any 
+time, resulting in deterministic reaction chains.
 %
 The transition rules for the primary expressions are as follows:
 %
@@ -1098,7 +1098,7 @@ The transition rules for the primary expressions are as follows:
 \begin{align*}
 \LL S,\1await(id) \RR &\ST
 \LL S,\1awaiting(id,n+1) \RR
-    & \textbf{(awaiting)}      \\
+    & \textbf{(await)}      \\
 %%%
 \LL id:S,\1awaiting(id,m) \RR &\ST
 \LL id:S,\1nop \RR, \2m<=n
@@ -1106,7 +1106,7 @@ The transition rules for the primary expressions are as follows:
 %%%
 \LL S,\1emit(id) \RR &\ST
 \LL id:S,\1emitting(|S|) \RR
-    & \textbf{(emitting)}       \\
+    & \textbf{(emit)}       \\
 %%%
 \LL S,\1emitting(|S|) \RR &\ST
 \LL S,\1nop \RR
@@ -1114,11 +1114,11 @@ The transition rules for the primary expressions are as follows:
 \end{align*}
 }
 %
-An $await$ is simply transformed into an $awaiting$ (rule \textbf{awaiting}) as 
-an artifact to remember the external sequence number $n$ it can awake.
-An $awaiting$ can only transit to a $nop$ (rule \textbf{awake}) if its referred 
-event $id$ matches the top of the stack and its sequence number is smaller or 
-equal than the current one ($m<n$).
+An $await$ is simply transformed into an $awaiting$ (rule \textbf{await}) as an 
+artifact to remember the external sequence number $n+1$ it can awake:
+an $awaiting$ can only transit to a $nop$ (rule \textbf{awake}) if its referred 
+event $id$ matches the top of the stack and it was reached in a previous 
+reaction (i.e., sequence number $m<n$).
 %
 %Remember that in \CEU, the \code{await} statement returns the value associated 
 %with the corresponding event: the yielded $mem$ represents the operation to 
@@ -1126,7 +1126,7 @@ equal than the current one ($m<n$).
 %
 An $emit$ transits to an $emitting$ holding the current stack level ($|S|$ 
 stands for the stack length), and pushing the referred event on the stack (rule 
-\textbf{emitting}).
+\textbf{emit}).
 With the new stack level $|S|+1$, the $emitting(|S|)$ itself cannot transit, as 
 rule \textbf{pop} expects its parameter to match the current stack level.
 This trick provides the desired stack-based semantics for internal events.
@@ -1167,12 +1167,12 @@ are straightforward:
 Given that our semantics focuses on control, rules \textbf{if-true} and 
 \textbf{if-false} are the only to query $mem$ expressions.
 %
-The ``magical'' function $val$ receives the memory identifier and current 
+The ``magical'' function $val$ receives a memory identifier and the current 
 reaction sequence number, returning the current memory value.
 %
 Although the value here is arbitrary, it is unique in a reaction chain, because 
 a given expression can execute only once within it (remember that $loops$ must 
-contain $awaits$ which, from rule \textbf{awaiting}, cannot awake in the same 
+contain $awaits$ which, from rule \textbf{await}, cannot awake in the same 
 reaction they are reached).
 %For all other rules, we omit these values (e.g., \textbf{seq-nop}).
 
@@ -1247,13 +1247,14 @@ branches $q$:
 }
 %
 The deterministic behavior of the semantics relies on the \emph{isBlocked} 
-predicate, defined in Figure~\ref{fig.isBlocked} and used in rules 
-\textbf{and-adv2} and \textbf{or-adv2}, requiring the left branch $p$ to be 
-blocked in order to allow the right transition from $q$ to $q'$.
+predicate, which is defined in Figure~\ref{fig.isBlocked} and used in rules 
+\textbf{and-adv2} and \textbf{or-adv2}.
+These rules require the left branch $p$ to be blocked in order to allow the 
+right transition from $q$ to $q'$.
 %
 Basically, the \emph{isBlocked} predicate determines that an expression becomes 
 blocked when all of its trails in parallel hang in $awaiting$ and $emitting$ 
-expressions.
+expressions that cannot advance.
 
 \begin{figure}
 {\small
@@ -1282,8 +1283,8 @@ For a parallel $and$, if one of the sides terminates, the composition is simply
 substituted by the other side (rules \textbf{and-nop1} and \textbf{and-nop2}).
 The last two rules \textbf{and-brk1} and \textbf{and-brk2} deal with a $break$ 
 in each of the sides in parallel.
-A $break$ should terminate the whole composition in order to escape the 
-innermost loop (\emph{aborting} the other side):
+To escape the innermost loop, a $break$ aborts the other side by applying the 
+$clear$ function (to be described further):
 %
 { \setlength{\jot}{20pt}
 \begin{eqnarray*}
@@ -1304,42 +1305,9 @@ innermost loop (\emph{aborting} the other side):
 \end{eqnarray*}
 }
 %
-The $clear$ function, defined in Figure~\ref{fig.formal.clear}, concatenates 
-all active $fin$ bodies of the side being aborted (to execute before the $and$ 
-rejoins).
-Note that there are no transition rules for $fin$ expressions.
-This is because once reached, a $fin$ expression halts and will only execute 
-when it is aborted by a trail in parallel and is expanded by the $clear$ 
-function.
-In Section~\ref{sec.formal.fins}, we show how a $fin$ is mapped to a 
-finalization block in the concrete language.
-%
-Note that there is a syntactic restriction that a $fin$ body can only contain 
-$mem$ expressions, i.e., they are guaranteed to execute entirely within a 
-reaction chain.
-
-\begin{figure}
-{\small
-\begin{align*}
-  clear( fin~p )       &= p                   \\
-  clear( p~;~q )       &= clear(p)            \\
-  clear( p~@~loop~q) ) &= clear(p)            \\
-  clear( p~and~q )     &= clear(p)~;~clear(q) \\
-  clear( p~or~q )      &= clear(p)~;~clear(q) \\
-  clear( \_ )          &= mem(id)
-\end{align*}
-}%
-%\rule{14cm}{0.37pt}
-\caption{
-The function $clear$ extracts $fin$ expressions in parallel and put their 
-bodies in sequence.
-\label{fig.formal.clear}
-}
-\end{figure}
-
 For a parallel $or$, if one of the sides terminates, the whole composition 
-terminates and applies the function $clear$ to the aborted side in order to 
-properly finalize it (rules \textbf{or-nop1} and \textbf{or-nop2}).
+terminates, also applying the $clear$ function to the aborted side (rules 
+\textbf{or-nop1} and \textbf{or-nop2}).
 Finally, a $break$ (rules \textbf{or-brk1} and \textbf{or-brk2}) behaves in the 
 same way as in a parallel $and$:
 %
@@ -1365,19 +1333,51 @@ same way as in a parallel $and$:
 \end{eqnarray*}
 }
 %
+The $clear$ function, defined in Figure~\ref{fig.formal.clear}, concatenates 
+all active $fin$ bodies of the side being aborted, so that they execute before 
+the composition rejoins.
+Note that there are no transition rules for $fin$ expressions.
+This is because once reached, a $fin$ expression halts and will only execute 
+when it is aborted by a trail in parallel and is expanded by the $clear$ 
+function.
+In Section~\ref{sec.formal.fins}, we show how to map a finalization block in 
+the concrete language to a $fin$ in the formal semantics.
+%
+Note that there is a syntactic restriction that a $fin$ body can only contain 
+$mem$ expressions, i.e., they are guaranteed to execute entirely within a 
+reaction chain.
+
+\begin{figure}
+{\small
+\begin{align*}
+  clear( fin~p )       &= p                   \\
+  clear( p~;~q )       &= clear(p)            \\
+  clear( p~@~loop~q) ) &= clear(p)            \\
+  clear( p~and~q )     &= clear(p)~;~clear(q) \\
+  clear( p~or~q )      &= clear(p)~;~clear(q) \\
+  clear( mem(id) )     &= mem(id)             \\
+  clear( \_ )          &= nop
+\end{align*}
+}%
+%\rule{14cm}{0.37pt}
+\caption{
+The function $clear$ extracts $fin$ expressions in parallel and put their 
+bodies in sequence.
+\label{fig.formal.clear}
+}
+\end{figure}
+
 A reaction chain eventually blocks in $awaiting$ and $emitting$ expressions in 
 parallel trails.
 %
 If all trails hangs only in $awaiting$ expressions, it means that the program 
 cannot advance in the current reaction chain.
 %
-However, $emitting$ expressions should resume their continuations of previous 
-$emit$ in the ongoing reaction, they are just hanged in lower stack indexes 
-(see rule \textbf{pop}).
+However, $emitting$ expressions are pending in lower stack indexes and should 
+eventualy resume in the ongoing reaction (see rule \textbf{pop}).
 %
 Therefore, we define another relation that behaves as \textbf{relation-inner} 
-(presented above) if the program is not blocked, and, otherwise, pops the 
-stack:
+(presented above) if the program can advance, and, otherwise, pops the stack:
 %
 $$
 \frac
@@ -1402,8 +1402,8 @@ $$
     \LL S,p \RR \xRightarrow[~~n~~]{*} \LL S',p' \RR
 $$
 %
-Finally, to describe the complete execution of a program, we need multiple 
-``invocations'' of reaction chains, incrementing the sequence number:
+Finally, to describe the complete execution of a program, we trigger multiple 
+``invocations'' of reaction chains in sequence:
 %
 \begin{align*}
 \LL [e1], p \RR
@@ -1414,12 +1414,16 @@ Finally, to describe the complete execution of a program, we need multiple
     & \xRightarrow[~~2~~]{*}
 \LL [  ], p'' \RR
 \\
+\LL [e3], p'' \RR
+    & \xRightarrow[~~3~~]{*}
+\LL [  ], p''' \RR
+\\
 & ...
 \end{align*}
 %
 Each invocation starts with an external event at the top of the stack and 
 finishes with a modified program and an empty stack.
-After each invocation, the sequence number is incremented.
+After each invocation, we increment the sequence number.
 
 \subsection{Concrete Language Mapping}
 
