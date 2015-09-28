@@ -502,108 +502,83 @@ These \emph{delayed awaits} avoid corner cases of instantaneous termination and
 re-execution of statements in the same reaction inside loops (known as 
 \emph{schizophrenic statements})~\cite{esterel.schizo}.
 %
-The example in the left of Figure~\ref{lst.delay} (\code{CODE-1}) relies on 
-this restriction to avoid infinite execution:
-Although both sides of the \code{par/or} have an \code{await} statement, the 
-\code{loop} would restart instantaneously if the \code{await} could awake in 
-the same reaction that reaches it.
-%
-In atypical scenarios requiring immediate awake, delayed awaits can be 
-circumvented by manually copying or making some transformation in the code to 
-execute on awake.
-%
-From our experience, in some cases we need to execute a block of code 
-periodically, \emph{including the current reaction}, starting from requests of 
-an internal event, as illustrated in the middle of Figure~\ref{lst.delay} 
-(\code{CODE-2}).
-In this case, moving the \code{await} to the end of the loop suffices to 
-execute the periodic code immediately (and then in reaction to each \code{emit} 
-request).
-If the periodic \code{emit} depends on a condition, the code becomes more 
-intricate, requiring to copy the condition test to the periodic code, as 
-illustrated in the right of Figure~\ref{lst.delay} (\code{CODE-3}).
+The example that follows relies on this restriction to avoid infinite 
+execution:
 
-\begin{figure}
-\begin{minipage}[t]{0.24\linewidth}
 \begin{lstlisting}
 event void e,f;
 loop do
-  par/or do
-    await e;
-  with
-    emit e;
-    await f;
-  end
+    par/or do
+        await e;
+    with
+        emit e;     // awakes 1s trail and restarts the loop
+        await f;
+    end
 end
-
-
-
-
-
-
-
-
-
-
-/* CODE-1 */
 \end{lstlisting}
-\end{minipage}
+
+Even though both sides of the \code{par/or} have an \code{await} statement to 
+avoid instantaneous termination, the \code{loop} would restart instantaneously 
+if the \code{await} could awake in the same reaction that reaches it.
+
+In atypical scenarios requiring immediate awake, delayed awaits can be 
+circumvented by manually copying or making transformations in the code to 
+execute on awake.
 %
-\begin{minipage}[t]{0.36\linewidth}
+From our experience, in some cases we need to execute a block of code 
+periodically from internal event requests, \emph{including the current 
+reaction}, as illustrated in the left of Figure~\ref{lst.delay}.
+In this case, moving the \code{await} to the end of the loop makes the periodic 
+code to also execute immediately (and then in reactions to each \code{emit} 
+request).
+If the periodic \code{emit} depends on a condition, the code becomes more 
+intricate because we need to copy the condition test to the periodic code, as 
+illustrated in the right of Figure~\ref{lst.delay}.
+
+\begin{figure}
+\begin{minipage}[t]{0.50\linewidth}
 \begin{lstlisting}
 event void e;
 par do
-  loop do
-    <...>
-    emit e;  // periodic request
-  end
+    loop do
+        <...>
+        emit e;   // periodic request
+    end
 with
-  loop do
-    <...>    // code to execute
-    await e; // await after
-  end
+    loop do
+        <...>     // code to execute
+        await e;  // await after
+    end
 end
-
-
-
-
-
-
-
-/* CODE-2 */
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.36\linewidth}
+\begin{minipage}[t]{0.50\linewidth}
 \begin{lstlisting}
 event void e;
-var bool execute_now = false;
+var bool should_execute = false;
 par do
-  loop do
-    <...>
-    if <...> then
-        execute_now = true;
-        emit e;
+    loop do
+        <...>
+        if <...> then
+            should_execute = true;
+            emit e;
+        end
     end
-  end
 with
-  loop do
-    if execute_now then
-      <...> // code to execute
+    loop do
+        if should_execute then
+            <...> // code to execute
+        end
+        await e;
     end
-    await e;
-  end
 end
-
-/* CODE-3 */
 \end{lstlisting}
 \end{minipage}
 %
-\caption{ In \code{CODE-1}, the \code{await} occurs simultaneously with the 
-\code{emit} and does not awake, preventing the \code{par/or} to terminate and 
-execute the \code{loop} indefinitely.
-\code{CODE-2} and \code{CODE-3} illustrate how to circumvent the \emph{delayed 
-await} restriction.
+\caption{ Examples that circumvent the \emph{delayed await} restriction by 
+post-fixing the \code{await} inside the \code{loop} (in the left), and by 
+copying the condition test (in the right).
 \label{lst.delay}
 }
 \end{figure}
