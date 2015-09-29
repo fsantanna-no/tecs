@@ -2154,8 +2154,8 @@ even for trails that only await a single event and terminate.
 %
 For instance, the \emph{CTP} collection protocol ported to \CEU reaches eight 
 simultaneous lines of execution with an overhead of 2\% in comparison to the 
-original version in \emph{nesC} (a dialect of \emph{C} for event-driven 
-programming)~\cite{ceu.sensys13}.
+original version in \emph{nesC}~\cite{wsn.nesc} (a dialect of \emph{C} for 
+event-driven programming)~\cite{ceu.sensys13}.
 
 \subsection{Code Generation and Scheduling}
 
@@ -2381,7 +2381,7 @@ implementation
     #include "ceu.c"
 
     event void Boot.booted () {
-        ceu_go_init();
+        ceu_sys_init();
 #ifdef CEU_WCLOCKS
         call Timer.startPeriodic(10);
 #endif
@@ -2389,25 +2389,26 @@ implementation
     
 #ifdef CEU_WCLOCKS
     event void Timer.fired () {
-        ceu_go_wclock(10000);
+        int dt = 10000;
+        ceu_sys_go(EVT__WCLOCK, &dt);
     }
 #endif
 
 #ifdef _EVT_PHOTO_READDONE
     event void Photo.readDone (uint16_t val) {
-        ceu_go_event(EVT_PHOTO_READDONE, (void*)val);
+        ceu_sys_go(EVT_PHOTO_READDONE, &val);
     }
 #endif
 
 #ifdef _EVT_RADIO_SENDDONE
     event void RadioSend.sendDone (message_t* msg) {
-        ceu_go_event(EVT_RADIO_SENDDONE, msg);
+        ceu_sys_go(EVT_RADIO_SENDDONE, &msg);
     }
 #endif
 
 #ifdef _EVT_RADIO_RECEIVE
     event message_t* RadioReceive.receive (message_t* msg) {
-        ceu_go_event(EVT_RADIO_RECEIVE, msg);
+        ceu_sys_go(EVT_RADIO_RECEIVE, &msg);
         return msg;
     }
 #endif
@@ -2424,10 +2425,8 @@ The \emph{TinyOS} binding for \CEU.
 }
 \end{figure}
 
-TODO: refs/cite WSNs
-
-As an example, Figure~\ref{lst.impl.tinyos} shows our binding for \emph{TinyOS} 
-which maps \emph{nesC} callbacks to input events in \CEU.
+As an example, Figure~\ref{lst.impl.tinyos} shows our binding for 
+\emph{TinyOS}~\cite{wsn.tos}, which maps callbacks to input events in \CEU.
 %
 The file \code{ceu.h} (included in line 3) contains all definitions for the 
 compiled \CEU program, which are further queried through \code{\#ifdef}'s.
@@ -2436,13 +2435,13 @@ pointing to the labels defined in the program.
 The callback \code{Boot.booted} (lines 6--11) is called by TinyOS on startup, 
 so we initialize \CEU inside it (line 7).
 If the \CEU program uses timers, we also start a periodic timer (lines 8--10) 
-that triggers callback \code{Timer.fired} (lines 13--17) every 10 milliseconds 
-and advances the wall-clock time of \CEU (line 15)%
+that triggers callback \code{Timer.fired} (lines 13--18) every 10 milliseconds 
+and advances the wall-clock time of \CEU (line 16)%
 \footnote{We also offer a mechanism to start the underlying timer on demand to
 avoid the ``battery unfriendly'' 10ms polling.}.
 The remaining lines map pre-defined TinyOS events that can be used in \CEU 
-programs, such as the light sensor (lines 19--23) and the radio transceiver 
-(lines 25--36).
+programs, such as the light sensor (lines 20--24) and the radio transceiver 
+(lines 26--37).
 
 \section{Terra and the \CEU-VM}
 
@@ -2465,20 +2464,28 @@ In fact, Esterel is also used in hardware design.
 %
 In \CEU, instead of clock ticks, the occurrence of a single external event that 
 defines a time unit.
-The event-driven approach is popular in many 
-communities~\cite{TOS,games,GUI,callbacks,nodejs}, and is essentially 
-synchronous, even though it is not commonly/formally 
-noticed/acknowledged/recognized as such.
-(TODO: rewrite)
+%
+\CEU also distinguishes external events from stack-based internal events, which 
+provides a limited form of coroutines that supports reactive statements (e.g., 
+\code{await} and \code{par/or}).
+
+The event-driven approach~\cite{sync_async.whynotthreads} is well known and 
+popular in many software communities,
+such as web frameworks in the client side (e.g., \emph{jQuery}~\cite{js.jquery} 
+and \emph{Rx.js}~\cite{js.rx}) and server side (e.g., 
+\emph{Node.js}~\cite{js.node} and \emph{SEDA}~\cite{sync_async.seda}),
+GUI toolkits (e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java 
+Swing}~\cite{java.swing}),
+and Games~\cite{gamepatterns}.
+%
+Like \CEU, event-driven programming is essentially synchronous, i.e., events go 
+through a queue and are dispatched sequentially and atomically to prevent race 
+conditions.
 %
 We believe that for software design, this approach is more familiar to 
 programmers and simplifies the reasoning about concurrency.
 For instance, the uniqueness of external events in \CEU is a prerequisite for 
 the temporal analysis that enables safe shared-memory concurrency.
-%
-Finally, \CEU also distinguishes external events from stack-based internal 
-events, which provides a limited form of coroutines that supports \CEU's 
-reactive statements.
 
 A number of synchronous languages have been designed to interoperate with C, 
 such as \emph{Reactive C}~\cite{rp.rc}, Protothreads \cite{wsn.protothreads}, 
