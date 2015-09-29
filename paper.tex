@@ -2510,6 +2510,90 @@ programs, such as the light sensor (lines 20--24) and the radio transceiver
 \subsection{The Terra Virtual Machine}
 \label{sec.terra}
 
+Terra is a system that implements a specif programming model for wireless 
+sensor networks~\cite{Branco2015a}.
+Terra is based on virtual machine concepts that uses an implementation of Céu 
+language as its scripting language.
+
+Terra programming model combines the use of configurable component-based 
+virtual machines with a reactive scripting language which can be statically 
+analyzed to avoid unbounded execution and memory conflicts.
+This approach allows the flexibility of remotely uploading code on motes to be 
+combined with a set of guarantees for the programmer.
+The choice of the specific set of  components in a virtual machine 
+configuration defines the abstraction level seen by the application script.
+
+Terra uses \ceut as its scripting language and implements a component-based 
+virtual machine \vmt to be customized for different application domains.
+\ceut implements a variation of Céu programming language.
+This variation, on one hand, excludes some of Céu's characteristics and, on the 
+other hand, includes some language extensions.
+We use Céu as Terra's scripting language because of its reactive nature and its 
+high-level control primitives and compile-time safety guarantees.
+We want only the VM components to escape the safety analysis, so we took out 
+the facility to include arbitrary C code, but we did maintain all of Céu's 
+original control structures.
+
+The Terra Virtual machine \vmt, with its customizations, runs on WSN nodes with 
+limited resources like MicaZ\cite{Memsic2009b} and TelosB\cite{Memsic2009} 
+motes.
+We built \vmt using the nesC programming language~\cite{Gay2003} and the TinyOS 
+operating system~\cite{Levis2004}.
+We used TinyOS, basically, because it is the operating system for WSN  most 
+ported to different mote types.
+
+Figure \ref{fig:system} presents the three basic elements of Terra -- a 
+scripting language (\ceut), a set of customized pre-built components, and an 
+embedded virtual-machine engine.
+The \vmt runtime environment is the virtual machine combined with a set of 
+customized components.
+
+\begin{figure}[!htb]
+ \centering
+ \includegraphics[width=0.7\columnwidth]{fig_system}
+\caption{Terra programming system basic elements.}
+ \label{fig:system}
+\end{figure}
+
+A \ceut program is compiled to a bytecode file that can then be disseminated to 
+the network nodes, where it is interpreted by the \vmt, which implements the 
+bytecode interpreter, the execution model, the code dissemination service, and 
+some specific customized components.
+Figure \ref{fig.impl-t} illustrates the Terra compilation process.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=1.0\columnwidth]{impl-t}
+\caption{Terra Compilation process: from the source code in \ceut to the final 
+bytecode.
+\label{fig.impl-t}
+}
+\end{figure}
+
+Similar to the Céu compiler process, the Terra process also has the three main phases:
+Parsing, Temporal Analysis, Code Generation.
+The Terra parsing phase uses the original Céu parser adding some extensions to 
+parse specific \ceut elements as the data types, the data structures, and the 
+configuration block.
+A configuration block defines all events, functions, and data structures 
+available in a specific \vmt customization.
+The Terra Temporal Analysis phase  only differs in the code output. Instead of 
+generating code in C, Terra generates the \vmt assembly code using the original 
+Céu labels for trails entry points.
+In the final phase for code generation, Terra compiler generates the \vmt 
+bytecode file using the program address in place of Céu labels.
+The use of address allows the Céu scheduler to execute directly a trail without 
+a index table to replace the switch-case.
+Related to memory layout and trail allocation, Terra uses the same data 
+organization approach for all Céu controls and variables.
+All Céu data and control structures for a specific program are determined at 
+compile time.
+Terra arranges all these structures in the beginning of virtual machine memory 
+space.
+The original Céu run time control functions are maintained with a small 
+modification where accesses to control structures have an off-set relative to 
+the begin of the virtual machine memory space.
+
 \section{Related Work}
 \label{sec.related}
 
