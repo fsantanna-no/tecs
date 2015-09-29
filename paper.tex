@@ -20,6 +20,8 @@
 
 \usepackage{verbatim}
 \usepackage{xspace}
+\newcommand{\C}{\emph{C}\xspace}
+\newcommand{\VM}{\emph{VM}\xspace}
 \newcommand{\CEU}{\textsc{C\'{e}u}\xspace}
 \newcommand{\code}[1] {{\small{\texttt{#1}}}}
 \newcommand{\MM}[1] {\textcircled{\tiny{\textsf{#1}}}}
@@ -237,8 +239,8 @@ Esterel, Synchronous, Reactivity
 
 \section{Introduction}
 
-An established alternative to \emph{C} in the field of embedded systems is the 
-family of reactive synchronous languages \cite{rp.twelve}.
+An established alternative to \C in the field of embedded systems is the family 
+of reactive synchronous languages \cite{rp.twelve}.
 %
 Two major styles of synchronous languages have evolved:
 in the \emph{control}--\emph{imperative} style, programs are structured with 
@@ -276,7 +278,7 @@ In this work, we present a formal semantics of a small synchronous kernel that
 represents a subset of \CEU covering these new functionalities.
 %
 We also present an implementation of \CEU with two backends:
-one aiming for efficiency and interoperability with \emph{C},
+one aiming for efficiency and interoperability with \C,
 and another based on a virtual machine that allows remote reprogramming.
 
 In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context 
@@ -284,24 +286,21 @@ of constrained wireless sensor networks, developing a number of applications,
 protocols, and drivers.
 %
 We evaluated the expressiveness of \CEU in comparison to event-driven code in 
-\emph{C}, and observed a reduction in source code size (around 25\%) with a 
-small increase in memory usage (around 5--10\% for ROM and 
-RAM)~\cite{ceu.sensys13}.
+\C, and observed a reduction in source code size (around 25\%) with a small 
+increase in memory usage (around 5--10\% for ROM and RAM)~\cite{ceu.sensys13}.
 %
-Considering the \emph{VM} backend, a simple application that blinks three LEDs 
+Considering the \VM backend, a simple application that blinks three LEDs 
 periodically occupies less than 100 bytes and can be completely transmitted in 
 4 radio messages.
-In contrast, without the preinstalled \emph{VM} with basic \emph{I/O} 
-functionality, a \emph{C}-compiled version occupies more than 2 
-kbytes~\cite{ceu.terra}.
+In contrast, without the preinstalled \VM with basic \emph{I/O} functionality, 
+a \C-compiled version occupies more than 2 kbytes~\cite{ceu.terra}.
 
 The rest of the paper is organized as follows:
 Section~\ref{sec.ceu} gives an overview of \CEU, exposing its fundamental 
 differences to Esterel.
 Section~\ref{sec.sem} presents a formal semantics for the control primitives of 
 \CEU.
-Section~\ref{sec.impl} presents the \emph{C} and \emph{VM} implementation 
-backends.
+Section~\ref{sec.impl} presents the \C and \VM implementation backends.
 Section~\ref{sec.related} discusses other synchronous languages targeting 
 embedded systems.
 Section~\ref{sec.conclusion} concludes the paper.
@@ -880,7 +879,7 @@ one handles the immediate retransmission request (line 7);
 the other transmits the packet%
 \footnote{
 The underline prefix marks (e.g., \code{\_send\_enqueue}) make interactions 
-with external \emph{C} libraries explicit and are required in \CEU.
+with external \C libraries explicit and are required in \CEU.
 }
 and waits for a confirmation (lines 9--16).
 %
@@ -908,14 +907,14 @@ corrupted data.
 
 The unsafe example in the left of Figure~\ref{lst.fin} does not compile because 
 \CEU tracks the interaction of \code{par/or} compositions with local variables 
-and stateful \emph{C} functions (e.g., device drivers) in order to preserve 
-safe abortion of trails~\cite{ceu.sensys13,ceu.mod15}.
+and stateful \C functions (e.g., device drivers) in order to preserve safe 
+abortion of trails~\cite{ceu.sensys13,ceu.mod15}.
 %
 %Finalization clauses are fundamental to preserve the orthogonality of 
 %\code{par/or} compositions in SSRP.
 %
 In fact, \CEU enforces the programmer to write a \emph{finalization} clause to 
-accompany the stateful \emph{C} call.
+accompany the stateful \C call.
 The code in the right of Figure~\ref{lst.fin} properly cancels the packet 
 transmission when the block of \code{buffer} goes out of scope, i.e., the 
 finalization clause (after the \code{with}) executes automatically on external 
@@ -925,7 +924,7 @@ Note that the compiler only enforces the programmer to write the finalization
 clause, but cannot check if it actually handles the resource properly.
 }
 %
-%Note also that \CEU environments rely on \emph{C} libraries that only provide 
+%Note also that \CEU environments rely on \C libraries that only provide 
 %asynchronous I/O and non-blocking functions~\cite{ceu.sensys13}.
 
 \begin{comment}
@@ -1067,7 +1066,7 @@ highlighting the main differences to Esterel, in particular the stack-based
 execution for internal events.
 %
 For the sake of simplicity, we focus on the control aspects of the language, 
-leaving out side effects and \emph{C} calls (which behave like in conventional 
+leaving out side effects and \C calls (which behave like in conventional 
 imperative languages).
 
 \subsection{Abstract Syntax}
@@ -1105,8 +1104,8 @@ Except for $fin$ and all semantic-derived expressions (i.e., $awating$,
 $emitting$, and $p~@~loop; p$), which are discussed further, all other 
 expressions map to their counterparts in the concrete language.
 
-The $mem(id)$ primitive represents all accesses, assignments, and \emph{C} 
-function calls that affect a memory location identified by $id$.
+The $mem(id)$ primitive represents all accesses, assignments, and \C function 
+calls that affect a memory location identified by $id$.
 As the challenging parts of \CEU reside on its control structures, we are not 
 concerned here with a precise semantics for side effects, but only with their 
 occurrences in programs.
@@ -1893,22 +1892,21 @@ This phase detects inconsistencies in \CEU programs, such as unbounded loops,
 suspicious accesses to shared memory, and also ``classical'' semantic analysis, 
 such as building a symbol table for checking variable declarations.
 %
-This phase outputs code in \emph{C}, given the way \CEU is tied to \emph{C} by 
-design.
+This phase outputs code in \C, given the way \CEU is tied to \C by design.
 %
 Some type checking is delayed to the last phase to take advantage of 
 \code{gcc}'s error handling.
-Therefore, we annotate the \emph{C} output file with \code{\#line} pragmas 
-matching the original file in \CEU.
+Therefore, we annotate the \C output file with \code{\#line} pragmas matching 
+the original file in \CEU.
 
 \item[Code Generation]
 
-The final phase packs the generated \emph{C} file with the \CEU runtime and 
+The final phase packs the generated \C file with the \CEU runtime and 
 platform-dependent functionality, compiling them with \emph{gcc} and generating 
 the final binary.
 %
 The \CEU runtime comprehends the scheduler, timer management, and the external 
-\emph{C} API.
+\C API.
 %
 The platform files include libraries for I/O and bindings to invoke the \CEU 
 scheduler on external events.
@@ -1937,8 +1935,8 @@ to its type:
 %
 \begin{itemize}
 %
-\item Nodes that represent expressions, assignments, \emph{C} calls, and 
-declarations simply reproduce $O=I$, as they do not await;
+\item Nodes that represent expressions, assignments, \C calls, and declarations 
+simply reproduce $O=I$, as they do not await;
 %
 \item An \code{await e} statement has $O=\{e\}$.
 %
@@ -2066,9 +2064,9 @@ as for temporary values and runtime flags.
 Memory for trails in parallel must coexist, while statements in sequence can 
 reuse it.
 %
-Translating this idea to \emph{C} is straightforward~\cite{wsn.osm,wsn.ocram}: 
-memory for blocks in sequence are packed in a \code{struct}, while blocks in 
-parallel, in a \code{union}.
+Translating this idea to \C is straightforward~\cite{wsn.osm,wsn.ocram}: memory 
+for blocks in sequence are packed in a \code{struct}, while blocks in parallel, 
+in a \code{union}.
 %In the example, the code following the loop (identified as \code{...}) reuses 
 %all memory from the loop.
 %
@@ -2218,7 +2216,7 @@ even for trails that only await a single event and terminate.
 %
 For instance, the \emph{CTP} collection protocol ported to \CEU reaches eight 
 simultaneous lines of execution with an overhead of 2\% in comparison to the 
-original version in \emph{nesC}~\cite{wsn.nesc} (a dialect of \emph{C} for 
+original version in \emph{nesC}~\cite{wsn.nesc} (a dialect of \C for 
 event-driven programming)~\cite{ceu.sensys13}.
 
 \subsection{Code Generation and Scheduling}
@@ -2321,8 +2319,8 @@ Static allocation of trails, entry-point labels, and dispatch loop.
 }
 \end{figure}
 
-In the final generated code in \emph{C}, each trail label representing an entry 
-point becomes a \emph{switch case} with the associated code to execute.
+In the final generated code in \C, each trail label representing an entry point 
+becomes a \emph{switch case} with the associated code to execute.
 %
 Figure~\ref{lst.impl.trails} illustrates the generation process.
 For the program in the left of the figure, the compiler extracts the entry 
@@ -2388,12 +2386,12 @@ The subsequent \emph{dispatch} pass executes the finalization code.
 Escaping a \code{loop} that contains parallel compositions also triggers the 
 same abortion process.
 
-\subsection{The External \emph{C} API}
+\subsection{The External \C API}
 
 As a reactive language, the execution of a program in \CEU is guided entirely 
 by the occurrence of external events.
 From the implementation perspective, there are three external sources of input 
-into programs, which are all exposed as functions in a \emph{C} API:
+into programs, which are all exposed as functions in a \C API:
 
 \begin{description}
 \item[{\textbf\code{ceu\_go\_init()}}:] initializes the program (e.g. trails) 
@@ -2418,9 +2416,9 @@ Further calls to the API have no effect on terminated programs.
 \begin{comment}
 Note that \CEU{} code running from a call to \code{ceu\_go\_async} may emit an 
 input event or the passage of time.
-In this case, the \emph{C} implementation makes a tail call to the 
-corresponding handler (i.e.  \code{ceu\_go\_event} or \code{ceu\_go\_time}), as 
-synchronous code has higher priority.
+In this case, the \C implementation makes a tail call to the corresponding 
+handler (i.e.  \code{ceu\_go\_event} or \code{ceu\_go\_time}), as synchronous 
+code has higher priority.
 
 The API reflects the \emph{global asynchronous} part of \CEU{}, as discussed in 
 Section~\ref{sec:ceu:gals}.
@@ -2510,77 +2508,62 @@ programs, such as the light sensor (lines 20--24) and the radio transceiver
 \subsection{The Terra Virtual Machine}
 \label{sec.terra}
 
-Terra is a system that implements a specif programming model for wireless 
-sensor networks~\cite{Branco2015a}.
-Terra is based on virtual machine concepts that uses an implementation of Céu 
-language as its scripting language.
-
-Terra programming model combines the use of configurable component-based 
-virtual machines with a reactive scripting language which can be statically 
-analyzed to avoid unbounded execution and memory conflicts.
-This approach allows the flexibility of remotely uploading code on motes to be 
-combined with a set of guarantees for the programmer.
-The choice of the specific set of  components in a virtual machine 
-configuration defines the abstraction level seen by the application script.
-
-Terra uses \ceut as its scripting language and implements a component-based 
-virtual machine \vmt to be customized for different application domains.
-\ceut implements a variation of Céu programming language.
-This variation, on one hand, excludes some of Céu's characteristics and, on the 
-other hand, includes some language extensions.
-We use Céu as Terra's scripting language because of its reactive nature and its 
-high-level control primitives and compile-time safety guarantees.
-We want only the VM components to escape the safety analysis, so we took out 
-the facility to include arbitrary C code, but we did maintain all of Céu's 
-original control structures.
-
-The Terra Virtual machine \vmt, with its customizations, runs on WSN nodes with 
-limited resources like MicaZ\cite{Memsic2009b} and TelosB\cite{Memsic2009} 
-motes.
-We built \vmt using the nesC programming language~\cite{Gay2003} and the TinyOS 
-operating system~\cite{Levis2004}.
-We used TinyOS, basically, because it is the operating system for WSN  most 
-ported to different mote types.
-
-Figure \ref{fig:system} presents the three basic elements of Terra -- a 
-scripting language (\ceut), a set of customized pre-built components, and an 
-embedded virtual-machine engine.
-The \vmt runtime environment is the virtual machine combined with a set of 
-customized components.
+Terra is a system for programming wireless sensor network applications that 
+uses \CEU as its scripting language~\cite{ceu.terra}.
+%
+Figure \ref{fig.terra} shows the three basic elements of Terra:
+\CEU as the scripting language,
+the set of customized pre-built components,
+and the embedded virtual-machine engine which can disseminate and install 
+bytecode images dynamically.
+%
+This approach aims to combine the flexibility of remotely uploading code with 
+the expressiveness and safety guarantees of \CEU.
 
 \begin{figure}[!htb]
  \centering
- \includegraphics[width=0.7\columnwidth]{fig_system}
+ \includegraphics[width=0.7\columnwidth]{terra}
 \caption{Terra programming system basic elements.}
- \label{fig:system}
+ \label{fig.terra}
 \end{figure}
 
-A \ceut program is compiled to a bytecode file that can then be disseminated to 
-the network nodes, where it is interpreted by the \vmt, which implements the 
-bytecode interpreter, the execution model, the code dissemination service, and 
-some specific customized components.
-Figure \ref{fig.impl-t} illustrates the Terra compilation process.
+\CEU scripts in Terra cannot execute arbitrary \C code, instead, they rely on 
+pre-built components that can be customized for different application domains.
+%
+Considering the domain of WSNs, Terra already provides components organized in 
+four areas: radio communication, group management, data aggregation, and local 
+operations (e.g., access to sensors and actuators).
+%
+When creating an instance of the \VM, the programmer can choose whether or not 
+to include each component, setting different abstraction boundaries.
+%
+The generated \VM has to be preloaded into the embedded devices before they are 
+physically distributed.
 
-\begin{figure}[!htb]
-\centering
-\includegraphics[width=1.0\columnwidth]{impl-t}
-\caption{Terra Compilation process: from the source code in \ceut to the final 
-bytecode.
-\label{fig.impl-t}
-}
-\end{figure}
+The communication between \CEU and the Terra components is mostly through 
+events:
+scripts make requests through \code{output} events and \code{await} answers 
+through \code{input} events.
+%
+Terra also provides system calls for initialization and configuration of 
+components.
 
-Similar to the Céu compiler process, the Terra process also has the three main phases:
-Parsing, Temporal Analysis, Code Generation.
-The Terra parsing phase uses the original Céu parser adding some extensions to 
-parse specific \ceut elements as the data types, the data structures, and the 
-configuration block.
-A configuration block defines all events, functions, and data structures 
-available in a specific \vmt customization.
-The Terra Temporal Analysis phase  only differs in the code output. Instead of 
-generating code in C, Terra generates the \vmt assembly code using the original 
-Céu labels for trails entry points.
-In the final phase for code generation, Terra compiler generates the \vmt 
+TODO: exemplo de implementacao/uso de um componente
+- Terra: binding em nesC
+- Ceu: header de configuracao
+- (analogo a Figura 19)
+
+Considering the compilation process illustrated in Figure~\ref{fig.impl} for 
+the \C backend, the main difference resides in the \emph{Code Generation}, 
+which now outputs assembly instructions for the Terra \VM, instead of \C.
+
+TODO: falar um pouco do assembly/bytecode, quais as decisoes envolvidas
+- (analogo a Figura 18)
+
+\begin{comment}
+Instead of generating code in C, Terra generates the vmt assembly code using 
+the original Céu labels for trails entry points.
+In the final phase for code generation, Terra compiler generates the vmt 
 bytecode file using the program address in place of Céu labels.
 The use of address allows the Céu scheduler to execute directly a trail without 
 a index table to replace the switch-case.
@@ -2593,6 +2576,7 @@ space.
 The original Céu run time control functions are maintained with a small 
 modification where accesses to control structures have an off-set relative to 
 the begin of the virtual machine memory space.
+\end{comment}
 
 \section{Related Work}
 \label{sec.related}
@@ -2701,8 +2685,8 @@ scheduling:
 The compiler slices programs into ``control points'' (analogous to our ``entry 
 points'') and rearranges them into a directed acyclic graph respecting the 
 constructive semantics of Esterel.
-Then, it flattens the graph into sequential code in \emph{C} suitable for 
-static scheduling.
+Then, it flattens the graph into sequential code in \C suitable for static 
+scheduling.
 
 \subsection{Virtual Machines}
 
@@ -2731,7 +2715,7 @@ synchronous languages do some at the lang semantic level
 
 % Bibliography
 \bibliographystyle{ACM-Reference-Format-Journals}
-\bibliography{my,other}
+\bibliography{my,other,terra}
                              % Sample .bib file with references that match those in
                              % the 'Specifications Document (V1.5)' as well containing
                              % 'legacy' bibs and bibs with 'alternate codings'.
