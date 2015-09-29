@@ -155,7 +155,7 @@ stack-based internal events.
 %
 We also present an implementation with two backends:
 one aiming for resource efficiency and interoperability with C, and another for 
-code dissemination in sensor networks.
+dynamic reprogramming over the air.
 \end{abstract}
 
 
@@ -237,21 +237,83 @@ Esterel, Synchronous, Reactivity
 
 \section{Introduction}
 
+An established alternative to \emph{C} in the field of embedded systems is the 
+family of reactive synchronous languages \cite{rp.twelve}.
+%
+Two major styles of synchronous languages have evolved:
+in the \emph{control}--\emph{imperative} style, programs are structured with 
+control flow primitives, such as parallelism, repetition, and preemption;
+in the \emph{dataflow}--\emph{declarative} style, programs can be seen as 
+graphs of values, in which a change to a value is propagated through its 
+dependencies without explicit programming.
+%
+Among the control-based languages, Esterel~\cite{esterel.ieee91} influenced a 
+number of other embedded languages, such as \emph{Reactive-C}~\cite{rp.rc}, 
+\emph{OSM}~\cite{wsn.osm}, \emph{Sync-C}~\cite{rp.synchc}, and 
+\emph{PRET-C}~\cite{rp.pretc}.
+
+\CEU is another language targeting embedded systems based on Esterel with some 
+novel functionalities:
+%
 \begin{itemize}
-\item Relevancia de Esterel
-\item Ceu
-    \begin{itemize}
-        \item Foco inicial em "constrained WSNs"
-        \item Estendendo para outros dominios? (jogos, artigo Mod'15)
-        \item Usos: SenSys, Terra, sala de aula, GSoC
-        \item ideia de tamanhos, ROM,RAM,CPU
-    \end{itemize}
-\item Limitacoes do modelo sincrono
-\item Semantica e Implementacao (nesse artigo, somente subset estatico)
+%
+\item Stack-based internal events, which provide a limited form of coroutines.
+%
+\item A static temporal analysis and deterministic execution semantics that 
+allows programs to safely share memory.
+%
+\item A finalization mechanism for safe abortion of lines of execution.
+%
+\item First-class synchronized timers.
+\end{itemize}
+
+\CEU shares limitations with Esterel and synchronous languages in general:
+computations that run in unbounded time (e.g., cryptography, image processing) 
+do not fit the zero-delay hypothesis~\cite{rp.hypothesis}, and cannot be 
+elegantly implemented.
+
+In this work, we present a formal semantics of a small synchronous kernel that 
+represents a subset of \CEU covering these new functionalities.
+%
+We also present an implementation of \CEU with two backends:
+one aiming for efficiency and interoperability with \emph{C},
+and another based on a virtual machine that allows remote reprogramming.
+
+In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context 
+of constrained wireless sensor networks, developing a number of applications, 
+protocols, and drivers.
+%
+We evaluated the expressiveness of \CEU in comparison to event-driven code in 
+\emph{C}, and observed a reduction in source code size (around 25\%) with a 
+small increase in memory usage (around 5--10\% for ROM and 
+RAM)~\cite{ceu.sensys13}.
+%
+Considering the \emph{VM} backend, a simple application that blinks three LEDs 
+periodically occupies less than 100 bytes and can be completely transmitted in 
+4 radio messages.
+In contrast, without the preinstalled \emph{VM} with basic \emph{I/O} 
+functionality, a \emph{C}-compiled version occupies more than 2 
+kbytes~\cite{ceu.terra}.
+
+The rest of the paper is organized as follows:
+Section~\ref{sec.ceu} gives an overview of \CEU, exposing its fundamental 
+differences to Esterel.
+Section~\ref{sec.sem} presents a formal semantics for the control primitives of 
+\CEU.
+Section~\ref{sec.impl} presents the \emph{C} and \emph{VM} implementation 
+backends.
+Section~\ref{sec.related} discusses other synchronous languages targeting 
+embedded systems.
+Section~\ref{sec.conclusion} concludes the paper.
+
+%\begin{itemize}
+        %\item Estendendo para outros dominios? (jogos, artigo Mod'15)
+        %\item Usos: sala de aula, GSoC
+%\item Semantica e Implementacao (nesse artigo, somente subset estatico)
 % Artigo de Rust, nao resolve os problemas
 %https://blog.skcript.com/asynchronous-io-in-rust-36b623e7b965
 %state machines everywhere
-\end{itemize}
+%\end{itemize}
 
 %Our work focuses on \emph{concurrency safety}, rather than \emph{type 
 %safety}~\cite{wsn.safety}.%
@@ -994,6 +1056,7 @@ depend on the execution timings for the code marked as \code{<...>}, making the
 reasoning about the execution behavior more difficult.
 
 \section{Formal Semantics}
+\label{sec.sem}
 
 %\begin{document}
 
@@ -1004,7 +1067,7 @@ highlighting the main differences to Esterel, in particular the stack-based
 execution for internal events.
 %
 For the sake of simplicity, we focus on the control aspects of the language, 
-leaving out side effects and $C$ calls (which behave like in conventional 
+leaving out side effects and \emph{C} calls (which behave like in conventional 
 imperative languages).
 
 \subsection{Abstract Syntax}
@@ -1042,8 +1105,8 @@ Except for $fin$ and all semantic-derived expressions (i.e., $awating$,
 $emitting$, and $p~@~loop; p$), which are discussed further, all other 
 expressions map to their counterparts in the concrete language.
 
-The $mem(id)$ primitive represents all accesses, assignments, and $C$ function 
-calls that affect a memory location identified by $id$.
+The $mem(id)$ primitive represents all accesses, assignments, and \emph{C} 
+function calls that affect a memory location identified by $id$.
 As the challenging parts of \CEU reside on its control structures, we are not 
 concerned here with a precise semantics for side effects, but only with their 
 occurrences in programs.
@@ -1058,7 +1121,6 @@ Note that $mem$ and $await$/$emit$ expressions do not share identifiers, i.e.,
 an identifier is either a variable or an event.
 
 \subsection{Operational Semantics}
-\label{sec.sem}
 
 The core of our semantics is a relation that, given a sequence number $n$ 
 identifying the current reaction chain, maps a program $p$ and a stack of 
@@ -1759,6 +1821,7 @@ level $i$ acquired from the previous big step.
 \end{comment}
 
 \section{Implementation}
+\label{sec.impl}
 
 \begin{comment}
 As a static language, much of the complexity in the implementation of \CEU{} 
@@ -1830,21 +1893,22 @@ This phase detects inconsistencies in \CEU programs, such as unbounded loops,
 suspicious accesses to shared memory, and also ``classical'' semantic analysis, 
 such as building a symbol table for checking variable declarations.
 %
-This phase outputs code in $C$, given the way \CEU is tied to $C$ by design.
+This phase outputs code in \emph{C}, given the way \CEU is tied to \emph{C} by 
+design.
 %
 Some type checking is delayed to the last phase to take advantage of 
 \code{gcc}'s error handling.
-Therefore, we annotate the $C$ output file with \code{\#line} pragmas matching 
-the original file in \CEU.
+Therefore, we annotate the \emph{C} output file with \code{\#line} pragmas 
+matching the original file in \CEU.
 
 \item[Code Generation]
 
-The final phase packs the generated $C$ file with the \CEU runtime and 
+The final phase packs the generated \emph{C} file with the \CEU runtime and 
 platform-dependent functionality, compiling them with \emph{gcc} and generating 
 the final binary.
 %
 The \CEU runtime comprehends the scheduler, timer management, and the external 
-$C$ API.
+\emph{C} API.
 %
 The platform files include libraries for I/O and bindings to invoke the \CEU 
 scheduler on external events.
@@ -1873,7 +1937,7 @@ to its type:
 %
 \begin{itemize}
 %
-\item Nodes that represent expressions, assignments, $C$ calls, and 
+\item Nodes that represent expressions, assignments, \emph{C} calls, and 
 declarations simply reproduce $O=I$, as they do not await;
 %
 \item An \code{await e} statement has $O=\{e\}$.
@@ -2002,7 +2066,7 @@ as for temporary values and runtime flags.
 Memory for trails in parallel must coexist, while statements in sequence can 
 reuse it.
 %
-Translating this idea to $C$ is straightforward~\cite{wsn.osm,wsn.ocram}: 
+Translating this idea to \emph{C} is straightforward~\cite{wsn.osm,wsn.ocram}: 
 memory for blocks in sequence are packed in a \code{struct}, while blocks in 
 parallel, in a \code{union}.
 %In the example, the code following the loop (identified as \code{...}) reuses 
@@ -2324,12 +2388,12 @@ The subsequent \emph{dispatch} pass executes the finalization code.
 Escaping a \code{loop} that contains parallel compositions also triggers the 
 same abortion process.
 
-\subsection{The External $C$ API}
+\subsection{The External \emph{C} API}
 
 As a reactive language, the execution of a program in \CEU is guided entirely 
 by the occurrence of external events.
 From the implementation perspective, there are three external sources of input 
-into programs, which are all exposed as functions in a $C$ API:
+into programs, which are all exposed as functions in a \emph{C} API:
 
 \begin{description}
 \item[{\textbf\code{ceu\_go\_init()}}:] initializes the program (e.g. trails) 
@@ -2354,9 +2418,9 @@ Further calls to the API have no effect on terminated programs.
 \begin{comment}
 Note that \CEU{} code running from a call to \code{ceu\_go\_async} may emit an 
 input event or the passage of time.
-In this case, the $C$ implementation makes a tail call to the corresponding 
-handler (i.e.  \code{ceu\_go\_event} or \code{ceu\_go\_time}), as synchronous 
-code has higher priority.
+In this case, the \emph{C} implementation makes a tail call to the 
+corresponding handler (i.e.  \code{ceu\_go\_event} or \code{ceu\_go\_time}), as 
+synchronous code has higher priority.
 
 The API reflects the \emph{global asynchronous} part of \CEU{}, as discussed in 
 Section~\ref{sec:ceu:gals}.
@@ -2443,9 +2507,11 @@ The remaining lines map pre-defined TinyOS events that can be used in \CEU
 programs, such as the light sensor (lines 20--24) and the radio transceiver 
 (lines 26--37).
 
-\section{Terra and the \CEU-VM}
+\subsection{The Terra Virtual Machine}
+\label{sec.terra}
 
 \section{Related Work}
+\label{sec.related}
 
 \emph{(As subsecoes serao retiradas do texto ao final...)}
 
@@ -2488,7 +2554,7 @@ For instance, the uniqueness of external events in \CEU is a prerequisite for
 the temporal analysis that enables safe shared-memory concurrency.
 
 A number of synchronous languages have been designed to interoperate with C, 
-such as \emph{Reactive C}~\cite{rp.rc}, Protothreads \cite{wsn.protothreads}, 
+such as \emph{Reactive C}~\cite{rp.rc}, Protothreads~\cite{wsn.protothreads}, 
 \emph{PRET-C}~\cite{rp.pretc} and \emph{SC}~\cite{rp.synchc}.
 %
 They offer Esterel-like parallel compositions with communication via shared 
@@ -2577,6 +2643,7 @@ synchronous languages do some at the lang semantic level
 \end{comment}
 
 \section{Final Remarks}
+\label{sec.conclusion}
 
 % Bibliography
 \bibliographystyle{ACM-Reference-Format-Journals}
