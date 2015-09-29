@@ -2522,28 +2522,29 @@ the expressiveness and safety guarantees of \CEU.
 
 \begin{figure}[!htb]
  \centering
- \includegraphics[width=0.7\columnwidth]{terra}
+ \includegraphics[width=0.5\columnwidth]{terra}
 \caption{Terra programming system basic elements.}
  \label{fig.terra}
 \end{figure}
 
-\CEU scripts in Terra cannot execute arbitrary \C code, instead, they rely on 
-pre-built components that can be customized for different application domains.
+\CEU scripts cannot execute arbitrary \C code, instead, they rely on pre-built 
+components that can be customized for different application domains.
 %
 Considering the domain of WSNs, Terra already provides components organized in 
 four areas: radio communication, group management, data aggregation, and local 
 operations (e.g., access to sensors and actuators).
 %
 When creating an instance of the \VM, the programmer can choose whether or not 
-to include each component, setting different abstraction boundaries.
+to include each component, setting different abstraction boundaries for 
+scripts.
 %
 The generated \VM has to be preloaded into the embedded devices before they are 
 physically distributed.
 
-The communication between \CEU and the Terra components is mostly through 
-events:
-scripts make requests through \code{output} events and \code{await} answers 
-through \code{input} events.
+The communication between scripts in \CEU and the components in the \VM is 
+mostly through events:
+scripts \code{emit} requests through \code{output} events and \code{await} 
+answers through \code{input} events.
 %
 Terra also provides system calls for initialization and configuration of 
 components.
@@ -2554,8 +2555,9 @@ TODO: exemplo de implementacao/uso de um componente
 - (analogo a Figura 19)
 
 Considering the compilation process illustrated in Figure~\ref{fig.impl} for 
-the \C backend, the main difference resides in the \emph{Code Generation}, 
-which now outputs assembly instructions for the Terra \VM, instead of \C.
+the \C backend, the main difference resides in the \emph{Code Generation} 
+phase, which here outputs assembly instructions for the Terra \VM, instead of 
+\C.
 
 TODO: falar um pouco do assembly/bytecode, quais as decisoes envolvidas
 - (analogo a Figura 18)
