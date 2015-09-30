@@ -118,7 +118,7 @@ escapeinside={||},
 %Applications}
 
 % Title portion
-\title{The Design, Semantics and Implementation of \CEU: a Synchronous Reactive Language based on Esterel}
+\title{The Design, Semantics, and Implementation of \CEU: a Synchronous Reactive Language based on Esterel}
 
 \author{
 Francisco Sant'Anna
@@ -155,7 +155,7 @@ In this work, we discuss the design of \CEU and propose a formal semantics
 focusing on its particular control mechanisms, such as parallel compositions, 
 finalization, and stack-based internal events.
 %
-We also present an implementation with two backends:
+We also present an implementation with two back ends:
 one aiming for resource efficiency and interoperability with \C,
 and another based on a virtual machine that allows remote reprogramming.
 \end{abstract}
@@ -253,8 +253,8 @@ first to appear and influenced a number of embedded languages, such as
 \emph{Reactive-C}~\cite{rp.rc}, \emph{OSM}~\cite{wsn.osm}, 
 \emph{Sync-C}~\cite{rp.synchc}, and \emph{PRET-C}~\cite{rp.pretc}.
 
-\CEU is another Esterel-based language targeting embedded systems with novel 
-functionalities:
+\CEU is another Esterel-based language targeting embedded and (soft) real-time 
+systems with novel functionalities:
 %
 \begin{itemize}
 %
@@ -264,28 +264,29 @@ of coroutines.
 \item A static temporal analysis and deterministic execution semantics that 
 allows programs to safely share memory.
 %
-\item A finalization mechanism for safe abortion of lines of execution.
+\item A finalization mechanism for safe abortion of lines of execution holding 
+external resources.
 %
 \item First-class synchronized timers.
 \end{itemize}
 
-In this work, we discuss the design of \CEU and propose a formal semantics of a 
-small synchronous kernel that represents a subset of the language covering 
+In this work, we discuss the design of \CEU and propose a formal semantics for 
+a small synchronous kernel that represents a subset of the language covering 
 these new functionalities.
 %
-We also present an implementation of \CEU with two backends:
+We also present an implementation of \CEU with two back ends:
 one aiming for resource efficiency and interoperability with \C,
 and another based on a virtual machine that allows remote reprogramming.
 %
 Our implementations target resource-constrained devices, such as \emph{Arduino} 
-and \emph{MICAz} sensor nodes, which use the \emph{ATmega328} 8-bit 
-microcontroller with 32 Kbytes of FLASH and 2 Kbytes of SRAM.%
+and \emph{MICAz} sensor nodes based on 8-bit microcontrollers.%
 \footnote{
 Arduino: \url{https://www.arduino.cc/en/Main/arduinoBoardUno}
 \\
 MICAz: \url{http://www.memsic.com/userfiles/files/Datasheets/WSN/micaz_datasheet-t.pdf}
 \\
-ATmega328: \url{http://www.atmel.com/devices/atmega328.aspx}}
+Both use the \emph{ATmega328} with 32 Kbytes of FLASH and 2 Kbytes of SRAM:
+\url{http://www.atmel.com/devices/atmega328.aspx}}
 
 In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context 
 of wireless sensor networks, developing a number of applications, protocols, 
@@ -296,18 +297,18 @@ We evaluated the expressiveness of \CEU in comparison to event-driven code in
 increase in memory usage (around 5--10\% for \emph{text} and 
 \emph{data})~\cite{ceu.sensys13}.
 %
-Considering the \VM backend, a simple application that blinks three LEDs 
+Considering the \VM back end, a simple application that blinks three LEDs 
 periodically occupies less than 100 bytes and can be completely transmitted in 
 4 radio messages.
-In contrast, without the preinstalled \VM with basic \emph{I/O} functionality, 
-a \C-compiled version occupies more than 2 Kbytes~\cite{ceu.terra}.
+In contrast, a \C-compiled version occupies more than 2 Kbytes (as it includes 
+all \emph{I/O} functionality preloaded with the \VM)~\cite{ceu.terra}.
 
 The rest of the paper is organized as follows:
 Section~\ref{sec.ceu} discusses the design of \CEU, exposing its fundamental 
 differences to Esterel.
 Section~\ref{sec.sem} presents a formal semantics for the control primitives of 
 \CEU.
-Section~\ref{sec.impl} presents the \C and \VM implementation backends.
+Section~\ref{sec.impl} presents the \C and \VM implementation back ends.
 Section~\ref{sec.related} discusses other synchronous languages targeting 
 embedded systems.
 Section~\ref{sec.conclusion} concludes the paper.
@@ -343,7 +344,7 @@ By synchronous, we mean that all trails at any given moment are either reacting
 to the current event or are awaiting another event;
 in other words, trails are never reacting to different events.
 
-In the sections that follow, we review the main differences between \CEU and 
+In the sections that follow, we discuss the main differences between \CEU and 
 Esterel~\cite{ceu.sensys13}:
 queue-based external events and stack-based internal events 
 (Section~\ref{sec.ceu.ints}),
@@ -360,8 +361,8 @@ Reset this behavior each time the input R occurs''.}
 %
 The first phrase of the specification, awaiting and emitting the events, is 
 translated almost identically in the two languages (lines 4--9, in both 
-implementations), as Esterel's `$\|$' and \CEU's \code{par/and} constructs are 
-equivalent.
+implementations), given that Esterel's `$\|$' and \CEU's \code{par/and} 
+constructs are equivalent.
 %
 For the second phrase, the reset behavior, the Esterel version uses a 
 \code{abort-when} (lines 3--10), which serves the same purpose of \CEU's 
@@ -419,7 +420,7 @@ concurrent lines of execution and broadcast communication through events.
 In addition, \CEU also employs the synchronous model, in which programs advance 
 in a sequence of discrete reactions to external events.
 Internal computations within a reaction (e.g. expressions, assignments, and 
-native calls) are considered to take no time in accordance with the synchronous 
+system calls) are considered to take no time in accordance with the synchronous 
 hypothesis~\cite{rp.hypothesis}.
 The \code{await} statements are the only ones that halt a running reaction and 
 allow a program to advance in this notion of time.
@@ -448,15 +449,14 @@ In \CEU, external input events are unique within reactions and programs cannot
 emit them, resulting in an intrinsic queue-based handling.
 %
 In contrast, programs can emit internal events but these follow a stack-based 
-execution policy, similar to subroutine calls in typical programming 
-languages~\cite{ceu.sensys13}.
+execution policy, similar to subroutine calls in typical programming languages.
 %
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
 Esterel and \CEU.
 %
-In the version in Esterel, on the occurrence of \code{A}, \code{B} is emitted 
-and they both become active, resulting in the invocation of \code{f()} and 
-\code{g()} in no particular order.
+In the version in Esterel, when \code{A} occurs, \code{B} is emitted (lines 
+5--6) and both events become active, resulting in the invocation of \code{f()} 
+and \code{g()} in no particular order.
 %
 In the version in \CEU, the occurrence of \code{A} makes the program behave as 
 follows (with the stack contents in italics):
@@ -478,7 +478,7 @@ program also terminates;
 
 \begin{figure}
 \begin{minipage}[t]{0.43\linewidth}
-\begin{lstlisting}[mathescape=true]
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 // ESTEREL
 input A;    // external
 signal B;   // internal
@@ -575,7 +575,7 @@ simultaneously in parallel trails, the \code{await} does not awake.
 %
 These \emph{delayed awaits} avoid corner cases of instantaneous termination and 
 re-execution of statements in the same reaction inside loops (known as 
-\emph{schizophrenic statements})~\cite{esterel.schizo}.
+\emph{schizophrenic statements}~\cite{esterel.schizo,esterel.schizo2}).
 %
 The example that follows relies on this restriction to avoid infinite 
 execution:
@@ -586,33 +586,39 @@ loop do
     par/or do
         await e;
     with
-        emit e;     // awakes 1s trail and restarts the loop
+        emit e;     // without the restriction, it awakes 1s trail and restarts the loop
         await f;
     end
 end
 \end{lstlisting}
 
 Even though both sides of the \code{par/or} have an \code{await} statement to 
-avoid instantaneous termination, the \code{loop} would restart instantaneously 
-if the \code{await} could awake in the same reaction that reaches it.
+avoid instantaneous termination, if the \code{await} could awake in the same 
+reaction that reaches it, the \code{loop} would restart instantaneously 
+resulting in infinite execution.
 
 In atypical scenarios requiring immediate awake, delayed awaits can be 
-circumvented by manually copying or making transformations in the code to 
-execute on awake.
+circumvented by manually copying or transforming the code to execute on awake.
 %
 From our experience, in some cases we need to execute a block of code 
 periodically from internal event requests, \emph{including the current 
 reaction}, as illustrated in the left of Figure~\ref{lst.delay}.
-In this case, moving the \code{await} to the end of the loop makes the periodic 
-code to also execute immediately (and then in reactions to each \code{emit} 
-request).
-If the periodic \code{emit} depends on a condition, the code becomes more 
-intricate because we need to copy the condition test to the periodic code, as 
-illustrated in the right of Figure~\ref{lst.delay}.
+In this case, moving the \code{await} to the end of the loop (line 10) makes 
+the periodic code to also execute immediately (line 9), and then in reactions 
+to each \code{emit} request (line 5).
+If the periodic \code{emit} depends on a condition, as illustrated in the right 
+of Figure~\ref{lst.delay}, the code becomes more intricate because we need a 
+state variable (line 2) and to copy the condition test to the periodic code 
+(line 13).
+%
+On the one hand, we transfer the burden of dealing with these corner cases to 
+the programmer.
+On the other hand, we simplify the semantics of the language and eliminate the 
+need for analysis to deal with shizophrenic statements.
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
-\begin{lstlisting}
+\begin{lstlisting}[numbers=left,xleftmargin=3em]
 event void e;
 par do
     loop do
@@ -629,7 +635,7 @@ end
 \end{minipage}
 %
 \begin{minipage}[t]{0.50\linewidth}
-\begin{lstlisting}
+\begin{lstlisting}[numbers=left,xleftmargin=3em]
 event void e;
 var bool should_execute = false;
 par do
@@ -2527,7 +2533,7 @@ uses \CEU as its scripting language~\cite{ceu.terra}.
 %
 Figure \ref{fig.terra} shows the three basic elements of Terra:
 \CEU as the scripting language,
-the set of customized pre-built components,
+a set of customized pre-built components,
 and the embedded virtual-machine engine which can disseminate and install 
 bytecode images dynamically.
 %
@@ -2541,12 +2547,12 @@ the expressiveness and safety guarantees of \CEU.
  \label{fig.terra}
 \end{figure}
 
-\CEU scripts cannot execute arbitrary \C code, instead, they rely on pre-built 
-components that can be customized for different application domains.
+In Terra, \CEU scripts cannot execute arbitrary \C code, instead, they rely on 
+pre-built components that can be customized for different application domains.
 %
-Considering the domain of WSNs, Terra already provides components organized in 
-four areas: radio communication, group management, data aggregation, and local 
-operations (e.g., access to sensors and actuators).
+Considering the domain of sensor networks, Terra already provides components 
+organized in four areas: radio communication, group management, data 
+aggregation, and local operations (e.g., access to sensors and actuators).
 %
 When creating an instance of the \VM, the programmer can choose whether or not 
 to include each component, setting different abstraction boundaries for 
@@ -2569,7 +2575,7 @@ TODO-VM: exemplo de implementacao/uso de um componente
 - (analogo a Figura 19)
 
 Considering the compilation process illustrated in Figure~\ref{fig.impl} for 
-the \C backend, the main difference resides in the \emph{Code Generation} 
+the \C back end, the main difference resides in the \emph{Code Generation} 
 phase, which here outputs assembly instructions for the Terra \VM, instead of 
 \C.
 
@@ -2602,7 +2608,7 @@ the begin of the virtual machine memory space.
 \subsection{Semantics}
 
 \CEU has a strong influence from Esterel~\cite{esterel.ieee91} and embraces the 
-disciplined synchronous-reactive model with support for lexical composition of 
+disciplined synchronous-reactive model and support for lexical composition of 
 lines of execution.
 %
 However, there are fundamental semantic differences that prevents the design of 
@@ -2616,17 +2622,14 @@ In \CEU, instead of clock ticks, the occurrence of a single external event that
 defines a time unit.
 %
 \CEU also distinguishes external events from stack-based internal events, which 
-provides a limited form of coroutines that supports reactive statements (e.g., 
+provide a limited form of coroutines supporting reactive statements (e.g., 
 \code{await} and \code{par/or}).
 
-The event-driven approach~\cite{sync_async.whynotthreads} is well known and 
-popular in many software communities,
-such as web frameworks in the client side (e.g., \emph{jQuery}~\cite{js.jquery} 
-and \emph{Rx.js}~\cite{js.rx}) and server side (e.g., 
-\emph{Node.js}~\cite{js.node} and \emph{SEDA}~\cite{sync_async.seda}),
-GUI toolkits (e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java 
-Swing}~\cite{java.swing}),
-and Games~\cite{gamepatterns}.
+The event-driven approach of \CEU is well known~\cite{sync_async.whynotthreads} 
+and popular in many software communities, such as client and server-side web 
+frameworks (e.g., \emph{jQuery}~\cite{js.jquery} and 
+\emph{Node.js}~\cite{js.node}), GUI toolkits (e.g., \emph{Tcl/Tk}~\cite{tcl.tk} 
+and \emph{Java Swing}~\cite{java.swing}), and Games~\cite{gamepatterns}.
 %
 Like \CEU, event-driven programming is essentially synchronous, i.e., events go 
 through a queue and are dispatched sequentially and atomically to prevent race 
@@ -2695,18 +2698,18 @@ algorithmic-intensive problems.
 
 \subsection{Implementation}
 
-Esterel has different compilation backends that synthesizes to software and 
+Esterel has different compilation back ends that synthesizes to software and 
 also to hardware circuits~\cite{esterel.emperor,esterel.tutorial}.
 Among the software-based approaches, \emph{SAXO--RT}~\cite{esterel.saxort} is 
 the closest to our implementation with respect to trail allocation and 
 scheduling:
-The compiler slices programs into ``control points'' (analogous to our ``entry 
+the compiler slices programs into ``control points'' (analogous to our ``entry 
 points'') and rearranges them into a directed acyclic graph respecting the 
 constructive semantics of Esterel.
 Then, it flattens the graph into sequential code in \C suitable for static 
 scheduling.
 
-\subsection{Virtual Machines}
+TODO-VM
 
 \begin{comment}
 - Kiel Esterel compiler
@@ -2728,8 +2731,65 @@ synchronous languages do some at the lang semantic level
 \cite{pret.building}
 \end{comment}
 
-\section{Final Remarks}
+\section{Conclusion}
 \label{sec.conclusion}
+
+We presented the design, semantics, and implementation of \CEU, a synchronous 
+reactive language based on Esterel targeting constrained embedded systems.
+
+\CEU is a concurrency-safe language, employing a static analysis that encompass 
+all control constructs and ensures that the high degree of concurrency in 
+embedded systems does not pose safety threats to applications.
+%
+As a summary, the following safety properties hold for all programs that 
+successfully compile in \CEU:
+time and memory-bounded reactions to the environment (except for external 
+system calls),
+no race conditions in shared memory,
+reliable abortion for activities handling resources,
+and automatic synchronization for timers.
+%
+These properties are usually desirable in applications and are guaranteed as 
+preconditions in \CEU by design.
+
+\CEU is a resource-efficient language suitable for constrained embedded 
+systems.
+The reference implementation compiles to portable event-driven code in \C, with 
+no special requirements for OS threads or per-trail data stacks.
+The \VM implementation uses the same front end and imposes no extra 
+restrictions, being equally suitable for constrained systems.
+
+\CEU is a practical language with expressive control constructs, such as 
+lexically scoped parallel compositions, convenient first-class timers, and a 
+unique stack-based signaling mechanism.
+%
+Programs interoperate seamlessly with \C, and can take advantage of existing 
+libraries, lowering the entry barrier for adoption.
+%
+\CEU has an open source implementation and bindings for \emph{TinyOS}, 
+\emph{Arduino}, and the \emph{SDL} graphical library.%
+\footnote{Website of \CEU: \url{http://www.ceu-lang.org/}}
+
+For the past three years, we have been teaching \CEU for undergraduate and 
+graduate students in research projects and two hands-on courses on 
+\emph{distributed systems} and \emph{reactive programming}.
+%, in which the studnets designing protocols, embedded systems, and graphical 
+%applications.
+%
+Our experience shows that students take advantage of the sequential-imperative 
+style of \CEU and can implement non-trivial concurrent applications in a few of 
+weeks.
+
+% Idexx
+
+\begin{comment}
+We are also extending and applying \CEU in more dynamic domains, such as GUIs 
+and games~\cite{ceu.mod15}, by relaxing some restrictions in the language.
+In particular, programs in these domains typically require unbounded memory and 
+execution time, such as for dealing with dynamic collections.
+We provide unsafe annotations to circumvent the rigid semantics of \CEU, 
+requiring them to be explicit and trackable at the same time.
+\end{comment}
 
 % Bibliography
 \bibliographystyle{ACM-Reference-Format-Journals}
