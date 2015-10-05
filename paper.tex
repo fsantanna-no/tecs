@@ -146,7 +146,7 @@ platforms and ensures safe concurrency by handling threats at compile time,
 rather than at runtime.
 %
 Based on the synchronous programming model, our design allows for a simple 
-reasoning about concurrency that enables compile-time analysis resulting in 
+reasoning about concurrency that enables compile-time analysis and results in 
 deterministic and memory-safe programs.
 %
 % TODO: some uses?
@@ -299,9 +299,10 @@ increase in memory usage (around 5--10\% for \emph{text} and
 %
 Considering the \VM back end, a simple application that blinks three LEDs 
 periodically occupies less than 100 bytes and can be completely transmitted in 
-4 radio messages.
-In contrast, a \C-compiled version occupies more than 2 Kbytes (as it includes 
-all \emph{I/O} functionality preloaded with the \VM)~\cite{ceu.terra}.
+4 radio messages, given that \emph{I/O} components are preloaded in the remote
+devices.
+In contrast, a \C-compiled version occupies more than 2 Kbytes, which includes 
+all \emph{I/O} functionality~\cite{ceu.terra}.
 
 The rest of the paper is organized as follows:
 Section~\ref{sec.ceu} discusses the design of \CEU, exposing its fundamental 
@@ -345,7 +346,7 @@ to the current event or are awaiting another event;
 in other words, trails are never reacting to different events.
 
 In the sections that follow, we discuss the main differences between \CEU and 
-Esterel~\cite{ceu.sensys13}:
+Esterel:
 queue-based external events and stack-based internal events 
 (Section~\ref{sec.ceu.ints}),
 shared-memory concurrency and determinism (Section~\ref{sec.ceu.det}),
@@ -368,7 +369,7 @@ For the second phrase, the reset behavior, the Esterel version uses a
 \code{abort-when} (lines 3--10), which serves the same purpose of \CEU's 
 \code{par/or} (lines 3--12):
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
-restarts the \code{loop}.
+restarts the enclosing \code{loop}.
 
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
@@ -432,8 +433,7 @@ all possible paths~\cite{ceu.sensys13,esterel.primer}.
 \CEU shares the same limitations with Esterel and synchronous languages in 
 general:
 computations that run in unbounded time (e.g., cryptography, image processing) 
-do not fit the zero-delay hypothesis~\cite{rp.hypothesis}, and cannot be 
-elegantly implemented.
+do not fit the zero-delay hypothesis, and cannot be elegantly implemented.
 
 
 % TODO: par/or vs abort, strong/weak abortion
@@ -509,7 +509,8 @@ end
 \end{lstlisting}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
-\caption{ Internal signals (events) in Esterel and \CEU. \newline
+\caption{ Internal signals (events) in Esterel and \CEU: similar syntax, but 
+different semantics.
 \label{lst.prints}
 }
 \end{figure}
@@ -569,9 +570,9 @@ Esterel supports same-cycle bi-directional
 communication~\cite{esterel.compiling}, i.e., two threads can react to one 
 another during the same cycle due to mutual signal dependency.
 %
-\CEU imposes a restriction that an \code{await} to an internal event is only 
-valid for the next reaction, i.e., if an \code{await} and \code{emit} occur 
-simultaneously in parallel trails, the \code{await} does not awake.
+\CEU imposes a restriction that an \code{await} is only valid for the next 
+reaction, i.e., if an \code{await} and \code{emit} occur simultaneously in 
+parallel trails, the \code{await} does not awake.
 %
 These \emph{delayed awaits} avoid corner cases of instantaneous termination and 
 re-execution of statements in the same reaction inside loops (known as 
@@ -586,7 +587,7 @@ loop do
     par/or do
         await e;
     with
-        emit e;     // without the restriction, it awakes 1s trail and restarts the loop
+        emit e; // w/o the restriction, awakes 1st trail and restarts the loop instantaneously
         await f;
     end
 end
@@ -608,13 +609,13 @@ the periodic code to also execute immediately (line 9), and then in reactions
 to each \code{emit} request (line 5).
 If the periodic \code{emit} depends on a condition, as illustrated in the right 
 of Figure~\ref{lst.delay}, the code becomes more intricate because we need a 
-state variable (line 2) and to copy the condition test to the periodic code 
-(line 13).
+state variable (line 2) and also to copy the condition test to the periodic 
+code (line 13).
 %
 On the one hand, we transfer the burden of dealing with these corner cases to 
 the programmer.
 On the other hand, we simplify the semantics of the language and eliminate the 
-need for analysis to deal with shizophrenic statements.
+need for analysis to deal with schizophrenic statements.
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
@@ -692,16 +693,17 @@ A trail segment is a sequence of statements followed by an \code{await} (or
 termination).
 %
 In the program in the left of Figure~\ref{lst.shared}, the two assignments to 
-\code{x} can never run concurrently, because each trail segment reacts to a 
-different input event and, according to the semantics of \CEU, cannot occur 
-simultaneously.
+\code{x} (lines 5,8) can never run concurrently, because each trail segment 
+reacts to a different input event (lines 4,7) and, according to the semantics 
+of \CEU, cannot occur simultaneously.
 %
 However, the program in the right is non-deterministic, because the two 
-assignments to \code{y} occur in the same reaction to input \code{A}.
+assignments to \code{y} (lines 5,8) occur in the same reaction to input 
+\code{A} (lines 4,7).
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
-\begin{lstlisting}
+\begin{lstlisting}[numbers=left,xleftmargin=3em]
 input void A, B;
 var int x = 1;
 par/and do
@@ -715,7 +717,7 @@ end
 \end{minipage}
 %
 \begin{minipage}[t]{0.50\linewidth}
-\begin{lstlisting}
+\begin{lstlisting}[numbers=left,xleftmargin=3em]
 input void A;
 var int y = 1;
 par/and do
@@ -738,7 +740,7 @@ reaction.
 \end{figure}
 
 \CEU performs a temporal analysis at compile time and detects concurrent 
-accesses to shared variables, as follows~\cite{ceu.sensys13}:
+accesses to shared variables, as follows:
 \emph{if a variable is written in a trail segment, then a concurrent trail 
 segment cannot read or write to that variable, nor dereference a pointer of 
 that variable type.}
@@ -767,9 +769,10 @@ shared-memory concurrency more tractable.
 %
 For constrained embedded development, we believe that deterministic 
 shared-memory concurrency is beneficial, given the extensive use of memory 
-mapped ports for I/O and the lack of hardware support for real parallelism.
+mapped ports for \emph{I/O} and the lack of hardware support for real 
+parallelism.
 Other synchronous embedded languages, such as \emph{SOL}~\cite{wsn.sol} and 
-\emph{PRET-C}\cite{rp.pretc}, made a similar design choice.
+\emph{PRET-C}~\cite{rp.pretc}, made a similar design choice.
 %For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
 %parallelism is inherent.
 
@@ -878,9 +881,9 @@ extended with a finalization clause in the right to handle abortion properly.
 }
 \end{figure}
 
-To illustrate threats related to abortion, consider the unsafe example, which 
-does not compile, in the left of Figure~\ref{lst.fin}, describing the state 
-machine of a data collection protocol for sensor 
+To illustrate threats related to abortion, consider the unsafe example in the 
+left of Figure~\ref{lst.fin}, which does not compile.
+It describes the state machine of a data collection protocol for sensor 
 networks~\cite{wsn.ctp,ceu.sensys13}.
 %
 The input events \code{STOP}, \code{RETRANSMIT}, and \code{SENDACK} (line 1) 
@@ -896,20 +899,21 @@ the other periodically transmits the packet (lines 5--18).
 %
 The periodic transmission is a loop that starts two other trails (lines 6--17):
 one handles the immediate retransmission request (line 7);
-the other transmits the packet%
-\footnote{
-The underline prefix marks (e.g., \code{\_send\_enqueue}) make interactions 
-with external \C libraries explicit and are required in \CEU.
-}
-and waits for a confirmation (lines 9--16).
+the other transmits the packet and waits for a confirmation (lines 9--16).
 %
 %
 The actual transmission (lines 12--15) is enclosed with a \code{par/and} that 
 takes at least one minute before looping, in accordance with the specification.
-Note that the call to \code{\_send\_enqueue} is \emph{asynchronous}, handing to 
-the radio driver a pointer to the lexically-scoped packet.
+Note that the call to \code{\_send\_enqueue}%
+\footnote{
+The underline prefix marks (e.g., \code{\_send\_enqueue}) make interactions 
+with external \C libraries explicit and are required in \CEU.
+}
+(line 14) is \emph{asynchronous}, handing to the radio driver a pointer to the 
+lexically-scoped packet (line 12).
 The driver makes the transmission in the background, holding the packet until 
-it signals the application with the \code{SENDACK} to acknowledge completion.
+it signals the application with the \code{SENDACK} to acknowledge completion 
+(line 15).
 %
 At any time, the client may request a retransmission (line 7), which terminates 
 the \code{par/or} (line 6), aborts the ongoing transmission (line 14, if not 
@@ -928,7 +932,7 @@ corrupted data.
 The unsafe example in the left of Figure~\ref{lst.fin} does not compile because 
 \CEU tracks the interaction of \code{par/or} compositions with local variables 
 and stateful \C functions (e.g., device drivers) in order to preserve safe 
-abortion of trails~\cite{ceu.sensys13,ceu.mod15}.
+abortion of trails.
 %
 %Finalization clauses are fundamental to preserve the orthogonality of 
 %\code{par/or} compositions in SSRP.
@@ -1020,7 +1024,7 @@ sequence (or in a loop) may accumulate a considerable amount of deltas that can
 lead to incorrect behavior in programs.
 
 The \code{await} statement of \CEU supports wall-clock time and handles deltas 
-automatically~\cite{ceu.sensys13}, resulting in more robust applications.
+automatically, resulting in more robust applications.
 For the example in the left of Figure~\ref{lst.timers}, suppose that after the 
 first \code{await} request, the underlying system gets busy and takes 15ms to 
 check for expiring awaits.
