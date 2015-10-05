@@ -361,13 +361,13 @@ specification~\cite{esterel.primer}:
 Reset this behavior each time the input R occurs''.}
 %
 The first phrase of the specification, awaiting and emitting the events, is 
-translated almost identically in the two languages (lines 4--9, in both 
+translated almost identically in the two languages (ln. 4--9, in both 
 implementations), given that Esterel's `$\|$' and \CEU's \code{par/and} 
 constructs are equivalent.
 %
 For the second phrase, the reset behavior, the Esterel version uses a 
-\code{abort-when} (lines 3--10), which serves the same purpose of \CEU's 
-\code{par/or} (lines 3--12):
+\code{abort-when} (ln. 3--10), which serves the same purpose of \CEU's 
+\code{par/or} (ln. 3--12):
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
 restarts the enclosing \code{loop}.
 
@@ -454,7 +454,7 @@ execution policy, similar to subroutine calls in typical programming languages.
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
 Esterel and \CEU.
 %
-In the version in Esterel, when \code{A} occurs, \code{B} is emitted (lines 
+In the version in Esterel, when \code{A} occurs, \code{B} is emitted (ln.  
 5--6) and both events become active, resulting in the invocation of \code{f()} 
 and \code{g()} in no particular order.
 %
@@ -464,9 +464,9 @@ follows (with the stack contents in italics):
 {\small
 \begin{enumerate}
 \setlength{\itemsep}{0pt}
-\item 1st trail awakes (line 5), emits \code{b}, and pauses.\\
+\item 1st trail awakes (ln. 5), emits \code{b}, and pauses.\\
     \emph{stack: [1st-trail]}
-\item 2nd trail awakes (line 9), calls \code{\_g()}, and terminates.\\
+\item 2nd trail awakes (ln. 9), calls \code{\_g()}, and terminates.\\
     \emph{stack: [1st-trail]}
 \item 1st trail (on top of the stack) resumes, calls \code{\_f()}, and 
     terminates.\\
@@ -517,16 +517,16 @@ different semantics.
 
 Internal events bring support for a limited form of subroutines, as depicted in 
 Figure~\ref{lst.sub}.
-The subroutine \code{inc} is defined as a loop (lines 3--6) that continuously 
-awaits its identifying event (line 4), incrementing the value passed as 
-reference (line 5).
-A trail in parallel (lines 8--11) invokes the subroutine in reaction to event 
-\code{A} through an \code{emit} (line 10).
+The subroutine \code{inc} is defined as a loop (ln. 3--6) that continuously 
+awaits its identifying event (ln. 4), incrementing the value passed as 
+reference (ln. 5).
+A trail in parallel (ln. 8--11) invokes the subroutine in reaction to event 
+\code{A} through an \code{emit} (ln. 10).
 Given the stacked execution for internal events, the calling trail pauses, the 
-subroutine awakes (line 4), runs its body (yielding \code{v=2}), loops, and 
-awaits the next ``call'' (line 4, again).
+subroutine awakes (ln. 4), runs its body (yielding \code{v=2}), loops, and 
+awaits the next ``call'' (ln. 4, again).
 Only after this sequence that the calling trail resumes and passes the 
-assertion test (line 11).
+assertion test (ln. 11).
  
 \begin{figure}
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
@@ -543,8 +543,8 @@ with
     _assert(v==2);  // after return
 end
 \end{lstlisting}
-\caption{ Subroutine \code{inc} is defined in a loop (lines 3--6), in parallel 
-with the caller (lines 8--11).
+\caption{ Subroutine \code{inc} is defined in a loop (ln. 3--6), in parallel 
+with the caller (ln. 8--11).
 \label{lst.sub}
 }
 \end{figure}
@@ -604,13 +604,13 @@ circumvented by manually copying or transforming the code to execute on awake.
 From our experience, in some cases we need to execute a block of code 
 periodically from internal event requests, \emph{including the current 
 reaction}, as illustrated in the left of Figure~\ref{lst.delay}.
-In this case, moving the \code{await} to the end of the loop (line 10) makes 
-the periodic code to also execute immediately (line 9), and then in reactions 
-to each \code{emit} request (line 5).
+In this case, moving the \code{await} to the end of the loop (ln. 10) makes the 
+periodic code to also execute immediately (ln. 9), and then in reactions to 
+each \code{emit} request (ln. 5).
 If the periodic \code{emit} depends on a condition, as illustrated in the right 
 of Figure~\ref{lst.delay}, the code becomes more intricate because we need a 
-state variable (line 2) and also to copy the condition test to the periodic 
-code (line 13).
+state variable (ln. 2) and also to copy the condition test to the periodic code 
+(ln. 13).
 %
 On the one hand, we transfer the burden of dealing with these corner cases to 
 the programmer.
@@ -693,13 +693,13 @@ A trail segment is a sequence of statements followed by an \code{await} (or
 termination).
 %
 In the program in the left of Figure~\ref{lst.shared}, the two assignments to 
-\code{x} (lines 5,8) can never run concurrently, because each trail segment 
-reacts to a different input event (lines 4,7) and, according to the semantics 
-of \CEU, cannot occur simultaneously.
+\code{x} (ln. 5,8) can never run concurrently, because each trail segment 
+reacts to a different input event (ln. 4,7) and, according to the semantics of 
+\CEU, cannot occur simultaneously.
 %
 However, the program in the right is non-deterministic, because the two 
-assignments to \code{y} (lines 5,8) occur in the same reaction to input 
-\code{A} (lines 4,7).
+assignments to \code{y} (ln. 5,8) occur in the same reaction to input \code{A} 
+(ln. 4,7).
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
@@ -886,7 +886,7 @@ left of Figure~\ref{lst.fin}, which does not compile.
 It describes the state machine of a data collection protocol for sensor 
 networks~\cite{wsn.ctp,ceu.sensys13}.
 %
-The input events \code{STOP}, \code{RETRANSMIT}, and \code{SENDACK} (line 1) 
+The input events \code{STOP}, \code{RETRANSMIT}, and \code{SENDACK} (ln. 1) 
 represent the external interface of the protocol.
 %
 The protocol has to transmit a packet every minute, unless it receives a 
@@ -894,32 +894,32 @@ The protocol has to transmit a packet every minute, unless it receives a
 request to terminate.
 %
 The protocol is composed of two main trails:
-one simply monitors the stopping event (line 3);
-the other periodically transmits the packet (lines 5--18).
+one simply monitors the stopping event (ln. 3);
+the other periodically transmits the packet (ln. 5--18).
 %
-The periodic transmission is a loop that starts two other trails (lines 6--17):
-one handles the immediate retransmission request (line 7);
-the other transmits the packet and waits for a confirmation (lines 9--16).
+The periodic transmission is a loop that starts two other trails (ln. 6--17):
+one handles the immediate retransmission request (ln. 7);
+the other transmits the packet and waits for a confirmation (ln. 9--16).
 %
 %
-The actual transmission (lines 12--15) is enclosed with a \code{par/and} that 
+The actual transmission (ln. 12--15) is enclosed with a \code{par/and} that 
 takes at least one minute before looping, in accordance with the specification.
 Note that the call to \code{\_send\_enqueue}%
 \footnote{
 The underline prefix marks (e.g., \code{\_send\_enqueue}) make interactions 
 with external \C libraries explicit and are required in \CEU.
 }
-(line 14) is \emph{asynchronous}, handing to the radio driver a pointer to the 
-lexically-scoped packet (line 12).
+(ln. 14) is \emph{asynchronous}, handing to the radio driver a pointer to the 
+lexically-scoped packet (ln. 12).
 The driver makes the transmission in the background, holding the packet until 
 it signals the application with the \code{SENDACK} to acknowledge completion 
-(line 15).
+(ln. 15).
 %
-At any time, the client may request a retransmission (line 7), which terminates 
-the \code{par/or} (line 6), aborts the ongoing transmission (line 14, if not 
-idle), and restarts the loop (line 5).
+At any time, the client may request a retransmission (ln. 7), which terminates 
+the \code{par/or} (ln. 6), aborts the ongoing transmission (ln. 14, if not 
+idle), and restarts the loop (ln. 5).
 %
-The client may also request to stop the whole protocol at any time (line 3).
+The client may also request to stop the whole protocol at any time (ln. 3).
 %
 Therefore, if the sending trail is aborted by the \code{STOP} or 
 \code{RETRANSMIT} requests, the packet buffer goes out of scope, leaving behind 
@@ -1992,10 +1992,10 @@ suspicious.
 The example in the left of Figure~\ref{lst.impl.ast} has a corresponding $AST$, 
 in the right of the figure, with the sets $I$ and $O$ for each node.
 The event $.$ (dot) represents the ``boot'' reaction.
-The assignments to \code{y} in parallel (lines 5,8 in the code) have an empty 
-intersection of $I$ (lines 6,9 in the AST), hence, they do not conflict.
-Note that although the accesses in lines 5,11 in the code (lines 6,11 in the 
-AST) do have an intersection, they are not in parallel and are also safe.
+The assignments to \code{y} in parallel (ln. 5,8 in the code) have an empty 
+intersection of $I$ (ln. 6,9 in the AST), hence, they do not conflict.
+Note that although the accesses in ln. 5,11 in the code (ln. 6,11 in the AST) 
+do have an intersection, they are not in parallel and are also safe.
 
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
@@ -2355,20 +2355,20 @@ becomes a \emph{switch case} with the associated code to execute.
 Figure~\ref{lst.impl.trails} illustrates the generation process.
 For the program in the left of the figure, the compiler extracts the entry 
 points and associated trails, e.g., the label \code{Awake\_e} will execute on 
-\code{TRAIL-0} (line 7).
+\code{TRAIL-0} (ln. 7).
 %
 For each statement that pauses (\code{emit} and \code{await}), resumes 
 (\code{par/and}, \code{par/or}, and \code{finalize}), or aborts (\code{par/or} 
 and \code{break}), the compiler splits the trail into segments with associated 
 entry points.
 %
-The entry points translate to an \code{enum} in the generated code (lines 
-1--10, in the middle of the figure).
+The entry points translate to an \code{enum} in the generated code (ln. 1--10, 
+in the middle of the figure).
 The state of trails translate to a vector of type \code{trail\_t} with the 
-maximum number of simultaneous trails (lines 12--15).
+maximum number of simultaneous trails (ln. 12--15).
 On initialization, \code{TRAIL-0} is set to execute the \code{Main} entry point 
-(line 13), while all others are set to \code{INACTIVE} (in the example, only 
-one, in line 14).
+(ln. 13), while all others are set to \code{INACTIVE} (in the example, only 
+one, in ln. 14).
 
 The scheduler executes in two passes:
 %
@@ -2385,7 +2385,7 @@ After all trails are properly dispatched, the scheduler decrements the stack
 level and resumes the previous execution.
 For the first reaction chain, the scheduler starts from the \emph{dispatch} 
 pass, given that the \code{Main} label is the only one that can be active at 
-the stack level 0 (line 13, in the middle of Figure~\ref{lst.impl.trails}).
+the stack level 0 (ln. 13, in the middle of Figure~\ref{lst.impl.trails}).
 
 The code the right of the Figure~\ref{lst.impl.trails} dispatches a trail
 according to the current label to execute.
@@ -2393,15 +2393,15 @@ according to the current label to execute.
 For the first reaction, it executes the \code{Main} label in \code{TRAIL-0}.
 %
 When the \code{Main} label reaches the \code{par/and}, it stacks \code{TRAIL-1} 
-(lines 4--7) and proceeds to the code in \code{TRAIL-0} (lines 9--14), 
-respecting the deterministic execution order.
+(ln. 4--7) and proceeds to the code in \code{TRAIL-0} (ln. 9--14), respecting 
+the deterministic execution order.
 %
 The code sets the running \code{TRAIL-0} to await \code{EVT\_e} on label 
 \code{Awake\_e}, and then halts with a \code{break}.
 %
 The next iteration of \code{dispatch} takes \code{TRAIL-1} and executes its 
-registered label \code{And\_sub\_2} (lines 16--21), which sets \code{TRAIL-1} 
-to await \code{EVT\_A} and also halts.
+registered label \code{And\_sub\_2} (ln. 16--21), which sets \code{TRAIL-1} to 
+await \code{EVT\_A} and also halts.
 
 Regarding abortion and finalization, when a \code{par/or} terminates, the 
 scheduler makes a \emph{broadcast} pass for the \code{FIN} event, but limited 
@@ -2519,20 +2519,20 @@ The \emph{TinyOS} binding for \CEU.
 As an example, Figure~\ref{lst.impl.tinyos} shows our binding for 
 \emph{TinyOS}~\cite{wsn.tos}, which maps callbacks to input events in \CEU.
 %
-The file \code{ceu.h} (included in line 3) contains all definitions for the 
-compiled \CEU program, which are further queried through \code{\#ifdef}'s.
-The file \code{ceu.c} (included in line 4) contains the main loop of \CEU 
-pointing to the labels defined in the program.
-The callback \code{Boot.booted} (lines 6--11) is called by TinyOS on startup, 
-so we initialize \CEU inside it (line 7).
-If the \CEU program uses timers, we also start a periodic timer (lines 8--10) 
-that triggers callback \code{Timer.fired} (lines 13--17) every 10 milliseconds 
-and advances the wall-clock time of \CEU (line 15)%
+The file \code{ceu.h} (ln. 3) contains all definitions for the compiled \CEU 
+program, which are further queried through \code{\#ifdef}'s.
+The file \code{ceu.c} (ln. 4) contains the main loop of \CEU pointing to the 
+labels defined in the program.
+The callback \code{Boot.booted} (ln. 6--11) is called by TinyOS on startup, so 
+we initialize \CEU inside it (ln. 7).
+If the \CEU program uses timers, we also start a periodic timer (ln. 8--10) 
+that triggers callback \code{Timer.fired} (ln. 13--17) every 10 milliseconds 
+and advances the wall-clock time of \CEU (ln. 15)%
 \footnote{We also offer a mechanism to start the underlying timer on demand to
 avoid the ``battery unfriendly'' 10ms polling.}.
 The remaining lines map pre-defined TinyOS events that can be used in \CEU 
-programs, such as the light sensor (lines 19--23) and the radio transceiver 
-(lines 25--36).
+programs, such as the light sensor (ln. 19--23) and the radio transceiver (ln.  
+25--36).
 
 \subsection{The Terra Virtual Machine}
 \label{sec.terra}
