@@ -1556,7 +1556,7 @@ External events require a similar translation, i.e., each external event has a
 corresponding variable that is explicitly set by the environment before each 
 reaction chain.
 
-\begin{figure}
+\begin{figure}[t]
 \begin{minipage}[t]{0.32\linewidth}
 \begin{lstlisting}
 par/or do
@@ -1602,9 +1602,9 @@ The abstract code uses a shared variable to hold the value.
 
 \subsubsection{First-class Timers}
 
-To encompass first-class timers, we introduce a special external \code{DT} 
-event that is intercalated with each other event occurrence in an application 
-(e.g.  \emph{e1, e2}):
+To encompass first-class timers, we introduce a special external event 
+\code{DT} that is intercalated with each other event occurrence in an 
+application (e.g.  \emph{e1, e2}):
 
 \begin{align*}
 \LL [DT], p \RR
@@ -1626,12 +1626,12 @@ event that is intercalated with each other event occurrence in an application
 & ...
 \end{align*}
 
-The \code{DT} event has an associated variable \code{DT\_} carrying the 
-wall-clock time elapsed between the two occurrences, as depicted by the 
+The event \code{DT} has an associated variable \code{DT\_} carrying the 
+wall-clock time elapsed between two occurrences in sequence, as depicted by the 
 two-step translation of Figure~\ref{lst.map.timers.2}.
-In the concrete program in the left, the variable \code{dt} will hold the 
-residual delta time (as described in Section~\ref{sec.ceu.timers}) after 
-awaking from the timer.
+In the concrete program in the left, the variable \code{dt} holds the residual 
+delta time (as described in Section~\ref{sec.ceu.timers}) after awaking from 
+the timer.
 In the first step of the translation, we expand the \code{await 10ms} to a 
 \code{loop} that decrements the elapsed number of microseconds for each 
 occurrence of \code{DT}.
@@ -1653,7 +1653,7 @@ loop do
     await DT;
     tot = tot - DT_;
     if tot <= 0 then
-        dt = tot;
+        dt = -tot;
         break;
     end
 end
@@ -1683,19 +1683,21 @@ Two-step translation from concrete to abstract timer.
 \subsubsection{Finalization Blocks}
 \label{sec.formal.fins}
 
-The biggest mismatch between concrete and abstract \CEU is regarding 
-finalization blocks, which require more complex modifications in the program
-for a proper mapping using the $fin$ expressions.
+The biggest mismatch between concrete and abstract \CEU is regarding the 
+\code{finalize} blocks, which require more complex modifications in the program
+for a proper mapping using $fin$ expressions.
 In the three-step translation of Figure~\ref{lst.map.fin}, we start with a 
 concrete program (\code{CODE-1}) that uses a \code{finalize} to safely 
 \code{\_release} the reference to \code{ptr} kept after the call to 
 \code{\_hold}.
-In the translation, we first need to catch the \code{do-end} termination to run 
-the finalization code.
+In the translation, we first need to catch the outermost \code{do-end} 
+termination to run the finalization code.
 For this, we translate the block into a \code{par/or} (\code{CODE-2}) with the 
-original body in parallel with a $fin$ to run the finalization code.
-This way, the $fin$ body executes whenever the \code{par/or} terminates, either 
-normally (after the \code{await B}) or aborted from an outer composition.
+original body in parallel with a $fin$ expression to run the finalization code.
+Note that the $fin$ has no transition rules in the semantics, keeping the 
+\code{par/or} alive.
+This way, the $fin$ body only executes when the \code{par/or} terminates either 
+normally (after the \code{await B}), or aborted from an outer composition.
 %
 However, the $fin$ still (incorrectly) executes even if the call to 
 \code{\_hold} is not reached in the body due to an abort before awaking from 
@@ -1923,17 +1925,17 @@ This phase may be aborted due to syntax errors in the \CEU source file.
 \item[Temporal Analysis]
 
 This phase detects inconsistencies in \CEU programs, such as unbounded loops, 
-suspicious accesses to shared memory, and also ``classical'' semantic analysis, 
-such as building a symbol table for checking variable declarations.
+suspicious accesses to shared memory, and also performs ``classical'' semantic 
+analysis, such as building a symbol table for checking variable declarations.
 %
-This phase outputs code in \C, given the way \CEU is tied to \C by design.
+For the (standard) \C back end, this phase outputs code in \C.
 %
 Some type checking is delayed to the last phase to take advantage of 
 \code{gcc}'s error handling.
 Therefore, we annotate the \C output file with \code{\#line} pragmas matching 
 the original file in \CEU.
 
-\item[Code Generation]
+\item[Final Generation]
 
 The final phase packs the generated \C file with the \CEU runtime and 
 platform-dependent functionality, compiling them with \emph{gcc} and generating 
@@ -2086,8 +2088,8 @@ state.
 \subsection{Memory Layout}
 \label{sec:impl:memory}
 
-\CEU favors a fine-grained use of trails, being common the use of trails that 
-await a single event.
+\CEU favors a fine-grained use of trails, being common to use trails that await 
+a single event.
 For this reason, \CEU{} does not allocate per-trail stacks; instead, all data 
 resides in fixed memory slots---this is true for the program variables as well 
 as for temporary values and runtime flags.
@@ -2176,14 +2178,14 @@ Like normal variables, trails that cannot be active at the same time can share
 slots in the static memory vector.
 
 At any given moment, a trail can be awaiting in one of the following states: 
-\code{INACTIVE}, \code{STACKED}, \code{FIN}, or in any of the events defined in 
-the program:
+\code{INACTIVE}, \code{STACKED}, \code{FINALIZE}, or in any of the events 
+defined in the program:
 
 \begin{lstlisting}
 enum {
     INACTIVE = 0,
     STACKED,
-    FIN,
+    FINALIZE,
     EVT_A,      // input void A;
     EVT_e,      // event int e;
     <...>       // other events
@@ -2196,7 +2198,7 @@ are ignored by the scheduler.
 A \code{STACKED} trail holds an associated stack level and is delayed until the 
 scheduler runtime reaches that level again.
 %
-A \code{FIN} trail represents a hanged finalization block which is only 
+A \code{FINALIZE} trail represents a hanged finalization block which is only 
 scheduled when its corresponding block goes out of scope.
 %
 A trail waiting for an event stays in the state of the corresponding event, 
@@ -2217,8 +2219,9 @@ struct trail_t {
 
 The field \code{evt} holds the state of the trail (or the event it is 
 awaiting); the field \code{lbl} holds the entry point in the code to execute 
-when the trail is scheduled; the third field depends on the \code{evt} field 
-and may hold the \code{seqno} for an event, or the stack level \code{stk} for a
+when the trail segment is scheduled; the third field depends on the \code{evt} 
+field and may hold the \code{seqno} for an event, or the stack level \code{stk} 
+for a
 \code{STACKED} state.
 
 The size of \code{state\_t} depends on the number of events in the application;
@@ -2255,8 +2258,8 @@ event-driven programming)~\cite{ceu.sensys13}.
 
 \subsection{Code Generation and Scheduling}
 
-In the final generated code in \C, each trail label representing an entry point 
-becomes a \emph{switch case} with the associated code to execute.
+In the final generated code in \C, each trail segment label representing an 
+entry point becomes a \emph{switch case} with the associated code to execute.
 %
 Figure~\ref{lst.impl.trails} illustrates the generation process.
 For the program in the left of the figure, the compiler extracts the entry 
@@ -2414,10 +2417,10 @@ registered label \code{And\_sub\_2} (ln. 16--21), which sets \code{TRAIL-1} to
 await \code{EVT\_A} and also halts.
 
 Regarding abortion and finalization, when a \code{par/or} terminates, the 
-scheduler makes a \emph{broadcast} pass for the \code{FIN} event, but limited 
-to the range of trails covered by the terminating \code{par/or}.
-Trails that do not match the \code{FIN} are set to \code{INACTIVE}, as they 
-have to be aborted.
+scheduler makes a \emph{broadcast} pass for the \code{FINALIZE} event, but 
+limited to the range of trails covered by the terminating \code{par/or}.
+Trails that do not match the \code{FINALIZE} are set to \code{INACTIVE}, as 
+they have to be aborted.
 Given that trails in parallel are allocated in subsequent slots in the static 
 vector \code{TRLS}, this pass only aborts the desirable trails.
 The subsequent \emph{dispatch} pass executes the finalization code.
