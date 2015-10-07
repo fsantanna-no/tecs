@@ -285,8 +285,9 @@ Arduino: \url{https://www.arduino.cc/en/Main/arduinoBoardUno}
 \\
 MICAz: \url{http://www.memsic.com/userfiles/files/Datasheets/WSN/micaz_datasheet-t.pdf}
 \\
-Both use the \emph{ATmega328} with 32 Kbytes of FLASH and 2 Kbytes of SRAM:
-\url{http://www.atmel.com/devices/atmega328.aspx}}
+(Both use the \emph{ATmega328} microcontroller with 32 Kbytes of FLASH and 2 
+Kbytes of SRAM.)}
+%:\url{http://www.atmel.com/devices/atmega328.aspx}}
 
 In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context 
 of wireless sensor networks, developing a number of applications, protocols, 
@@ -371,7 +372,7 @@ For the second phrase, the reset behavior, the Esterel version uses a
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
 restarts the enclosing \code{loop}.
 
-\begin{figure}
+\begin{figure}[b]
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 // ESTEREL
@@ -476,7 +477,7 @@ program also terminates;
 \end{enumerate}
 }
 
-\begin{figure}
+\begin{figure}[b]
 \begin{minipage}[t]{0.43\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 // ESTEREL
@@ -701,7 +702,7 @@ However, the program in the right is non-deterministic, because the two
 assignments to \code{y} (ln. 5,8) occur in the same reaction to input \code{A} 
 (ln. 4,7).
 
-\begin{figure}
+\begin{figure}[b]
 \begin{minipage}[t]{0.50\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3em]
 input void A, B;
@@ -1629,7 +1630,7 @@ When the variable \code{tot} reaches zero, we escape the \code{loop} setting
 the variable \code{dt} to contain the appropriate delta.
 In the last step, we convert the program to the abstract syntax.
 
-\begin{figure}
+\begin{figure}[b]
 \begin{minipage}[t]{0.30\linewidth}
 \begin{lstlisting}
 dt = await 10ms;
@@ -1856,7 +1857,7 @@ first-class timers, finalization blocks, and all bookkeeping related to trails.
 The compilation process of a program in \CEU is composed of three main phases, 
 as illustrated in Figure~\ref{fig.impl}:
 
-\begin{figure}
+\begin{figure}[b]
 \centering
 \includegraphics[scale=0.20]{impl}
 \caption{ Compilation process: from the source code in \CEU to the final 
@@ -2245,7 +2246,28 @@ event-driven programming)~\cite{ceu.sensys13}.
 
 \subsection{Code Generation and Scheduling}
 
-\begin{figure}
+In the final generated code in \C, each trail label representing an entry point 
+becomes a \emph{switch case} with the associated code to execute.
+%
+Figure~\ref{lst.impl.trails} illustrates the generation process.
+For the program in the left of the figure, the compiler extracts the entry 
+points and associated trails, e.g., the label \code{Awake\_e} will execute on 
+\code{TRAIL-0} (ln. 7).
+%
+For each statement that pauses (\code{emit} and \code{await}), resumes 
+(\code{par/and}, \code{par/or}, and \code{finalize}), or aborts (\code{par/or} 
+and \code{break}), the compiler splits the trail into segments with associated 
+entry points.
+%
+The entry points translate to an \code{enum} in the generated code (ln. 1--10, 
+in the middle of the figure).
+The state of trails translate to a vector of type \code{trail\_t} with the 
+maximum number of simultaneous trails (ln. 12--15).
+On initialization, \code{TRAIL-0} is set to execute the \code{Main} entry point 
+(ln. 13), while all others are set to \code{INACTIVE} (in the example, only 
+one, in ln. 14).
+
+\begin{figure}[t]
 \begin{minipage}[t]{0.31\linewidth}
 \begin{lstlisting}
 input void A;
@@ -2348,27 +2370,6 @@ identifier with the corresponding code to execute.
 \label{lst.impl.trails}
 }
 \end{figure}
-
-In the final generated code in \C, each trail label representing an entry point 
-becomes a \emph{switch case} with the associated code to execute.
-%
-Figure~\ref{lst.impl.trails} illustrates the generation process.
-For the program in the left of the figure, the compiler extracts the entry 
-points and associated trails, e.g., the label \code{Awake\_e} will execute on 
-\code{TRAIL-0} (ln. 7).
-%
-For each statement that pauses (\code{emit} and \code{await}), resumes 
-(\code{par/and}, \code{par/or}, and \code{finalize}), or aborts (\code{par/or} 
-and \code{break}), the compiler splits the trail into segments with associated 
-entry points.
-%
-The entry points translate to an \code{enum} in the generated code (ln. 1--10, 
-in the middle of the figure).
-The state of trails translate to a vector of type \code{trail\_t} with the 
-maximum number of simultaneous trails (ln. 12--15).
-On initialization, \code{TRAIL-0} is set to execute the \code{Main} entry point 
-(ln. 13), while all others are set to \code{INACTIVE} (in the example, only 
-one, in ln. 14).
 
 The scheduler executes in two passes:
 %
