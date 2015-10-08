@@ -1151,8 +1151,8 @@ an identifier is either a variable or an event.
 \subsection{Operational Semantics}
 
 The core of our semantics is a relation that, given a sequence number $n$ 
-identifying the current reaction chain, maps a program $p$ and a stack of 
-events $S$ in a single step to a modified program and stack:
+identifying the current reaction, maps a program $p$ and a stack of events $S$ 
+in a single step to a modified program and stack:
 %
 \begin{align*}
 \LL S, p \RR &\ST
@@ -1168,12 +1168,12 @@ S, S' &\in id^*
 p, p' &\in P
     && (program~as~described~in~Figure~\ref{lst.formal.syntax}) \\
 n     &\in \mathds{N}
-    && (unique~identifier~for~the~reaction~chain)
+    && (unique~identifier~for~the~reaction)
 \end{align*}
 %
-At the beginning of a reaction chain, the stack is initialized with the 
-occurring external event $ext$ ($S=[ext]$), but $emit$ expressions can push new 
-events on top of it (we discuss how they are popped further).
+At the beginning of a reaction, the stack is initialized with the occurring 
+external event $ext$ ($S=[ext]$), but $emit$ expressions can push new events on 
+top of it (we discuss how they are popped further).
 The ever-increasing sequence number $n$ prevents that awaiting expressions 
 awake in the same reaction they are reached (the \emph{delayed awaits} as 
 explained in Section~\ref{sec.ceu.ints}).
@@ -1260,8 +1260,8 @@ Given that our semantics focuses on control, rules \textbf{if-true} and
 The ``magical'' function $val$ receives a memory identifier and the current 
 reaction sequence number, returning the current memory value.
 %
-Although the value here is arbitrary, it is unique in a reaction chain, because 
-a given expression can execute only once within it (remember that $loops$ must 
+Although the value here is arbitrary, it is unique in a reaction, because a 
+given expression can execute only once within it (remember that $loops$ must 
 contain $awaits$ which, from rule \textbf{await}, cannot awake in the same 
 reaction they are reached).
 %For all other rules, we omit these values (e.g., \textbf{seq-nop}).
@@ -1410,7 +1410,7 @@ the concrete language to a $fin$ in the formal semantics.
 %
 Note that there is a syntactic restriction that a $fin$ body can only contain 
 $mem$ expressions, i.e., they are guaranteed to execute entirely within a 
-reaction chain.
+reaction.
 
 \begin{figure}[b]
 {\small
@@ -1457,11 +1457,11 @@ function:
 \end{eqnarray*}
 }
 %
-A reaction chain eventually blocks in $awaiting$ and $emitting$ expressions in 
+A reaction eventually blocks in $awaiting$ and $emitting$ expressions in 
 parallel trails.
 %
 If all trails hangs only in $awaiting$ expressions, it means that the program 
-cannot advance in the current reaction chain.
+cannot advance in the current reaction.
 %
 However, $emitting$ expressions are pending in lower stack indexes and should 
 eventualy resume in the ongoing reaction (see rule \textbf{pop}).
@@ -1484,8 +1484,8 @@ $$
 \5\5\5\textbf{(relation-outer)}
 $$
 %
-To describe a \emph{reaction chain} in \CEU, i.e., how a program behaves in 
-reaction to a single external event, we use the reflexive transitive closure of 
+To describe a \emph{reaction} in \CEU, i.e., how a program behaves in reaction 
+to a single external event, we use the reflexive transitive closure of 
 \textbf{relation-outer}:
 %
 $$
@@ -1554,7 +1554,7 @@ Finally, we convert the program into the equivalent in the abstract syntax,
 translating side-effect statements into $mem$ expressions.
 External events require a similar translation, i.e., each external event has a 
 corresponding variable that is explicitly set by the environment before each 
-reaction chain.
+reaction.
 
 \begin{figure}[t]
 \begin{minipage}[t]{0.32\linewidth}
@@ -2273,7 +2273,7 @@ entry points.
 %
 The entry points translate to an \code{enum} in the generated code (ln. 1--10, 
 in the middle of the figure).
-The state of trails translate to a vector of type \code{trail\_t} with the 
+The state of trails translates to a vector of type \code{trail\_t} with the 
 maximum number of simultaneous trails (ln. 12--15).
 On initialization, \code{TRAIL-0} is set to execute the \code{Main} entry point 
 (ln. 13), while all others are set to \code{INACTIVE} (in the example, only 
@@ -2385,23 +2385,23 @@ identifier with the corresponding code to execute.
 
 The scheduler executes in two passes:
 %
-In the \emph{broadcast} pass, the scheduler sets all trails that are waiting 
-for the current event to \code{STACKED} in the current stack level.
+in the \emph{broadcast} pass, it sets all trails that are waiting for the 
+current event to \code{STACKED} in the current stack level;
 %
-In the \emph{dispatch} pass, the scheduler executes each trail that is 
-\code{STACKED} to run in the current level, setting it immediately to 
-\code{INACTIVE}.
+in the \emph{dispatch} pass, it executes each trail that is \code{STACKED} to 
+run in the current level, setting it immediately to \code{INACTIVE} (the trail 
+segment may reset it in sequence if it doesn't terminate).
 
 During the dispatch pass, if a trail executes and emits an internal event, the 
 scheduler increments the stack level and re-executes the two passes.
 After all trails are properly dispatched, the scheduler decrements the stack 
 level and resumes the previous execution.
-For the first reaction chain, the scheduler starts from the \emph{dispatch} 
-pass, given that the \code{Main} label is the only one that can be active at 
-the stack level 0 (ln. 13, in the middle of Figure~\ref{lst.impl.trails}).
+For the first reaction, the scheduler starts from the \emph{dispatch} pass, 
+given that the \code{Main} label is the only one that can be active at the 
+stack level 0 (ln. 13, in the middle of Figure~\ref{lst.impl.trails}).
 
-The code the right of the Figure~\ref{lst.impl.trails} dispatches a trail
-according to the current label to execute.
+The code in the right of the Figure~\ref{lst.impl.trails} dispatches a trail 
+segment according to the current label to execute.
 %
 For the first reaction, it executes the \code{Main} label in \code{TRAIL-0}.
 %
@@ -2437,11 +2437,12 @@ From the implementation perspective, there are three external sources of input
 into programs, which are all exposed as functions in a \C API:
 
 \begin{description}
-\item[{\textbf\code{ceu\_go\_init()}}:] initializes the program (e.g. trails) 
-and executes the ``boot'' reaction (i.e., the \code{Main} label).
+\item[{\textbf\code{ceu\_go\_init()}}:] initializes the program (e.g., the 
+initial state of trails) and executes the ``boot'' reaction (i.e., the 
+\code{Main} label).
 
 \item[{\textbf\code{ceu\_go\_event(id,param)}}:] executes the reaction for the 
-received event id and associated parameter.
+received external event id and associated parameter.
 
 \item[{\textbf\code{ceu\_go\_wclock(us)}}:] increments the current time in 
 microseconds and runs a reaction if any timer expires.
@@ -2473,8 +2474,8 @@ calls.
 The bindings for the specific platforms are responsible for calling the 
 functions in the API in the order that better suit their requirements.
 As an example, it is possible to set different priorities for events that occur 
-concurrently (i.e. while a reaction chain is running).
-However, a binding must never interleave or run multiple functions in parallel.
+concurrently (i.e. while a reaction is running).
+However, a binding must never interleave or run multiple API calls in parallel.
 This would break the \CEU sequential/discrete semantics of time.
 %, as discussed in Section~\ref{sec:ceu}.
 
@@ -2482,8 +2483,8 @@ This would break the \CEU sequential/discrete semantics of time.
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
 implementation
 {
-    #include "ceu.h"
-    #include "ceu.c"
+    #include "ceu_app.h"
+    #include "ceu_app.c"
 
     event void Boot.booted () {
         ceu_sys_init();
@@ -2532,10 +2533,10 @@ The \emph{TinyOS} binding for \CEU.
 As an example, Figure~\ref{lst.impl.tinyos} shows our binding for 
 \emph{TinyOS}~\cite{wsn.tos}, which maps callbacks to input events in \CEU.
 %
-The file \code{ceu.h} (ln. 3) contains all definitions for the compiled \CEU 
-program, which are further queried through \code{\#ifdef}'s.
-The file \code{ceu.c} (ln. 4) contains the main loop of \CEU pointing to the 
-labels defined in the program.
+The file \code{ceu\_app.h} (ln. 3) contains all definitions for the compiled 
+\CEU program, which are further queried through \code{\#ifdef}'s.
+The file \code{ceu\_app.c} (ln. 4) contains the runtime of \CEU with the 
+scheduler and dispatcher pointing to the labels defined in the program.
 The callback \code{Boot.booted} (ln. 6--11) is called by TinyOS on startup, so 
 we initialize \CEU inside it (ln. 7).
 If the \CEU program uses timers, we also start a periodic timer (ln. 8--10) 
@@ -2546,6 +2547,10 @@ avoid the ``battery unfriendly'' 10ms polling.}.
 The remaining lines map pre-defined TinyOS events that can be used in \CEU 
 programs, such as the light sensor (ln. 19--23) and the radio transceiver (ln.  
 25--36).
+%
+The scheduler of the TinyOS is already synchronous by default and always 
+execute \code{event} handlers atomically, hence, the API calls to \CEU are 
+properly serialized.
 
 \subsection{The Terra Virtual Machine}
 \label{sec.terra}
@@ -2671,6 +2676,64 @@ phase, which here outputs assembly instructions for the Terra \VM, instead of
 TODO-VM: falar um pouco do assembly/bytecode, quais as decisoes envolvidas
 - (analogo a Figura 18)
 
+During compilation process the script is broken in trails in the same way it is 
+done in the \CEU compiler explained in Section 4.
+The Terra virtual machine implements a similar \CEU scheduler to execute the 
+script trails, but the VM
+uses the real trails address instead of labels. In this way is possible to jump directly to each script
+partitions without using a dispatcher.
+The Terra VM instruction set includes operations to support the \CEU execution 
+model.
+Basically, it is composed by instructions to define a pending trail (\code{tkins}),
+a pending event(using \code{set\_c} to set a value in the memory),
+a check operation to verify the \code{par/and} termination(\code{chkret}),
+a pending timer event (\code{clken}), and some others like to clear trails data or suspend execution.
+All pending entries are managed by the scheduler, that also responds for timer and input events.
+All trails are executed as a TinyOS task, this ensure that each trail runs to completion avoiding race condition between then.
+
+Figure~\ref{lst.impl.assembly} presents the bytecode generated for the initial 
+part for the example of Figure~\ref{lst.impl.trails}.
+After initializing the trail and event slots in the memory, the VM engine starts the execution from the \code{main} label.
+In this example it registers in the trails slots the label addresses for the two block of the \code{par/and} control (lines 3--6).
+The scheduler, first, executes the code in the label \code{and\_sub\_1} that registers the label \code{awk\_e} into the slot of event \code{e} (lines 8--10).
+Then, executes the code in the label \code{and\_sub\_2} that registers the label \code{awk\_temp} into the slot of the event \code{I\_TEMP} (lines 17--18).
+In this moment the VM engine suspends its execution waiting for some new input or timer event.
+In the case of this example, the engine waits for the \code{I\_TEMP} event to continue the script execution.
+
+
+\begin{figure}
+\begin{minipage}[t]{0.91\linewidth}
+\begin{lstlisting}[language=C,numbers=left,xleftmargin=2.5em,keywords={tkins,end,set_c,ushort,ubyte,exec}]
+  <...> // Initializes the trails and events slots
+
+:main -- Activate TRAILs 0 & 1
+  tkins and_sub_1           // Activate TRAIL 0 - lbl and_sub_1
+  tkins and_sub_2           // Activate TRAIL 1 - lbl and_sub_2
+  end                       // Suspend execution
+
+:and_sub_1
+  set_c ushort slot_e awk_e // await e
+  end                       // Suspend execution
+
+:awk_e
+  set_c ubyte slot_1 1      // Close TRAIL 0 - lbl and_sub_1
+  exec chkret               // goto check par/and termination
+
+:and_sub_2
+  set_c ushort I_TEMP awk_temp // await TEMP
+  end                       // Suspend execution
+
+  <....> // Other entries: chkret, awk_TEMP, etc..
+\end{lstlisting}
+\end{minipage}
+\caption{
+%{\small %\textmd{
+Assembly code for a \code{par/and} control structure.
+%}%}
+\label{lst.impl.assembly}
+}
+\end{figure}
+
 \begin{comment}
 %-------------------------------------------------
 Figure~\ref{lst.impl.custom} presents a partial implementation for the elements 
@@ -2739,18 +2802,18 @@ VM Customization -- input/output events and functions.
 
 \begin{comment}
 Instead of generating code in C, Terra generates the vmt assembly code using 
-the original Céu labels for trails entry points.
+the original \CEU labels for trails entry points.
 In the final phase for code generation, Terra compiler generates the vmt 
-bytecode file using the program address in place of Céu labels.
-The use of address allows the Céu scheduler to execute directly a trail without 
-a index table to replace the switch-case.
+bytecode file using the program address in place of \CEU labels.
+The use of address allows the \CEU scheduler to execute directly a trail 
+without a index table to replace the switch-case.
 Related to memory layout and trail allocation, Terra uses the same data 
-organization approach for all Céu controls and variables.
-All Céu data and control structures for a specific program are determined at 
+organization approach for all \CEU controls and variables.
+All \CEU data and control structures for a specific program are determined at 
 compile time.
 Terra arranges all these structures in the beginning of virtual machine memory 
 space.
-The original Céu run time control functions are maintained with a small 
+The original \CEU run time control functions are maintained with a small 
 modification where accesses to control structures have an off-set relative to 
 the begin of the virtual machine memory space.
 \end{comment}
@@ -2763,14 +2826,14 @@ the begin of the virtual machine memory space.
 \subsection{Semantics}
 
 \CEU has a strong influence from Esterel and embraces the disciplined 
-synchronous-reactive model and support for lexical composition of lines of 
+synchronous-reactive model with support for lexical composition of lines of 
 execution.
 %
 However, there are fundamental semantic differences that prevents the design of 
-\CEU as pure extensions to Esterel (i.e., on top of its formal semantics).
+\CEU as pure extensions to Esterel.
 %
-In particular, Esterel has a notion of time similar to that of digital circuits 
-in which multiple signals can be active at a clock tick.
+In particular, Esterel has a notion of time similar to digital circuits in 
+which multiple signals can be active at a clock tick.
 In fact, Esterel is also used in hardware design.
 %
 In \CEU, instead of clock ticks, the occurrence of a single external event that 
@@ -2804,7 +2867,7 @@ variables, relying on deterministic scheduling to preserve determinism.
 %
 However, it is the responsibility of the programmer to specify the execution 
 order for threads, based on either explicit priorities, or source code lexical 
-order (like \CEU).
+order.
 %
 These languages have a tick-based notion of time similar to Esterel, which 
 prevents the event-based temporal analysis of \CEU.
@@ -2816,6 +2879,20 @@ Concurrency is based on stackful coroutines, diverging from our goals regarding
 resource efficiency and static bounds for memory and execution time.
 
 TODO-VM
+
+Plummer et al.~\cite{esterel.vm} present a reactive virtual machine for 
+embedded systems.
+This VM uses the Esterel programming language as scripting language and implements
+a specific instruction set to the Esterel concurrent and multi-thread semantic.
+They focus in code reduction instead of on efficiency.
+Experimentally, they found the bytecode was about half the size of optimized
+native assembly code generated from C.
+The Terra virtual machine also implements a customized instruction set for a reactive
+programming model, but it uses the \CEU model for concurrence and event 
+control.
+The Terra component based approach also contributes to have a very small bytecode size.
+In our experiments, depending of the abstraction level of the pre-built customized components,
+the bytecode size reduction may reach about 99\%.
 
 \begin{comment}
 More recently, Wireless Sensor Networks (WSNs) emerged as an active research 
@@ -2904,8 +2981,8 @@ no race conditions in shared memory,
 reliable abortion for activities handling resources,
 and automatic synchronization for timers.
 %
-These properties are usually desirable in applications and are guaranteed as 
-preconditions in \CEU by design.
+These properties are usually desirable in embedded applications and are 
+guaranteed as preconditions in \CEU by design.
 
 \CEU is a resource-efficient language suitable for constrained embedded 
 systems.
