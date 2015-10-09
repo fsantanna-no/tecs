@@ -841,7 +841,8 @@ because they are not subject to the same synchronous execution discipline.
 \begin{figure}
 \begin{minipage}[t]{0.55\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3em]
-input void STOP, RETRANSMIT, SENDACK;
+input void STOP, RETRANSMIT, SEND_ACK;
+output _pkt_t* SEND_ENQUEUE, SEND_CANCEL;
 par/or do
     await STOP;
 with
@@ -854,8 +855,8 @@ with
             with
                 var _pkt_t buffer;
                 <fill-buffer-info>
-                _send_enqueue(&buffer);
-                await SENDACK;
+                emit SEND_ENQUEUE => &buffer;
+                await SEND_ACK;
             end
         end
     end
@@ -863,17 +864,17 @@ end
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.41\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3em,firstnumber=11]
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3em,firstnumber=12]
 <...>
     var _pkt_t buffer;
     <fill-buffer-info>
     finalize
-        _send_enqueue(&buffer);
+        emit SEND_ENQUEUE => &buffer;
     with
-        _send_cancel(&buffer);
+        emit SEND_CANCEL => &buffer;
     end
-    await SENDACK;
+    await SEND_ACK;
 <...>
 \end{lstlisting}
 \end{minipage}
@@ -890,41 +891,36 @@ left of Figure~\ref{lst.fin}, which does not compile in \CEU.
 It describes the state machine of a data collection protocol for sensor 
 networks~\cite{wsn.ctp,ceu.sensys13}.
 %
-The input events \code{STOP}, \code{RETRANSMIT}, and \code{SENDACK} (ln. 1) 
-represent the external interface of the protocol.
+The input and output events represent the external interface of the protocol 
+(ln. 1--2).
 %
-The protocol has to transmit a packet every minute, unless it receives a 
-\code{RETRANSMIT} request to immediately re-transmit it, or a \code{STOP} 
-request to terminate.
+The protocol has to transmit a packet every minute (with \code{SEND\_ENQUEUE}), 
+unless it receives a \code{RETRANSMIT} request to immediately re-transmit it, 
+or a \code{STOP} request to terminate.
 %
 The protocol is composed of two main trails:
-one simply monitors the stopping event (ln. 3);
-the other periodically transmits the packet (ln. 5--18).
+one simply monitors the stopping event (ln. 4);
+the other periodically transmits the packet (ln. 6--19).
 %
-The periodic transmission is a loop that starts two other trails (ln. 6--17):
-one handles the immediate retransmission request (ln. 7);
-the other transmits the packet and waits for a confirmation (ln. 9--16).
+The periodic transmission is a loop that starts two other trails (ln. 7--18):
+one handles the immediate retransmission request (ln. 8);
+the other transmits the packet and waits for a confirmation (ln. 10--17).
 %
 %
-The actual transmission (ln. 12--15) is enclosed with a \code{par/and} that 
-takes at least one minute before looping (ln. 10), in accordance with the 
+The actual transmission (ln. 13--16) is enclosed with a \code{par/and} that 
+takes at least one minute before looping (ln. 11), in accordance with the 
 specification.
-Note that the call to \code{\_send\_enqueue}%
-\footnote{
-The underline prefix marks (e.g., \code{\_send\_enqueue}) make interactions 
-with external \C libraries explicit and are required in \CEU.
-}
-(ln. 14) is \emph{asynchronous}, handing to the radio driver a pointer to the 
-lexically-scoped packet (ln. 12).
+Note that the \code{emit SEND\_ENQUEUE} (ln. 15) is \emph{asynchronous}, 
+handing to the radio driver a pointer to the lexically-scoped packet (ln. 13).
 The driver makes the transmission in the background, holding the packet until 
-it signals the application with the \code{SENDACK} to acknowledge completion 
-(ln. 15).
+it signals the application with the \code{SEND\_ACK} to acknowledge completion 
+(ln. 16).
 %
-At any time, the client may request a retransmission (ln. 7), which terminates 
-the \code{par/or} (ln. 6), aborts the ongoing transmission (ln. 14, if not 
-idle), and restarts the loop (ln. 5).
+At any time, the client may request a retransmission (ln. 8), which terminates 
+the \code{par/or} (ln. 7), aborts the ongoing transmission (ln. 15, if not 
+idle), and restarts the loop (ln. 6).
 %
-The client may also request to stop the whole protocol at any time (ln. 3).
+The client may also request to stop the whole protocol at any time (ln. 4).
 %
 Therefore, if the sending trail is aborted by the \code{STOP} or 
 \code{RETRANSMIT} requests, the packet buffer goes out of scope, leaving behind 
@@ -936,14 +932,14 @@ corrupted data.
 
 The unsafe example in the left of Figure~\ref{lst.fin} does not compile because 
 \CEU tracks the interaction of \code{par/or} compositions with local variables 
-and stateful \C functions (e.g., device drivers) in order to preserve safe 
-abortion of trails.
+and stateful output events and \C calls in order to preserve safe abortion of 
+trails.
 %
 %Finalization clauses are fundamental to preserve the orthogonality of 
 %\code{par/or} compositions in SSRP.
 %
 In fact, \CEU enforces the programmer to write a \emph{finalization} clause to 
-accompany the stateful \C call.
+accompany the output request.
 The code in the right of Figure~\ref{lst.fin} properly cancels the packet 
 transmission when the block of \code{buffer} goes out of scope, i.e., the 
 finalization clause (after the \code{with}) executes automatically on external 
@@ -1133,8 +1129,8 @@ Except for $fin$ and all semantic-derived expressions (i.e., $awating$,
 $emitting$, and $p~@~loop; p$), which are discussed further, all other 
 expressions are equivalent to their counterparts in the concrete language.
 
-The $mem(id)$ primitive represents all accesses, assignments, and \C function 
-calls that affect a memory location identified by $id$.
+The $mem(id)$ primitive represents all accesses, assignments, \C function 
+calls, and output events that affect a memory location identified by $id$.
 As the challenging parts of \CEU reside on its control structures, we are not 
 concerned here with a precise semantics for side effects, but only with their 
 occurrences in programs.
