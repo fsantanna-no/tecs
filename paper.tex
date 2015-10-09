@@ -123,14 +123,14 @@ escapeinside={||},
 \author{
 Francisco Sant'Anna
 \affil{Departamento de Inform\'atica, PUC--Rio}
-Adriano Branco
-\affil{Departamento de Inform\'atica, PUC--Rio}
 Roberto Ierusalimschy
 \affil{Departamento de Inform\'atica, PUC--Rio}
 Noemi Rodriguez
 \affil{Departamento de Inform\'atica, PUC--Rio}
 Silvana Rossetto
 \affil{Departamento de Ci\^encia da Computa\c{c}\~ao, UFRJ}
+Adriano Branco
+\affil{Departamento de Inform\'atica, PUC--Rio}
 }
 
 % NOTE! Affiliations placed here should be for the institution where the
@@ -142,8 +142,7 @@ Silvana Rossetto
 
 \begin{abstract}
 \CEU is a reactive language based on Esterel that targets constrained embedded 
-platforms and ensures safe concurrency by handling threats at compile time, 
-rather than at runtime.
+platforms and ensures safe concurrency by handling threats at compile time.
 %
 Based on the synchronous programming model, our design allows for a simple 
 reasoning about concurrency that enables compile-time analysis and results in 
@@ -151,11 +150,11 @@ deterministic and memory-safe programs.
 %
 % TODO: some uses?
 %
-In this work, we discuss the design of \CEU and propose a formal semantics 
-focusing on its particular control mechanisms, such as parallel compositions, 
-finalization, and stack-based internal events.
+We discuss the design of \CEU and propose a formal semantics for its particular 
+control mechanisms, such as parallel compositions, finalization, and internal 
+events.
 %
-We also present an implementation with two back ends:
+We also present two implementation back ends:
 one aiming for resource efficiency and interoperability with \C,
 and another based on a virtual machine that allows remote reprogramming.
 \end{abstract}
@@ -923,17 +922,16 @@ idle), and restarts the loop (ln. 6).
 The client may also request to stop the whole protocol at any time (ln. 4).
 %
 Therefore, if the sending trail is aborted by the \code{STOP} or 
-\code{RETRANSMIT} requests, the packet buffer goes out of scope, leaving behind 
-a \emph{dangling pointer} in the radio driver, which will possibly transmit 
-corrupted data.
+\code{RETRANSMIT} requests, the packet buffer goes out of scope (ln. 13), 
+leaving behind a \emph{dangling pointer} in the radio driver, which will 
+possibly transmit corrupted data.
 %
 %\subsubsection{Finalization}
 %\label{sec.ceu.fin}
 
 The unsafe example in the left of Figure~\ref{lst.fin} does not compile because 
 \CEU tracks the interaction of \code{par/or} compositions with local variables 
-and stateful output events and \C calls in order to preserve safe abortion of 
-trails.
+and stateful output events calls in order to preserve safe abortion of trails.
 %
 %Finalization clauses are fundamental to preserve the orthogonality of 
 %\code{par/or} compositions in SSRP.
@@ -942,8 +940,8 @@ In fact, \CEU enforces the programmer to write a \emph{finalization} clause to
 accompany the output request.
 The code in the right of Figure~\ref{lst.fin} properly cancels the packet 
 transmission when the block of \code{buffer} goes out of scope, i.e., the 
-finalization clause (after the \code{with}) executes automatically on external 
-abortion.%
+finalization clause (after the \code{with}, ln. 18) executes automatically on 
+external abortion.%
 \footnote{
 Note that the compiler only enforces the programmer to write the finalization 
 clause, but cannot check if it actually handles the resource properly.
@@ -2596,16 +2594,16 @@ Terra also provides system calls for initialization and configuration of
 components (e.g., \emph{getters} and \emph{setters}).
 %
 The left of Figure~\ref{lst.terra.defs} shows a \CEU interface with the 
-available functionality for a customized \VM with temperature and radio 
-components.
-The right of the figure shows the associated binding for output events (ln.  
+available functionality for a customized \VM (with temperature and radio 
+components).
+The right of the figure shows the associated bindings for output events (ln.  
 1--8), input events (ln. 10--14), and system calls (ln. 16--22).
 %
 Note that all applications for the customized \VM must comply with the same 
 interface.
-In contrast, the template-based \C back end allows applications to choose all 
-possible combinations of functionalities from the underlying platform at 
-compile time (as illustrated in Figure~\ref{lst.impl.tinyos}).
+In contrast, the template-based \C back end (illustrated in 
+Figure~\ref{lst.impl.tinyos}) allows applications to choose all possible 
+combinations of functionalities from the underlying platform at compile time.
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
@@ -2669,11 +2667,13 @@ System calls use \code{VM.push} for immediate return values (ln. 16--22).
 Considering the compilation process illustrated in Figure~\ref{fig.impl} for 
 the \C back end, the main difference resides in the \emph{Code Generation} 
 phase, which here outputs assembly instructions for the Terra \VM, instead of 
-\C.
+statements in \C.
 %
 The \VM includes special instructions to support complex and recurrent 
 operations from the runtime of \CEU, such as dispatching events, clearing 
-aborted trails
+aborted trails,
+TODO
+\begin{comment}
 Basically, they map
 
 Basically, it is composed by instructions to define a pending trail (\code{tkins}),
@@ -2733,16 +2733,6 @@ Assembly code for a \code{par/and} control structure.
 }
 \end{figure}
 
-\begin{comment}
-%-------------------------------------------------
-\end{comment}
- 
-%-----------------------------------------------------
-% Equivalent to the fig. 19
-
-%------------------------------------------------------
-
-\begin{comment}
 Instead of generating code in C, Terra generates the vmt assembly code using 
 the original \CEU labels for trails entry points.
 In the final phase for code generation, Terra compiler generates the vmt 
@@ -2837,9 +2827,9 @@ scheduling.
 
 A number of virtual machines have been proposed for embedded systems.
 %
-The \emph{Sun SPOT} Java-based platform with the \emph{Squawk 
-JVM}~\cite{wsn.sunspot} brings Java for the embedded domain, but requires a 
-much powerful hardware.%
+The \emph{Sun SPOT} Java-based platform with the \emph{Squawk JVM} brings Java 
+for the embedded domain~\cite{wsn.sunspot}, but requires a much powerful 
+hardware.%
 \footnote{The \emph{Sun SPOT} uses a 32-bit CPU with 4 Mbytes of FLASH and 512 
 KBytes of SRAM.}
 %
@@ -2854,8 +2844,8 @@ accessing shared memory.
 %
 Plummer et al.~\cite{esterel.vm} propose a Esterel-based \VM with similar 
 design choices to our work.
-To reduce code size, the \VM has a instruction set to deal with event handling 
-and concurrency constructs that are particular to Esterel.
+To reduce code size, the \VM has a specialized instruction set to deal with 
+events and concurrency constructs that are particular to Esterel.
 However, the proposed \VM is only a proof of concept, with no support for 
 arithmetic operations, external system calls, or remote reprogramming.
 
