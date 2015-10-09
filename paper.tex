@@ -2552,7 +2552,7 @@ properly serialized.
 \subsection{The Terra Virtual Machine}
 \label{sec.terra}
 
-Terra is a system for programming wireless sensor network applications that 
+Terra is a system for programming wireless sensor network applications which 
 uses \CEU as its scripting language~\cite{ceu.terra}.
 %
 Figure \ref{fig.terra} shows the three basic elements of Terra:
@@ -2570,6 +2570,14 @@ the expressiveness and safety guarantees of \CEU.
 \caption{Terra programming system basic elements.}
  \label{fig.terra}
 \end{figure}
+
+The main difference between the standard \C back end and the Terra \VM is the 
+\emph{Code Generation} phase (as illustrated in Figure~\ref{fig.impl}), which 
+here outputs assembly instructions for the \VM, instead of statements in \C.
+%
+To reduce the memory footprint of applications, the \VM includes special 
+instructions for complex and recurrent operations from the runtime of \CEU, 
+such as handling events and trails.
 
 In Terra, \CEU scripts cannot execute arbitrary \C code, instead, they rely on 
 pre-built components that can be customized for different application domains.
@@ -2606,14 +2614,14 @@ Figure~\ref{lst.impl.tinyos}) allows applications to choose all possible
 combinations of functionalities from the underlying platform at compile time.
 
 \begin{figure}
-\begin{minipage}[t]{0.50\linewidth}
+\begin{minipage}[t]{0.51\linewidth}
 \begin{lstlisting}[morekeywords={function}]
 // Output events
 output void REQUEST_TEMPERATURE;
-output int  REQUEST_SEND;    // sends int
+output int  REQUEST_SEND;    // sends int value
 
 // Input events
-input int  TEMPERATURE_DONE; // receives int
+input int  TEMPERATURE_DONE; // recvs int value
 input void SEND_DONE;
 
 // System calls
@@ -2621,7 +2629,7 @@ function int getRadioID (void);
 \end{lstlisting}
 \end{minipage}
 %
-\begin{minipage}[t]{0.50\linewidth}
+\begin{minipage}[t]{0.49\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=2.5em]
 // Output events
 void VM.out(int evt_id, void* args) {
@@ -2650,10 +2658,10 @@ void VM.function(int id, void* params) {
 %
 \caption{
 %{\small %\textmd{
-\CEU interface (in the left) with associated customized \VM (in the right).
+\CEU interface (in the left) with customized \VM (in the right).
 %
-\code{VM.out} redirects all output events to the corresponding OS call (ln.  
-1--8).
+The routine \code{VM.out} redirects all output events to the corresponding OS 
+calls (ln.  1--8).
 %
 Each \emph{TinyOS} event callback calls \code{VM.enqueue} for the corresponding 
 input event (ln 10--14).
@@ -2664,15 +2672,6 @@ System calls use \code{VM.push} for immediate return values (ln. 16--22).
 }
 \end{figure}
 
-Considering the compilation process illustrated in Figure~\ref{fig.impl} for 
-the \C back end, the main difference resides in the \emph{Code Generation} 
-phase, which here outputs assembly instructions for the Terra \VM, instead of 
-statements in \C.
-%
-The \VM includes special instructions to support complex and recurrent 
-operations from the runtime of \CEU, such as dispatching events, clearing 
-aborted trails,
-TODO
 \begin{comment}
 Basically, they map
 
@@ -2827,9 +2826,8 @@ scheduling.
 
 A number of virtual machines have been proposed for embedded systems.
 %
-The \emph{Sun SPOT} Java-based platform with the \emph{Squawk JVM} brings Java 
-for the embedded domain~\cite{wsn.sunspot}, but requires a much powerful 
-hardware.%
+The \emph{Sun SPOT} platform with the \emph{Squawk JVM} brings Java for the 
+embedded domain~\cite{wsn.sunspot}, but requires a much powerful hardware.%
 \footnote{The \emph{Sun SPOT} uses a 32-bit CPU with 4 Mbytes of FLASH and 512 
 KBytes of SRAM.}
 %
