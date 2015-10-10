@@ -118,7 +118,7 @@ escapeinside={||},
 %Applications}
 
 % Title portion
-\title{The Design, Semantics, and Implementation of \CEU: a Synchronous Reactive Language based on Esterel}
+\title{The Design, Semantics, and Implementation of \CEU: a Synchronous Reactive Language}
 
 \author{
 Francisco Sant'Anna
@@ -141,8 +141,9 @@ Adriano Branco
 %       currently affiliated with NASA.
 
 \begin{abstract}
-\CEU is a reactive language based on Esterel that targets constrained embedded 
-platforms and ensures safe concurrency by handling threats at compile time.
+\CEU is a reactive language inspired by Esterel that targets constrained 
+embedded platforms and ensures safe concurrency by handling threats at compile 
+time.
 %
 Based on the synchronous programming model, our design allows for a simple 
 reasoning about concurrency that enables compile-time analysis and results in 
@@ -340,7 +341,7 @@ Section~\ref{sec.conclusion} concludes the paper.
 \section{The Design of \CEU}
 \label{sec.ceu}
 
-\CEU is a synchronous reactive language based on Esterel with support for 
+\CEU is a synchronous reactive language inspired by Esterel with support for 
 multiple concurrent lines of execution known as \emph{trails}.
 By reactive, we mean that programs are stimulated by the environment through 
 input events that are broadcast to all awaiting trails.
@@ -2871,7 +2872,7 @@ synchronous languages do some at the lang semantic level
 \label{sec.conclusion}
 
 We presented the design, semantics, and implementation of \CEU, a synchronous 
-reactive language based on Esterel targeting constrained embedded systems.
+reactive language inspired by Esterel targeting constrained embedded systems.
 
 \CEU is a concurrency-safe language, employing a static analysis that encompass 
 all control constructs and ensures that the high degree of concurrency in 
