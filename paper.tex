@@ -118,8 +118,8 @@ escapeinside={||},
 %Applications}
 
 % Title portion
-\title{The Design, Semantics, and Implementation of the Synchronous Reactive 
-Language \CEU}
+\title{The Design, Semantics, and Implementation of the Synchronous Language 
+\CEU}
 
 \author{
 Francisco Sant'Anna
@@ -254,21 +254,26 @@ first to appear and succeed, influencing a number of embedded languages, such
 as \emph{Reactive-C}~\cite{rp.rc}, \emph{OSM}~\cite{wsn.osm}, 
 \emph{Sync-C}~\cite{rp.synchc}, and \emph{PRET-C}~\cite{rp.pretc}.
 
-Despite its success and influence, Esterel has a overly complex semantics that 
+Despite its success and influence, Esterel has an overly complex semantics that 
 requires ingenious static analysis to detect and refuse programs with 
-\emph{causality} and \emph{schizophrenia} 
-problems~\cite{esterel.constructive,esterel.d1,esterel.d2,esterel.d3,esterel.d4,esterel.d5,esterel.d6,esterel.d7,esterel.d8}.
+\emph{causality} and \emph{schizophrenia} problems, with extensive coverage in 
+the 
+literature~\cite{esterel.constructive,esterel.d1,esterel.d2,esterel.d3,esterel.d4,esterel.d5,esterel.d6,esterel.d7,esterel.d8}.
 %
 The complex semantics not only challenges the analysis and compilation of 
-programs, but also results in incompatible or non-compliant implementations.
+programs, but also results in incompatible and non-compliant implementations.
 %
-More importantly, it also affects the programmer's understanding capacity, 
-which, after all, have to solve the errors when facing corner cases in 
-programs.
+Furthermore, it also affects the capacity of the programmer's understanding, 
+which, after all, has to solve the errors when facing corner cases.
 %
-Another drawback of the Esterel semantics consists of non-deterministic 
-execution for intra-reaction statements, which prevents threads to share memory 
-and interact with side-effect and stateful system calls.
+Another drawback of the Esterel semantics consists of loose and 
+non-deterministic execution for intra-reaction statements, which prevents 
+threads to share memory and interact with side-effect and stateful system calls 
+appropriately.
+%
+For instance, although Esterel supports orthogonal abortion of 
+threads~\cite{esterel.preemption}, it doesn't offer a finalization mechanism to 
+release resources in use.
 
 In this work, we present \CEU, a new programming language that inherits the 
 synchronous and imperative mindset of Esterel but diverges in fundamental 
@@ -277,7 +282,7 @@ semantic aspects.
 Overall, \CEU has a simple semantics with fine-grained execution control, and a 
 straightforward implementation targeting resource-constrained systems.
 %
-The list that follows summarizes the semantic peculiarities of \CEU:
+The list that follows summarizes the semantic peculiarities of our design:
 %
 \begin{itemize}
 %
@@ -302,16 +307,16 @@ one aiming for resource efficiency and interoperability with \C,
 and another based on a virtual machine that allows remote reprogramming.
 %
 Our implementations target resource-constrained devices, such as \emph{Arduino} 
-and \emph{MICAz} sensor nodes based on 8-bit microcontrollers, showing that the 
-peculiarities in the semantics of \CEU does not pose practical obstacles.%
+and \emph{MICAz} sensor nodes based on 8-bit microcontrollers%
 \footnote{
 Arduino: \url{https://www.arduino.cc/en/Main/arduinoBoardUno}
 \\
 MICAz: \url{http://www.memsic.com/userfiles/files/Datasheets/WSN/micaz_datasheet-t.pdf}
 \\
 (Both use the \emph{ATmega328} microcontroller with 32 Kbytes of FLASH and 2 
-Kbytes of SRAM.)}
-%:\url{http://www.atmel.com/devices/atmega328.aspx}}
+Kbytes of SRAM.)
+}, showing that the peculiarities in the semantics of \CEU does not pose 
+practical obstacles.%:\url{http://www.atmel.com/devices/atmega328.aspx}}
 
 In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context 
 of wireless sensor networks, developing a number of applications, protocols, 
@@ -323,8 +328,8 @@ increase in memory usage (around 5--10\% for \emph{text} and
 \emph{data})~\cite{ceu.sensys13}.
 %
 For the \VM back end, a simple application that blinks three LEDs periodically 
-occupies less than 100 bytes and can be completely transmitted in 4 radio 
-messages.
+occupies less than 100 bytes and can be transmitted over the air in a couple of 
+packets.
 
 The rest of the paper is organized as follows:
 Section~\ref{sec.ceu} discusses the design of \CEU, focusing on the fundamental 
@@ -377,19 +382,19 @@ and first-class timers (Section~\ref{sec.ceu.timers}).
 
 Regarding the similarities, Figure~\ref{lst.abro} shows side-by-side the 
 implementations in Esterel (a) and \CEU (b) for the following control 
-specification~\cite{esterel.primer}:
+specification:
 %
 \emph{``Emit an output O as soon as two inputs A and B have occurred.
-Reset this behavior each time the input R occurs''.}
+Reset this behavior each time the input R occurs''}~\cite{esterel.primer}.
 %
 The first phrase of the specification, awaiting and emitting the events, is 
-translated almost identically in the two languages (ln. 4--9, in both 
+translated almost identically in the two languages (ln. 3--8, in both 
 implementations), given that Esterel's `$\|$' and \CEU's \code{par/and} 
 constructs are equivalent.
 %
 For the second phrase, the reset behavior, the Esterel version uses a 
-\code{abort-when} (ln. 3--10), which, in this case, serves the same purpose of 
-\CEU's \code{par/or} (ln. 3--12):
+\code{abort-when} (ln. 2--9), which, in this case, serves the same purpose of 
+\CEU's \code{par/or} (ln. 2--11):
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
 restarts the enclosing \code{loop}.
 
@@ -466,11 +471,11 @@ do not fit the zero-delay hypothesis, and cannot be directly implemented.
 \label{sec.ceu.ints}
 
 Esterel makes no semantic distinctions between internal and external signals.
-In particular, programs can emit multiple external input signals, which may 
-coexist during a reaction.
+In particular, programs can emit different external input signals 
+simultaneously, with all coexisting during a reaction.
 %
-In \CEU, a reaction starts from the occurrence of an external input event and 
-programs cannot emit inputs.
+In \CEU, a reaction starts from an external input event and programs cannot 
+emit inputs at all.
 Therefore, the occurring input event is unique during the entire reaction, 
 resulting in intrinsic queue-based handling.
 %
@@ -480,7 +485,7 @@ execution policy, similar to subroutine calls in typical programming languages.
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
 Esterel (a) and \CEU (b).
 %
-In Esterel, when \code{A} occurs, \code{B} is emitted (ln.  5--6) and both 
+In Esterel, when \code{A} occurs, \code{B} is emitted (ln. 4--5) and both 
 events become active, resulting in the invocation of \code{f()} and \code{g()} 
 in no particular order.
 %
@@ -489,8 +494,8 @@ In \CEU, the occurrence of \code{A} makes the program behave as follows:
 {\small
 \begin{enumerate}
 \setlength{\itemsep}{0pt}
-\item 1st trail awakes (ln. 5), emits \code{b}, and pauses.
-\item 2nd trail awakes (ln. 9), calls \code{\_g()}, and terminates.
+\item 1st trail awakes (ln. 4), emits \code{b}, and pauses.
+\item 2nd trail awakes (ln. 8), calls \code{\_g()}, and terminates.
 \item 1st trail (on top of the stack) resumes, calls \code{\_f()}, and 
     terminates.
 \item Both trails have terminated, so the \code{par/and} rejoins, and the 
@@ -498,7 +503,7 @@ program also terminates.
 \end{enumerate}
 }
 
-\begin{figure}[b]
+\begin{figure}
 \begin{minipage}[t]{0.43\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 input A;    // external
@@ -537,7 +542,8 @@ different semantics.
 }
 \end{figure}
 
-Internal events bring support for a limited form of subroutines, as depicted in 
+Internal events provide a fine-grained intra-reaction control mechanism.
+For instance, it brings a limited form of subroutines, as depicted in 
 Figure~\ref{lst.sub}.
 The subroutine \code{inc} is defined as a loop (ln. 3--6) that continuously 
 awaits its identifying event (ln. 4), incrementing the value passed as 
@@ -550,7 +556,7 @@ awaits the next ``call'' (ln. 4, again).
 Only after this sequence the calling trail resumes and passes the assertion 
 test (ln. 11).
  
-\begin{figure}
+\begin{figure}[b]
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
 event int* inc; // subroutine `inc'
 par/or do
@@ -599,8 +605,8 @@ simultaneously in parallel trails, the \code{await} does not awake.
 These \emph{delayed awaits} avoid corner cases of instantaneous termination and 
 re-execution of statements in the same reaction (known as \emph{schizophrenic 
 statements}~\cite{esterel.schizo,esterel.schizo2}).
-%
-The example in Figure~\ref{lst.await} illustrates this distinction, which 
+
+The example in Figure~\ref{lst.await} illustrates delayed awaits, which 
 prevents infinite execution by design.
 Both sides of the \code{par/or} have an \code{await} statement to avoid 
 instantaneous termination (ln. 4,7).
@@ -629,7 +635,7 @@ In atypical scenarios requiring immediate awake, delayed awaits can be
 circumvented by manually copying or transforming the code to execute on awake.
 %
 For instance, sometimes we need to execute a block of code immediately, and 
-then periodically, from internal event requests, as illustrated in 
+then, periodically from internal event requests, as illustrated in 
 Figure~\ref{lst.delay}.
 In this case, the \code{await} moved to the end of the loop (ln. 10) makes the 
 periodic code to also execute immediately (ln. 9), and then in reactions to 
@@ -699,7 +705,7 @@ Embedded applications make extensive use of global memory and shared resources,
 such as through memory-mapped registers and system calls to drivers.
 Hence, an important goal of \CEU is to ensure a reliable behavior for programs 
 with concurrent lines of execution sharing memory and interacting with the 
-environment through system calls.
+environment.
 
 Esterel is only deterministic with respect to reactive control: ``the same 
 sequence of inputs always produces the same sequence of 
@@ -713,9 +719,9 @@ it''~\cite{esterel.primer}.
 For this reason, Esterel assumes that external calls to the host language do 
 not perform side effects.
 %
-Therefore, Esterel syntactically forbids sharing memory between lines of 
-execution to preserve determinism: \emph{``if a variable is written by some 
-thread, then it can neither be read nor be written by concurrent 
+Also, Esterel syntactically forbids sharing memory between lines of execution 
+to preserve determinism: \emph{``if a variable is written by some thread, then 
+it can neither be read nor be written by concurrent 
 threads''}~\cite{esterel.primer}.
 
 Concurrency in \CEU is characterized when two or more trail segments in 
@@ -723,12 +729,12 @@ parallel execute during the same reaction.
 A trail segment is a sequence of statements followed by an \code{await} (or 
 termination).
 %
-In the example of Figure~\ref{lst.shared}.a, the two assignments to \code{x} 
+In the example in Figure~\ref{lst.shared}.a, the two assignments to \code{x} 
 (ln.  5,8) can never run concurrently, because each trail segment reacts to 
 different input events (ln. 4,7), which cannot occur simultaneously (according 
 to Section~\ref{sec.ceu.ints}).
 %
-However, the example of Figure~\ref{lst.shared}.b is non-deterministic, because 
+However, the example in Figure~\ref{lst.shared}.b is non-deterministic, because 
 the two assignments to \code{y} (ln. 5,8) occur in the same reaction to input 
 \code{A} (ln. 4,7).
 
@@ -779,8 +785,8 @@ variable type.
 An analogous policy is applied for pointers \emph{vs} variables and pointers 
 \emph{vs} pointers, as well as for system calls with side effects (e.g., 
 \code{printf}).%
-\footnote{\CEU assumes all system calls perform side effects, unless they are 
-annotated as ``\texttt{@pure}''.}
+\footnote{\CEU assumes that all system calls perform side effects, unless they 
+are annotated as ``\texttt{@pure}''.}
 %The algorithm for the analysis holds the set of all events in preceding 
 %\code{await} statements for each variable access.
 %Then, the sets for all accesses in parallel trails are compared to assert that 
@@ -791,7 +797,7 @@ Regardless of the temporal analysis of \CEU, when multiple trails are active
 during the same reaction, they are scheduled in the order they appear in the 
 program source code.
 %
-Therefore, even though the example of Figure~\ref{lst.shared}.b is suspicious, 
+Therefore, even though the example in Figure~\ref{lst.shared}.b is suspicious, 
 the assignments to \code{y} are both atomic and deterministic, i.e., after the 
 reaction to \code{A} terminates, the value of \code{y} is $4$ (\code{(1+1)*2}).
 %
@@ -809,8 +815,8 @@ Other synchronous embedded languages, such as \emph{SOL}~\cite{wsn.sol} and
 %For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
 %parallelism is inherent.
 
-Figure~\ref{lst.det} compares the two syntactically equivalent code fragments 
-in Esterel (a) and \CEU (b) to summarize the semantic difference regarding 
+Figure~\ref{lst.det} compares two syntactically equivalent code fragments in 
+Esterel (a) and \CEU (b) to summarize the semantic differences regarding 
 (non-)determinism.
 %
 Even though the program in \CEU executes deterministically, the compiler still 
@@ -859,7 +865,7 @@ deterministic scheduling based on lexical order.
 \subsection{Safe Abortion with Finalization}
 \label{sec.ceu.abrt}
 
-The introductory example of Figure~\ref{lst.abro} illustrates how synchronous 
+The introductory example in Figure~\ref{lst.abro} illustrates how synchronous 
 languages can abort awaiting lines of execution without tweaking them with 
 synchronization primitives.
 In contrast, traditional (asynchronous) multi-threaded languages cannot express 
@@ -982,8 +988,7 @@ stateful output events calls in order to preserve safe abortion of trails.
 \CEU enforces a \emph{finalization} clause to accompany the output request.
 The code in Figure~\ref{lst.fin}.b properly cancels the packet transmission 
 when the block of \code{buffer} goes out of scope, i.e., the finalization 
-clause (after the \code{with}, ln. 18) executes automatically on external 
-abortion.%
+clause (ln. 18) executes automatically on external abortion.%
 \footnote{
 Note that the compiler only enforces the programmer to write the finalization 
 clause, but cannot check if it actually handles the resource properly.
@@ -993,7 +998,7 @@ clause, but cannot check if it actually handles the resource properly.
 %asynchronous I/O and non-blocking functions~\cite{ceu.sensys13}.
 
 \begin{comment}
-The code fragments of Figure~\ref{lst.abortion} shows a corner case regarding
+The code fragments in Figure~\ref{lst.abortion} shows a corner case regarding
 abortion: when the event \code{A} occurs, the program behavior seems ambiguous.
 %
 For instance, it is not clear in the code in Esterel if the call to \code{f} 
@@ -1066,7 +1071,7 @@ lead to incorrect behavior in programs.
 
 The \code{await} statement of \CEU supports wall-clock time and handles deltas 
 automatically, resulting in more robust applications.
-For the example of Figure~\ref{lst.timers}.a, suppose that after the first 
+For the example in Figure~\ref{lst.timers}.a, suppose that after the first 
 \code{await} request, the underlying system gets busy and takes 15ms to check 
 for expiring awaits.
 The \CEU scheduler will notice that the \code{await 10ms} has not only already 
@@ -1113,7 +1118,7 @@ end
 
 \CEU also takes into account the fact that time is a physical quantity that can 
 be added and compared.
-For instance, for the example of Figure~\ref{lst.timers}.b, although the 
+For instance, for the example in Figure~\ref{lst.timers}.b, although the 
 scheduler cannot guarantee that the first trail terminates exactly in 11ms, it 
 can at least ensure that the program always terminates with \code{v=1}.
 %
@@ -1137,7 +1142,7 @@ highlighting the peculiarities of \CEU, in particular the stack-based
 execution for internal events.
 %
 For the sake of simplicity, we focus on the control aspects of the language, 
-leaving out side effects and \C calls (which behave like in conventional 
+leaving out side effects and system calls (which behave like in conventional 
 imperative languages).
 
 \subsection{Abstract Syntax}
@@ -1176,8 +1181,8 @@ Except for $fin$ and the expressions used internally by the semantics (i.e.,
 $awating$, $emitting$, $p~@~loop; p$, and $nop$), all other expressions are 
 equivalent to their counterparts in the concrete language.
 
-The $mem(id)$ primitive represents all accesses, assignments, \C function 
-calls, and output events that affect a memory location identified by $id$.
+The $mem(id)$ primitive represents all accesses, assignments, system calls, and 
+output events that affect a memory location identified by $id$.
 %
 According to the synchronous hypothesis of \CEU, $mem$ expressions are 
 considered to be atomic and instantaneous.
@@ -1197,7 +1202,7 @@ an identifier is either a variable or an event.
 
 The core of our semantics describes how a program reacts to a single external 
 input event, i.e., starting from the input event, how the program behaves and 
-becomes idle again for the subsequent reaction.
+becomes idle again to proceed to the subsequent reaction.
 %
 We use a set of small-step operational rules, which are built in such a way 
 that at most one transition is possible at any time, resulting in deterministic 
@@ -1228,9 +1233,9 @@ n     &\in \mathds{N}
 At the beginning of a reaction, the stack is initialized with the occurring 
 external event $ext$ ($S=[ext]$), but $emit$ expressions can push new events on 
 top of it (we discuss how they are popped further).
-The sequence number $n$ prevents that awaiting expressions awake in the same 
-reaction they are reached (the \emph{delayed awaits} as explained in 
-Section~\ref{sec.ceu.ints}).
+The sequence number $n$, which is incremented each reaction, prevents that 
+awaiting expressions awake in the same reaction they are reached (the 
+\emph{delayed awaits} as explained in Section~\ref{sec.ceu.ints}).
 
 The transition rules for the primary expressions are as follows:
 %
@@ -1264,7 +1269,7 @@ An $await$ is transformed into an $awaiting$ (rule \textbf{await}) as an
 artifice to remember the external sequence number $n+1$ it can awake:
 an $awaiting$ can only transit to a $nop$ (rule \textbf{awake}) if its referred 
 event $id$ matches the top of the stack and it was reached in a previous 
-reaction (i.e., sequence number $m<=n$).
+reaction (i.e., sequence number $m \leq n$).
 %
 %Remember that in \CEU, the \code{await} statement returns the value associated 
 %with the corresponding event: the yielded $mem$ represents the operation to 
@@ -1274,7 +1279,7 @@ An $emit$ transits to an $emitting$ holding the current stack level ($|S|$
 stands for the stack length), and pushing the referred event on the stack (rule 
 \textbf{emit}).
 With the new stack level $|S|+1$, the $emitting(|S|)$ itself cannot transit, as 
-rule \textbf{pop} expects its parameter to match the current stack level.
+rule \textbf{pop} expects its parameter $k$ to match the current stack level.
 This trick provides the desired stack-based semantics for internal events.
 
 Proceeding to compound expressions, the rules for conditionals and sequences 
@@ -1464,9 +1469,9 @@ function.
 In Section~\ref{sec.formal.fins}, we show how to map a finalization block in 
 the concrete language to a $fin$ in the formal semantics.
 %
-Note that there is a syntactic restriction that a $fin$ body can only contain 
-$mem$ expressions, i.e., they are guaranteed to execute entirely within a 
-reaction.
+Note also that there is a syntactic restriction that a $fin$ body can only 
+contain $mem$ expressions in sequence, i.e., they are guaranteed to execute 
+entirely within a reaction.
 
 \begin{figure}[b]
 {\small
@@ -1523,7 +1528,8 @@ However, $emitting$ expressions are pending in lower stack indexes and should
 eventually resume in the ongoing reaction (see rule \textbf{pop}).
 %
 Therefore, we define another rule that behaves as \textbf{rule-inner} 
-(presented above) if the program can advance, and, otherwise, pops the stack:
+(presented above) if the program can advance, and, otherwise, pops the stack to 
+resume the lower level:
 %
 $$
 \frac
@@ -1574,13 +1580,13 @@ After each invocation, we increment the sequence number.
 \subsection{Concrete Language Mapping}
 
 Most statements from \CEU (``concrete \CEU'') map directly to those presented 
-in the reduced syntax of Figure~\ref{lst.formal.syntax} (``abstract \CEU'').
+in the reduced syntax in Figure~\ref{lst.formal.syntax} (``abstract \CEU'').
 %, namely, the \code{if}, \code{`;'}, \code{loop}, \code{par/and}, and 
 %\code{par/or}.
 For instance, the \code{if} in the concrete language behaves exactly like the 
 $if$ in the formal semantics.
 However, there are some significant mismatches between the concrete and 
-abstract \CEU, and we (informally) propose appropriate mappings in this 
+abstract \CEU, and we (informally) present appropriate mappings in this 
 section.
 %
 Again, we are not considering side-effects, which are all mapped to the $mem$ 
@@ -1600,16 +1606,16 @@ $.
 
 The concrete \code{await} and \code{emit} primitives support communication of 
 values between them.
-In the two-step translation of Figure~\ref{lst.map.emit.await}, we start with 
-the concrete program in \CEU, which communicates the value $1$ between the 
-\code{emit} and \code{await} in parallel (a).
+In the two-step translation in Figure~\ref{lst.map.emit.await}, we start with 
+the concrete program in \CEU (a), which communicates the value $1$ between the 
+\code{emit} and \code{await} in parallel.
 In the intermediate translation (b), we include the shared variable \code{e\_} 
 to hold the value being communicated between the two trails in order to 
 simplify the \code{emit}.
 Finally, we convert the program into the equivalent in the abstract syntax (c), 
 translating side-effect statements into $mem$ expressions.
-External events require a similar translation, i.e., each external event has a 
-corresponding variable that is explicitly set by the environment before each 
+External events have a similar translation, i.e., each external event requires 
+a corresponding variable that is explicitly set by the environment before each 
 reaction.
 
 \begin{figure}[t]
@@ -1695,7 +1701,7 @@ application (e.g.  \emph{e1, e2}):
 
 The event \code{DT} has an associated variable \code{DT\_} carrying the 
 wall-clock time elapsed between two occurrences in sequence, as depicted by the 
-two-step translation of Figure~\ref{lst.map.timers.2}.
+two-step translation in Figure~\ref{lst.map.timers.2}.
 In the concrete program (a), the variable \code{dt} holds the residual delta 
 time (as described in Section~\ref{sec.ceu.timers}) after awaking from the 
 timer.
@@ -1766,7 +1772,7 @@ Two-step translation from concrete to abstract timer.
 The biggest mismatch between concrete and abstract \CEU is regarding the 
 \code{finalize} blocks, which require more complex modifications in the program
 for a proper mapping using $fin$ expressions.
-In the three-step translation of Figure~\ref{lst.map.fin}, we start with a 
+In the three-step translation in Figure~\ref{lst.map.fin}, we start with a 
 concrete program (a) that uses a \code{finalize} to safely \code{\_release} the 
 reference to \code{ptr} kept after the call to \code{\_hold}.
 In the translation, we first need to catch the outermost \code{do-end} 
@@ -1896,7 +1902,7 @@ The semantic rules are continuously applied (note the `$*$' klenee operator)
 until
 consider only the top of the stack and continuously apply transformations to 
 the program until it blocks and no rules can be applied.
-The \emph{isBlocked} predicate of Figure~\ref{fig.isBlocked} identifies a 
+The \emph{isBlocked} predicate in Figure~\ref{fig.isBlocked} identifies a 
 blocked program based on its structure and event at the top of the stack.
 xxx
 A program becomes blocked when all parallel branches are hanged in $awaiting$, 
@@ -1944,10 +1950,21 @@ syntax tree (AST)};
 the \emph{temporal analysis phase} detects inconsistencies in programs, such as 
 unbounded loops and suspicious accesses to shared memory;
 the \emph{code generation phase} converts the \emph{AST} to standard \C code 
-and packs it with platform-dependent functionality and the runtime of \CEU, 
-compiling everything with \emph{gcc} to generate the final binary.
+and packs it with platform-dependent functionality (e.g., system calls) and the 
+runtime of \CEU, compiling everything with \emph{gcc} to generate the final 
+binary.
+
+In the sections that follow, we discuss the implementation insights related to 
+the peculiarities of \CEU:
+the temporal analysis for determinism (Section~\ref{sec.impl.analysis}),
+static memory allocation for data and trails (Sections~\ref{sec.impl.data} 
+and~\ref{sec.impl.trails}),
+static scheduling and trail finalization (Section~\ref{sec.impl.scheduler}),
+interaction with the environment (Section~\ref{sec.impl.environment}),
+and the \VM back end (Section~\ref{sec.terra}),
 
 \subsection{Temporal Analysis for Shared-Memory Concurrency}
+\label{sec.impl.analysis}
 
 The compile-time \emph{temporal analysis} phase detects inconsistencies in \CEU 
 programs.
@@ -1994,7 +2011,7 @@ and are in parallel branches, comparing their sets $I$ for intersections.
 For each pair, if the intersection is not the empty set, we mark both nodes as 
 suspicious.
 
-The example of Figure~\ref{lst.impl.ast}.a has a corresponding $AST$, in 
+The example in Figure~\ref{lst.impl.ast}.a has a corresponding $AST$, in 
 Figure~\ref{lst.impl.ast}.b, with the sets $I$ and $O$ for each node.
 The event $.$ (dot) represents the ``boot'' reaction.
 The assignments to \code{y} in parallel (ln. 5,8 in the code) have an empty 
@@ -2080,8 +2097,8 @@ Then, every set of awaiting nodes for a given external event starts another DFA
 state.
 \end{comment}
 
-\subsection{Memory Layout}
-\label{sec:impl:memory}
+\subsection{Static Memory Layout}
+\label{sec.impl.data}
 
 \CEU favors a fine-grained use of trails, being common to use trails that await 
 a single event.
@@ -2159,8 +2176,8 @@ layout generated by the compiler.
 }
 \end{figure}
 
-\subsection{Trail Allocation}
-\label{sec:impl:gates}
+\subsection{Static and Lightweight Trail Allocation}
+\label{sec.impl.trails}
 
 Each line of execution in \CEU needs to carry associated data, such as which 
 event it is awaiting and which code to execute when it awakes.
@@ -2248,10 +2265,10 @@ even for trails that only await a single event and terminate.
 %
 For instance, the \emph{CTP} collection protocol ported to \CEU reaches eight 
 simultaneous lines of execution with an overhead of 2\% in comparison to the 
-original version in \emph{nesC}~\cite{wsn.nesc} (a dialect of \C for 
-event-driven programming)~\cite{ceu.sensys13}.
+original version in \C~\cite{ceu.sensys13}.
 
-\subsection{Code Generation and Scheduling}
+\subsection{Static Scheduling and Trail Finalization}
+\label{sec.impl.scheduler}
 
 In the final generated code in \C, each trail segment label representing an 
 entry point becomes a \emph{switch case} with the associated code to execute.
@@ -2394,7 +2411,7 @@ After all trails are properly dispatched, the scheduler decrements the stack
 level and resumes the previous execution.
 For the first reaction, the scheduler starts from the \emph{dispatch} pass, 
 given that the \code{Main} label is the only one that can be active at the 
-stack level 0 (ln. 13, in the middle of Figure~\ref{lst.impl.trails}).
+stack level 0 (ln. 13, in Figure~\ref{lst.impl.trails}.b).
 
 The code in Figure~\ref{lst.impl.trails}.c dispatches a trail segment according 
 to the current label to execute.
@@ -2426,6 +2443,7 @@ Escaping a \code{loop} that contains parallel compositions also triggers the
 same abortion process.
 
 \subsection{Interaction with the Environment}
+\label{sec.impl.environment}
 
 As a reactive language, the execution of programs in \CEU is guided entirely by 
 the occurrence of external input events.
@@ -2439,7 +2457,7 @@ parallel.
 This would break the \CEU sequential/discrete semantics of time.
 
 As an example, Figure~\ref{lst.impl.tinyos} shows our binding for 
-\emph{TinyOS}~\cite{wsn.tos}, which maps driver callbacks to input events in 
+\emph{TinyOS}~\cite{wsn.tos}, which maps system callbacks to input events in 
 \CEU.
 %
 The file \code{ceu\_app.h} (ln. 3) contains all definitions for the compiled 
@@ -2469,7 +2487,7 @@ implementation
     #include "ceu_app.c"
 
     event void Boot.booted () {
-        ceu_sys_init();
+        ceu_init();
 #ifdef CEU_WCLOCKS
         call Timer.startPeriodic(10);
 #endif
@@ -2477,25 +2495,25 @@ implementation
     
 #ifdef CEU_WCLOCKS
     event void Timer.fired () {
-        ceu_sys_wclock(10000);
+        ceu_wclock(10000);
     }
 #endif
 
 #ifdef EVT_PHOTO_READDONE
     event void Photo.readDone (int val) {
-        ceu_sys_go(EVT_PHOTO_READDONE, &val);
+        ceu_go(EVT_PHOTO_READDONE, &val);
     }
 #endif
 
 #ifdef EVT_RADIO_SENDDONE
     event void RadioSend.sendDone (message_t* msg) {
-        ceu_sys_go(EVT_RADIO_SENDDONE, &msg);
+        ceu_go(EVT_RADIO_SENDDONE, &msg);
     }
 #endif
 
 #ifdef EVT_RADIO_RECEIVE
     event message_t* RadioReceive.receive (message_t* msg) {
-        ceu_sys_go(EVT_RADIO_RECEIVE, &msg);
+        ceu_go(EVT_RADIO_RECEIVE, &msg);
         return msg;
     }
 #endif
@@ -2750,14 +2768,13 @@ In \CEU, instead of clock ticks, the occurrence of a single external event that
 defines a time unit.
 %
 \CEU also distinguishes external events from stack-based internal events, which 
-provide a limited form of coroutines supporting reactive statements (e.g., 
-\code{await} and \code{par/or}).
+provide a limited form of coroutines supporting reactive statements.
 
-The event-driven approach of \CEU is well known~\cite{sync_async.whynotthreads} 
-and popular in many software communities, such as client and server-side web 
-frameworks (e.g., \emph{jQuery}~\cite{js.jquery} and 
-\emph{Node.js}~\cite{js.node}), GUI toolkits (e.g., \emph{Tcl/Tk}~\cite{tcl.tk} 
-and \emph{Java Swing}~\cite{java.swing}), and Games~\cite{gamepatterns}.
+The event-driven approach of \CEU is widespread~\cite{sync_async.whynotthreads} 
+and popular in many software communities, such as web frameworks (e.g., 
+\emph{jQuery}~\cite{js.jquery} and \emph{Node.js}~\cite{js.node}), GUI toolkits 
+(e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java Swing}~\cite{java.swing}), 
+and Games~\cite{gamepatterns}.
 %
 Like \CEU, event-driven programming is essentially synchronous, i.e., events go 
 through a queue and are dispatched sequentially and atomically to prevent race 
@@ -2770,14 +2787,14 @@ the temporal analysis that enables safe shared-memory concurrency.
 
 Many synchronous languages have been designed to interoperate with C, such as 
 \emph{Reactive C}~\cite{rp.rc}, Protothreads~\cite{wsn.protothreads}, 
-\emph{PRET-C}~\cite{rp.pretc} and \emph{SC}~\cite{rp.synchc}.
+\emph{PRET-C}~\cite{rp.pretc} and \emph{Sync-C}~\cite{rp.synchc}.
 %
 They offer Esterel-like parallel compositions with communication via shared 
 variables, relying on deterministic scheduling to preserve determinism.
 %
 However, it is the responsibility of the programmer to specify the execution 
 order for threads, based on either explicit priorities, or source code lexical 
-order.
+order (similar to \CEU).
 %
 These languages have a tick-based notion of time similar to Esterel, which 
 prevents the event-based temporal analysis of \CEU.
@@ -2892,7 +2909,7 @@ graduate students in research projects and two hands-on courses on
 %applications.
 %
 Our experience shows that students take advantage of the sequential-imperative 
-style of \CEU and can implement non-trivial concurrent applications in a few of 
+style of \CEU and can implement non-trivial concurrent applications in a few 
 weeks.
 
 % Idexx
