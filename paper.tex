@@ -376,7 +376,7 @@ safe abortion with finalization (Section~\ref{sec.ceu.abrt}),
 and first-class timers (Section~\ref{sec.ceu.timers}).
 
 Regarding the similarities, Figure~\ref{lst.abro} shows side-by-side the 
-implementations in Esterel and \CEU for the following control 
+implementations in Esterel (a) and \CEU (b) for the following control 
 specification~\cite{esterel.primer}:
 %
 \emph{``Emit an output O as soon as two inputs A and B have occurred.
@@ -396,7 +396,6 @@ restarts the enclosing \code{loop}.
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
-// ESTEREL
 loop
    abort
       [
@@ -407,12 +406,14 @@ loop
       emit O
    when R
 end
+
+.
 \end{lstlisting}
+\centering\small{(a) Esterel}
 \end{minipage}
 %
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em]
-// CEU
 loop do
    par/or do
       par/and do
@@ -426,6 +427,7 @@ loop do
    end
 end
 \end{lstlisting}
+\centering\small{(b) \CEU}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ A control specification implemented in Esterel and \CEU:
@@ -476,7 +478,7 @@ In contrast, programs can emit internal events but these follow a stack-based
 execution policy, similar to subroutine calls in typical programming languages.
 %
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
-Esterel and \CEU.
+Esterel (a) and \CEU (b).
 %
 In Esterel, when \code{A} occurs, \code{B} is emitted (ln.  5--6) and both 
 events become active, resulting in the invocation of \code{f()} and \code{g()} 
@@ -499,7 +501,6 @@ program also terminates.
 \begin{figure}[b]
 \begin{minipage}[t]{0.43\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
-// ESTEREL
 input A;    // external
 signal B;   // internal
 [[
@@ -511,11 +512,11 @@ $\|$
     call g();
 ]]
 \end{lstlisting}
+\centering\small{(a) Esterel}
 \end{minipage}
 %
 \begin{minipage}[t]{0.53\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.1em]
-// CEU
 input void A;  // external (in uppercase)
 event void b;  // internal (in lowercase)
 par/and do
@@ -527,6 +528,7 @@ with
     _g();
 end
 \end{lstlisting}
+\centering\small{(b) \CEU}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ Internal signals (events) in Esterel and \CEU: similar syntax, but 
@@ -721,14 +723,14 @@ parallel execute during the same reaction.
 A trail segment is a sequence of statements followed by an \code{await} (or 
 termination).
 %
-In the program in the left of Figure~\ref{lst.shared}, the two assignments to 
-\code{x} (ln. 5,8) can never run concurrently, because each trail segment 
-reacts to different input events (ln. 4,7), which cannot occur simultaneously 
-(according to Section~\ref{sec.ceu.ints}).
+In the example of Figure~\ref{lst.shared}.a, the two assignments to \code{x} 
+(ln.  5,8) can never run concurrently, because each trail segment reacts to 
+different input events (ln. 4,7), which cannot occur simultaneously (according 
+to Section~\ref{sec.ceu.ints}).
 %
-However, the program in the right is non-deterministic, because the two 
-assignments to \code{y} (ln. 5,8) occur in the same reaction to input \code{A} 
-(ln. 4,7).
+However, the example of Figure~\ref{lst.shared}.b is non-deterministic, because 
+the two assignments to \code{y} (ln. 5,8) occur in the same reaction to input 
+\code{A} (ln. 4,7).
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
@@ -743,6 +745,7 @@ with
     x = x * 2;
 end
 \end{lstlisting}
+\centering\small{(a)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.50\linewidth}
@@ -757,13 +760,13 @@ with
     y = y * 2;
 end
 \end{lstlisting}
+\centering\small{(b)}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ Shared-memory concurrency in \CEU:
-the code in the left is safe because the trails access \code{x} atomically in 
-different reactions;
-the code in the right is unsafe because both trails access \code{y} in the same 
-reaction.
+Example (a) is safe because the trails access \code{x} atomically in different 
+reactions;
+Example (b) is unsafe because both trails access \code{y} in the same reaction.
 \label{lst.shared}
 }
 \end{figure}
@@ -788,10 +791,9 @@ Regardless of the temporal analysis of \CEU, when multiple trails are active
 during the same reaction, they are scheduled in the order they appear in the 
 program source code.
 %
-Therefore, even though the program in the right of Figure~\ref{lst.shared} is 
-suspicious, the assignments to \code{y} are both atomic and deterministic, 
-i.e., after the reaction to \code{A} terminates, the value of \code{y} is $4$ 
-(\code{(1+1)*2}).
+Therefore, even though the example of Figure~\ref{lst.shared}.b is suspicious, 
+the assignments to \code{y} are both atomic and deterministic, i.e., after the 
+reaction to \code{A} terminates, the value of \code{y} is $4$ (\code{(1+1)*2}).
 %
 On the one hand, enforcing an execution order for concurrent operations may 
 seen arbitrary and also precludes true parallelism.
@@ -808,7 +810,7 @@ Other synchronous embedded languages, such as \emph{SOL}~\cite{wsn.sol} and
 %parallelism is inherent.
 
 Figure~\ref{lst.det} compares the two syntactically equivalent code fragments 
-in Esterel and \CEU to summarize the semantic difference regarding 
+in Esterel (a) and \CEU (b) to summarize the semantic difference regarding 
 (non-)determinism.
 %
 Even though the program in \CEU executes deterministically, the compiler still 
@@ -821,7 +823,6 @@ which disallows a similar temporal analysis.
 \begin{figure}[b]
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[mathescape=true]
-// ESTEREL
 input A;
 [
     await A;
@@ -831,11 +832,11 @@ $\|$
     call f2();
 ];
 \end{lstlisting}
+\centering\small{(a) Esterel}
 \end{minipage}
 %
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
-// CEU
 input void A;
 par/and do
     await A;
@@ -845,6 +846,7 @@ with
     _f2();
 end
 \end{lstlisting}
+\centering\small{(b) \CEU}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ In Esterel, the execution order between \code{f1} and \code{f2} is 
@@ -889,6 +891,7 @@ with
     end
 end
 \end{lstlisting}
+\centering\small{(a)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.45\linewidth}
@@ -903,18 +906,30 @@ end
     end
     await SEND_ACK;
 <...>
+
+
+
+
+
+
+
+
+
+.
 \end{lstlisting}
+\centering\small{(b)}
 \end{minipage}
 %\rule{8.5cm}{0.37pt}
-\caption{The unsafe network protocol in the left, which does not compile, is 
-extended with a finalization clause in the right to handle abortion properly.
+\caption{
+(a) The unsafe network protocol does not compile.
+(b) The finalization clause extends the protocol to handle abortion properly.
 %\caption{ Parallel compositions can describe complex state machines.
 \label{lst.fin}
 }
 \end{figure}
 
-To illustrate the risks related to abortion, consider the unsafe example in the 
-left of Figure~\ref{lst.fin}, which does not compile in \CEU.
+To illustrate the risks related to abortion, consider the unsafe example of 
+Figure~\ref{lst.fin}.a, which does not compile in \CEU.
 It describes the state machine of the data collection protocol \emph{CTP} for 
 sensor networks~\cite{wsn.ctp}.
 %
@@ -957,18 +972,18 @@ possibly transmit corrupted data.
 %\subsubsection{Finalization}
 %\label{sec.ceu.fin}
 
-The unsafe example in the left of Figure~\ref{lst.fin} does not compile because 
-\CEU tracks the interaction of \code{par/or} compositions with local variables 
-and stateful output events calls in order to preserve safe abortion of trails.
+The unsafe example of Figure~\ref{lst.fin}.a does not compile because \CEU 
+tracks the interaction of \code{par/or} compositions with local variables and 
+stateful output events calls in order to preserve safe abortion of trails.
 %
 %Finalization clauses are fundamental to preserve the orthogonality of 
 %\code{par/or} compositions in SSRP.
 %
 \CEU enforces a \emph{finalization} clause to accompany the output request.
-The code in the right of Figure~\ref{lst.fin} properly cancels the packet 
-transmission when the block of \code{buffer} goes out of scope, i.e., the 
-finalization clause (after the \code{with}, ln. 18) executes automatically on 
-external abortion.%
+The code in Figure~\ref{lst.fin}.b properly cancels the packet transmission 
+when the block of \code{buffer} goes out of scope, i.e., the finalization 
+clause (after the \code{with}, ln. 18) executes automatically on external 
+abortion.%
 \footnote{
 Note that the compiler only enforces the programmer to write the finalization 
 clause, but cannot check if it actually handles the resource properly.
@@ -998,7 +1013,6 @@ trail and the call to \code{\_f} never executes.
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
-// ESTEREL
 abort
     await A;
     call f();
@@ -1006,11 +1020,11 @@ when A;
 
 
 \end{lstlisting}
+\centering\small{(a) Esterel}
 \end{minipage}
 %
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}
-// CEU
 par/or do
     await A;
 with
@@ -1018,6 +1032,7 @@ with
     _f();
 end
 \end{lstlisting}
+\centering\small{(b) \CEU}
 \end{minipage}
 %
 %\rule{8.4cm}{0.37pt}
@@ -1051,9 +1066,9 @@ lead to incorrect behavior in programs.
 
 The \code{await} statement of \CEU supports wall-clock time and handles deltas 
 automatically, resulting in more robust applications.
-For the example in the left of Figure~\ref{lst.timers}, suppose that after the 
-first \code{await} request, the underlying system gets busy and takes 15ms to 
-check for expiring awaits.
+For the example of Figure~\ref{lst.timers}.a, suppose that after the first 
+\code{await} request, the underlying system gets busy and takes 15ms to check 
+for expiring awaits.
 The \CEU scheduler will notice that the \code{await 10ms} has not only already 
 expired, but is delayed with \code{delta=5ms}.
 Then, the awaiting trail awakes, sets \code{v=1}, and invokes \code{await 1ms}.
@@ -1068,7 +1083,12 @@ await 10ms;
 v = 1;
 await 1ms;
 v = 2;
+
+
+
+.
 \end{lstlisting}
+\centering\small{(a)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.51\linewidth}
@@ -1083,6 +1103,7 @@ with
     v = 2;
 end
 \end{lstlisting}
+\centering\small{(b)}
 \end{minipage}
 %\rule{8.5cm}{0.37pt}
 \caption{ First-class timers in \CEU.
@@ -1092,9 +1113,9 @@ end
 
 \CEU also takes into account the fact that time is a physical quantity that can 
 be added and compared.
-For instance, for the program in the right of Figure~\ref{lst.timers}, although 
-the scheduler cannot guarantee that the first trail terminates exactly in 11ms, 
-it can at least ensure that the program always terminates with \code{v=1}.
+For instance, for the example of Figure~\ref{lst.timers}.b, although the 
+scheduler cannot guarantee that the first trail terminates exactly in 11ms, it 
+can at least ensure that the program always terminates with \code{v=1}.
 %
 Given that any non-awaiting sequence is considered to take no time in the 
 synchronous model, the first trail is guaranteed to terminate before the second 
@@ -1581,11 +1602,11 @@ The concrete \code{await} and \code{emit} primitives support communication of
 values between them.
 In the two-step translation of Figure~\ref{lst.map.emit.await}, we start with 
 the concrete program in \CEU, which communicates the value $1$ between the 
-\code{emit} and \code{await} in parallel (left-most code).
-In the intermediate translation, we include the shared variable \code{e\_} to 
-hold the value being communicated between the two trails in order to simplify 
-the \code{emit}.
-Finally, we convert the program into the equivalent in the abstract syntax, 
+\code{emit} and \code{await} in parallel (a).
+In the intermediate translation (b), we include the shared variable \code{e\_} 
+to hold the value being communicated between the two trails in order to 
+simplify the \code{emit}.
+Finally, we convert the program into the equivalent in the abstract syntax (c), 
 translating side-effect statements into $mem$ expressions.
 External events require a similar translation, i.e., each external event has a 
 corresponding variable that is explicitly set by the environment before each 
@@ -1601,7 +1622,10 @@ with
   v = await e;
   _printf("%d\n",v);
 end
+
+.
 \end{lstlisting}
+\centering\small{(a)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.32\linewidth}
@@ -1616,6 +1640,7 @@ with
   _printf("%d\n",v);
 end
 \end{lstlisting}
+\centering\small{(b)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.32\linewidth}
@@ -1623,14 +1648,21 @@ end
 <...> ; mem ; emit(e)
         or
 await(e) ; mem ; mem
+
+
+
+
+
+.
 \end{lstlisting}
+\centering\small{(c)}
 \end{minipage}
 \caption{
 Two-step translation from concrete to abstract \code{emit} and \code{await} 
 expressions.
-The concrete code in the left communicates the value \code{1} from the 
-\code{emit} to the \code{await}.
-The abstract code uses a shared variable to hold the value.
+The concrete code in (a) communicates the value \code{1} from the \code{emit} 
+to the \code{await}.
+The abstract code in (c) uses a shared variable to hold the value.
 \label{lst.map.emit.await}
 }
 \end{figure}
@@ -1664,21 +1696,31 @@ application (e.g.  \emph{e1, e2}):
 The event \code{DT} has an associated variable \code{DT\_} carrying the 
 wall-clock time elapsed between two occurrences in sequence, as depicted by the 
 two-step translation of Figure~\ref{lst.map.timers.2}.
-In the concrete program in the left, the variable \code{dt} holds the residual 
-delta time (as described in Section~\ref{sec.ceu.timers}) after awaking from 
-the timer.
-In the first step of the translation, we expand the \code{await 10ms} to a 
+In the concrete program (a), the variable \code{dt} holds the residual delta 
+time (as described in Section~\ref{sec.ceu.timers}) after awaking from the 
+timer.
+In the first step of the translation (b), we expand the \code{await 10ms} to a 
 \code{loop} that decrements the elapsed number of microseconds for each 
 occurrence of \code{DT}.
 When the variable \code{tot} reaches zero, we escape the \code{loop} setting 
 the variable \code{dt} to contain the appropriate delta.
-In the last step, we convert the program to the abstract syntax.
+In the last step (c), we convert the program to the abstract syntax.
 
 \begin{figure}
 \begin{minipage}[t]{0.30\linewidth}
 \begin{lstlisting}
 dt = await 10ms;
+
+
+
+
+
+
+
+
+.
 \end{lstlisting}
+\centering\small{(a)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.37\linewidth}
@@ -1692,7 +1734,9 @@ loop do
         break;
     end
 end
+.
 \end{lstlisting}
+\centering\small{(b)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.30\linewidth}
@@ -1708,6 +1752,7 @@ loop(
         nop
 )
 \end{lstlisting}
+\centering\small{(c)}
 \end{minipage}
 \caption{
 Two-step translation from concrete to abstract timer.
@@ -1722,13 +1767,12 @@ The biggest mismatch between concrete and abstract \CEU is regarding the
 \code{finalize} blocks, which require more complex modifications in the program
 for a proper mapping using $fin$ expressions.
 In the three-step translation of Figure~\ref{lst.map.fin}, we start with a 
-concrete program (\code{CODE-1}) that uses a \code{finalize} to safely 
-\code{\_release} the reference to \code{ptr} kept after the call to 
-\code{\_hold}.
+concrete program (a) that uses a \code{finalize} to safely \code{\_release} the 
+reference to \code{ptr} kept after the call to \code{\_hold}.
 In the translation, we first need to catch the outermost \code{do-end} 
 termination to run the finalization code.
-For this, we translate the block into a \code{par/or} (\code{CODE-2}) with the 
-original body in parallel with a $fin$ expression to run the finalization code.
+For this, we translate the block into a \code{par/or} (b) with the original 
+body in parallel with a $fin$ expression to run the finalization code.
 Note that the $fin$ has no transition rules in the semantics, keeping the 
 \code{par/or} alive.
 This way, the $fin$ body only executes when the \code{par/or} terminates either 
@@ -1739,14 +1783,14 @@ However, the $fin$ still (incorrectly) executes even if the call to
 the \code{await A}.
 %
 To deal with this issue, for each $fin$ we need a corresponding flag to keep 
-track of code that needs to be finalized (\code{CODE-3}).
+track of code that needs to be finalized (c).
 %
 The flag is initially set to false, avoiding the finalization code to execute.
 Only after the call to \code{\_hold} that we set the flag to true and enable 
 the $fin$ body to execute.
 %
 The complete translation substitutes the side-effect operations with $mem$ 
-expressions (\code{CODE-4}).
+expressions (d).
 
 \begin{figure}
 \begin{minipage}[t]{0.26\linewidth}
@@ -1764,9 +1808,9 @@ end
 
 
 
-
-// CODE-1
+.
 \end{lstlisting}
+\centering\small{(a)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.26\linewidth}
@@ -1784,9 +1828,9 @@ end
 
 
 
-
-// CODE-2
+.
 \end{lstlisting}
+\centering\small{(b)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.26\linewidth}
@@ -1804,9 +1848,9 @@ with
         _release(ptr);
       end }
 end
-
-// CODE-3
+.
 \end{lstlisting}
+\centering\small{(c)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.18\linewidth}
@@ -1825,8 +1869,8 @@ or
      else
        nop
 )
-// CODE-4
 \end{lstlisting}
+\centering\small{(d)}
 \end{minipage}
 %
 \caption{
@@ -1950,8 +1994,8 @@ and are in parallel branches, comparing their sets $I$ for intersections.
 For each pair, if the intersection is not the empty set, we mark both nodes as 
 suspicious.
 
-The example in the left of Figure~\ref{lst.impl.ast} has a corresponding $AST$, 
-in the right of the figure, with the sets $I$ and $O$ for each node.
+The example of Figure~\ref{lst.impl.ast}.a has a corresponding $AST$, in 
+Figure~\ref{lst.impl.ast}.b, with the sets $I$ and $O$ for each node.
 The event $.$ (dot) represents the ``boot'' reaction.
 The assignments to \code{y} in parallel (ln. 5,8 in the code) have an empty 
 intersection of $I$ (ln. 6,9 in the AST), hence, they do not conflict.
@@ -1973,6 +2017,7 @@ end
 await A;
 y = 3;
 \end{lstlisting}
+\centering\small{(a)}
 \end{minipage}
 %
 %
@@ -1990,6 +2035,7 @@ Stmts I={.} O={A}
     Await_A I={A,B} O={A}
     Set_y I={A} O={A}
 \end{lstlisting}
+\centering\small{(b)}
 \end{minipage}
 %
 %\rule{14cm}{0.37pt}
@@ -2211,9 +2257,8 @@ In the final generated code in \C, each trail segment label representing an
 entry point becomes a \emph{switch case} with the associated code to execute.
 %
 Figure~\ref{lst.impl.trails} illustrates the generation process.
-For the program in the left of the figure, the compiler extracts the entry 
-points and associated trails, e.g., the label \code{Awake\_e} will execute on 
-\code{TRAIL-0} (ln. 7).
+For the program in (a), the compiler extracts the entry points and associated 
+trails, e.g., the label \code{Awake\_e} will execute on \code{TRAIL-0} (ln. 7).
 %
 For each statement that pauses (\code{emit} and \code{await}), resumes 
 (\code{par/and}, \code{par/or}, and \code{finalize}), or aborts (\code{par/or} 
@@ -2221,7 +2266,7 @@ and \code{break}), the compiler splits the trail into segments with associated
 entry points.
 %
 The entry points translate to an \code{enum} in the generated code (ln. 1--10, 
-in the middle of the figure).
+in (b)).
 The state of trails translates to a vector of type \code{trail\_t} with the 
 maximum number of simultaneous trails (ln. 12--15).
 On initialization, \code{TRAIL-0} is set to execute the \code{Main} entry point 
@@ -2257,6 +2302,7 @@ await A;
 
 .
 \end{lstlisting}
+\centering\small{(a)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.31\linewidth}
@@ -2287,6 +2333,7 @@ trail_t TRLS[2] = {
 
 .
 \end{lstlisting}
+\centering\small{(b)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.37\linewidth}
@@ -2317,15 +2364,15 @@ void dispatch (trail_t* t) {
   }
 }
 \end{lstlisting}
+\centering\small{(c)}
 \end{minipage}
 \caption{
 %{\small %\textmd{
-From left to right: static allocation of trails, entry-point labels, and 
-dispatch function.
-In the left, the comments identify the trail indexes inferred by the compiler.
-In the middle, each trail segment has an associated numeric identifier 
+(a) Static allocation of trails: the comments identify the trail indexes 
+inferred by the compiler;
+(b) Entry-point labels: each trail segment has an associated numeric identifier 
 generated by the compiler.
-In the right, the dispatcher uses a \code{switch} to associate each segment 
+(c) Dispatch function: uses a \code{switch} to associate each segment 
 identifier with the corresponding code to execute.
 %}%}
 \label{lst.impl.trails}
@@ -2349,8 +2396,8 @@ For the first reaction, the scheduler starts from the \emph{dispatch} pass,
 given that the \code{Main} label is the only one that can be active at the 
 stack level 0 (ln. 13, in the middle of Figure~\ref{lst.impl.trails}).
 
-The code in the right of the Figure~\ref{lst.impl.trails} dispatches a trail 
-segment according to the current label to execute.
+The code in Figure~\ref{lst.impl.trails}.c dispatches a trail segment according 
+to the current label to execute.
 %
 For the first reaction, it executes the \code{Main} label in \code{TRAIL-0}.
 %
@@ -2520,11 +2567,10 @@ answers through \code{input} events.
 Terra also provides system calls for initialization and configuration of 
 components (e.g., \emph{getters} and \emph{setters}).
 %
-The left of Figure~\ref{lst.terra.defs} shows a \CEU interface with the 
-available functionality for a customized \VM (with temperature and radio 
-components).
-The right of the figure shows the associated bindings for output events (ln.  
-1--8), input events (ln. 10--14), and system calls (ln. 16--22).
+Figure~\ref{lst.terra.defs}.a shows a \CEU interface with the available 
+functionality for a customized \VM (with temperature and radio components).
+Figure~\ref{lst.terra.defs}.b shows the associated bindings for output events 
+(ln.  1--8), input events (ln. 10--14), and system calls (ln.  16--22).
 %
 Note that all applications for the customized \VM must comply with the same 
 interface.
@@ -2545,7 +2591,20 @@ input void SEND_DONE;
 
 // System calls
 function int getRadioID (void);
+
+
+
+
+
+
+
+
+
+
+
+.
 \end{lstlisting}
+\centering\small{(a)}
 \end{minipage}
 %
 \begin{minipage}[t]{0.49\linewidth}
@@ -2573,14 +2632,15 @@ void VM.function(int id, void* params) {
     }
 }
 \end{lstlisting}
+\centering\small{(b)}
 \end{minipage}
 %
 \caption{
 %{\small %\textmd{
-\CEU interface (in the left) with customized \VM (in the right).
+(a) \CEU interface with customized \VM.
 %
-The routine \code{VM.out} redirects all output events to the corresponding OS 
-calls (ln.  1--8).
+(b) The routine \code{VM.out} redirects all output events to the corresponding 
+OS calls (ln.  1--8).
 %
 Each \emph{TinyOS} event callback calls \code{VM.enqueue} for the corresponding 
 input event (ln 10--14).
