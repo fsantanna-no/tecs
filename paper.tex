@@ -255,24 +255,24 @@ as \emph{Reactive-C}~\cite{rp.rc}, \emph{OSM}~\cite{wsn.osm},
 \emph{Sync-C}~\cite{rp.synchc}, and \emph{PRET-C}~\cite{rp.pretc}.
 
 Despite its success and influence, Esterel has an overly complex semantics that 
-requires ingenious static analysis to detect and refuse programs with 
-\emph{causality} and \emph{schizophrenia} problems, with extensive coverage in 
-the 
-literature~\cite{esterel.constructive,esterel.d1,esterel.d2,esterel.d3,esterel.d4,esterel.d5,esterel.d6,esterel.d7,esterel.d8}.
+requires careful static analysis to detect and refuse programs with 
+\emph{causality} and \emph{schizophrenia} problems.
+Both problems have an extensive coverage and debate in the literature 
+~\cite{esterel.constructive,esterel.d7,esterel.d6,esterel.d3,esterel.d5,esterel.d8,esterel.d1,esterel.schizo2}.
 %
 The complex semantics not only challenges the analysis and compilation of 
 programs, but also results in incompatible and non-compliant implementations.
 %
-Furthermore, it also affects the capacity of the programmer's understanding, 
+Furthermore, it also affects the programmer's understanding about the code, 
 which, after all, has to solve the errors when facing corner cases.
 %
-Another drawback of the Esterel semantics consists of loose and 
+Another drawback of the Esterel semantics consists of the loose and 
 non-deterministic execution for intra-reaction statements, which prevents 
 threads to share memory and interact with side-effect and stateful system calls 
 appropriately.
 %
 For instance, although Esterel supports orthogonal abortion of 
-threads~\cite{esterel.preemption}, it doesn't offer a finalization mechanism to 
+threads~\cite{esterel.preemption}, it doesn't offer an effective mechanism to 
 release resources in use.
 
 In this work, we present \CEU, a new programming language that inherits the 
@@ -286,13 +286,13 @@ The list that follows summarizes the semantic peculiarities of our design:
 %
 \begin{itemize}
 %
-\item Stack-based execution for internal events, which provide a limited form 
+\item Stack-based execution for internal events, which provides a limited form 
 of coroutines.
 %
-\item A static temporal analysis and deterministic execution semantics that 
+\item Static temporal analysis and deterministic execution semantics that 
 allows programs to safely share memory.
 %
-\item A finalization mechanism for safe abortion of lines of execution holding 
+\item Finalization mechanism for safe abortion of lines of execution holding 
 external resources.
 %
 \item First-class synchronized timers.
@@ -309,12 +309,8 @@ and another based on a virtual machine that allows remote reprogramming.
 Our implementations target resource-constrained devices, such as \emph{Arduino} 
 and \emph{MICAz} sensor nodes based on 8-bit microcontrollers%
 \footnote{
-Arduino: \url{https://www.arduino.cc/en/Main/arduinoBoardUno}
-\\
-MICAz: \url{http://www.memsic.com/userfiles/files/Datasheets/WSN/micaz_datasheet-t.pdf}
-\\
-(Both use the \emph{ATmega328} microcontroller with 32 Kbytes of FLASH and 2 
-Kbytes of SRAM.)
+Both \emph{Arduino} and \emph{MICAz} use the 8-bit \emph{ATmega328} 
+microcontroller with 32K of FLASH and 2K of SRAM.
 }, showing that the peculiarities in the semantics of \CEU does not pose 
 practical obstacles.%:\url{http://www.atmel.com/devices/atmega328.aspx}}
 
@@ -327,9 +323,9 @@ We evaluated the expressiveness of \CEU in comparison to event-driven code in
 increase in memory usage (around 5--10\% for \emph{text} and 
 \emph{data})~\cite{ceu.sensys13}.
 %
-For the \VM back end, a simple application that blinks three LEDs periodically 
-occupies less than 100 bytes and can be transmitted over the air in a couple of 
-packets.
+For the \VM back end, applications have a bytecode footprint in the order of 
+hundreds of bytes can be transmitted over the air in a few 
+packets~\cite{ceu.terra}.
 
 The rest of the paper is organized as follows:
 Section~\ref{sec.ceu} discusses the design of \CEU, focusing on the fundamental 
@@ -556,7 +552,7 @@ awaits the next ``call'' (ln. 4, again).
 Only after this sequence the calling trail resumes and passes the assertion 
 test (ln. 11).
  
-\begin{figure}[b]
+\begin{figure}
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
 event int* inc; // subroutine `inc'
 par/or do
@@ -604,7 +600,7 @@ simultaneously in parallel trails, the \code{await} does not awake.
 %
 These \emph{delayed awaits} avoid corner cases of instantaneous termination and 
 re-execution of statements in the same reaction (known as \emph{schizophrenic 
-statements}~\cite{esterel.schizo,esterel.schizo2}).
+statements}~\cite{esterel.constructive}).
 
 The example in Figure~\ref{lst.await} illustrates delayed awaits, which 
 prevents infinite execution by design.
@@ -644,10 +640,10 @@ If the periodic \code{emit} depends on a condition, then the code
 transformation becomes more intricate, requiring an extra condition test around 
 the periodic code to prevent its immediate execution.
 %
-On the one hand, we transfer the burden of dealing with these corner cases to 
-the programmer.
+On the one hand, we transfer the burden of dealing with these specific corner 
+cases to the programmer.
 On the other hand, we simplify the semantics of the language and eliminate the 
-need for analysis to deal with schizophrenic statements.
+need for complex analysis to deal with schizophrenic statements.
 
 \begin{figure}[t]
 %\begin{minipage}[t]{0.50\linewidth}
@@ -690,8 +686,8 @@ end
 %\end{lstlisting}
 %\end{minipage}
 %
-\caption{ An example that circumvents the \emph{delayed await} restriction by 
-post-fixing the \code{await} inside the \code{loop}.
+\caption{ An example that circumvents the \emph{delayed await} by post-fixing 
+the \code{await} inside the \code{loop}.
 % (in the left), and by copying the condition test (in the right).
 \label{lst.delay}
 }
@@ -979,8 +975,9 @@ possibly transmit corrupted data.
 %\label{sec.ceu.fin}
 
 The unsafe example of Figure~\ref{lst.fin}.a does not compile because \CEU 
-tracks the interaction of \code{par/or} compositions with local variables and 
-stateful output events calls in order to preserve safe abortion of trails.
+tracks the interaction of \code{par/or} compositions with pointers to local 
+variables and stateful output events calls in order to preserve safe abortion 
+of trails.
 %
 %Finalization clauses are fundamental to preserve the orthogonality of 
 %\code{par/or} compositions in SSRP.
@@ -1137,9 +1134,8 @@ reasoning about the execution behavior more difficult.
 
 In this section, we introduce a reduced syntax of \CEU and propose an 
 operational semantics to formally describe the language.
-We describe a small synchronous kernel with broadcast communication
-highlighting the peculiarities of \CEU, in particular the stack-based
-execution for internal events.
+We describe a small synchronous kernel highlighting the peculiarities of \CEU, 
+in particular the stack-based execution for internal events.
 %
 For the sake of simplicity, we focus on the control aspects of the language, 
 leaving out side effects and system calls (which behave like in conventional 
@@ -1555,7 +1551,7 @@ $$
 $$
 %
 Finally, to describe the complete execution of a program, we trigger multiple 
-``invocations'' of reaction chains in sequence:
+``invocations'' of reactions in sequence:
 %
 \begin{align*}
 \LL [e1], p \RR
@@ -1573,8 +1569,8 @@ Finally, to describe the complete execution of a program, we trigger multiple
 & ...
 \end{align*}
 %
-Each invocation starts with an external event at the top of the stack and 
-finishes with a modified program and an empty stack.
+Each invocation starts with the occurring external event at the top of the 
+stack and finishes with a modified program and an empty stack.
 After each invocation, we increment the sequence number.
 
 \subsection{Concrete Language Mapping}
@@ -1885,61 +1881,6 @@ Three-step translation from concrete to abstract finalization.
 }
 \end{figure}
 
-
-\begin{comment}
-
-There are also some restriction on valid programs in \CEU, which the semantic 
-allows:
-- loops
-- awaits in fins
-- local scopes
-
-handled in separate, in a parsing phase that is not related to the execution
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-The semantic rules are continuously applied (note the `$*$' klenee operator) 
-until
-consider only the top of the stack and continuously apply transformations to 
-the program until it blocks and no rules can be applied.
-The \emph{isBlocked} predicate in Figure~\ref{fig.isBlocked} identifies a 
-blocked program based on its structure and event at the top of the stack.
-xxx
-A program becomes blocked when all parallel branches are hanged in $awaiting$, 
-$stacked$, and/or $emitting$ primitives, as defined in 
-Figure~\ref{fig:isBlocked}.
-an \code{awaiting} is unblocked only if its event matches the top of the stack
-the \code{emitting} primitive only proceeds once its stack level is restored.
-
-\begin{itemize}
-\item The program is awaiting in all trails, i.e., function $pop$ returns 
-$(0,\{\})$.
-\item The program terminates, i.e., the small-step rules transform the whole 
-program into a $nop$.
-\end{itemize}
-%
-In Section~\ref{XXX} we show that by imposing syntactic restrictions to 
-programs, reaction chains always reach one of these conditions in a finite 
-number of steps, meaning that reactions to the environment always execute in 
-bounded time.
-
-To be compliant with the reactive nature of \CEU, we assume that all programs 
-start awaiting the main event ``$\$$'', which is emitted once by the 
-environment on startup, i.e., $(i,E)=(1,\{\$\})$ for the very first big step.
-
-As briefly introduced, small-step rules continuously apply transformations to 
-unblocked trails.
-A program becomes blocked when all parallel branches are hanged in $awaiting$, 
-$stacked$, and/or $emitting$ primitives, as defined in 
-Figure~\ref{fig:isBlocked}.
-
-All small-step rules are associated with the current (deepest) stack depth 
-level $i$ acquired from the previous big step.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\end{comment}
-
 \section{Implementation}
 \label{sec.impl}
 
@@ -1954,8 +1895,8 @@ and packs it with platform-dependent functionality (e.g., system calls) and the
 runtime of \CEU, compiling everything with \emph{gcc} to generate the final 
 binary.
 
-In the sections that follow, we discuss the implementation insights related to 
-the peculiarities of \CEU:
+In the sections that follow, we discuss the implementation highlights related 
+to the peculiarities of \CEU:
 the temporal analysis for determinism (Section~\ref{sec.impl.analysis}),
 static memory allocation for data and trails (Sections~\ref{sec.impl.data} 
 and~\ref{sec.impl.trails}),
@@ -2527,7 +2468,7 @@ implementation
 The \emph{TinyOS} binding for \CEU.
 This platform-dependent template includes the \C files generated from the 
 original application in \CEU (\code{ceu\_app.h} and \code{ceu\_app.c}) for the 
-\emph{Final generation} phase of Figure~\ref{fig.impl}.
+\emph{code generation phase}.
 %}%}
 \label{lst.impl.tinyos}
 }
@@ -2822,19 +2763,19 @@ scheduling.
 
 A number of virtual machines have been proposed for embedded systems.
 %
-The \emph{Sun SPOT} platform with the \emph{Squawk JVM} brings Java for the 
-embedded domain~\cite{wsn.sunspot}, but requires a much powerful hardware.%
-\footnote{The \emph{Sun SPOT} uses a 32-bit CPU with 4 Mbytes of FLASH and 512 
-KBytes of SRAM.}
+%The \emph{Sun SPOT} platform with the \emph{Squawk JVM} brings Java for the 
+%embedded domain~\cite{wsn.sunspot}, but requires a much powerful hardware.%
+%\footnote{The \emph{Sun SPOT} uses a 32-bit CPU with 4 Mbytes of FLASH and 512 
+%KBytes of SRAM.}
 %
 \emph{Darjeeling}~\cite{wsn.darjeeling} and \emph{TakaTuka}~\cite{wsn.takatuka} 
-are complete \emph{JVMs} targeting constrained embedded systems with support 
-for multithreading and garbage collection.
+are complete \emph{Java VMs} targeting constrained embedded systems with 
+support for multithreading and garbage collection.
 %
 Java has antagonistic design choices in comparison to \CEU:
 it does not impose static bounds on memory usage and execution time, and 
-provides preemptive multithreading with synchronization primitives for 
-accessing shared memory.
+provides preemptive multithreading which requires synchronization primitives 
+for accessing shared memory.
 %
 Plummer et al.~\cite{esterel.vm} propose a Esterel-based \VM with similar 
 design choices to our work.
