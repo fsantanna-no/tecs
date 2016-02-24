@@ -394,6 +394,8 @@ For the second phrase, the reset behavior, the Esterel version uses a
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
 restarts the enclosing \code{loop}.
 
+% TODO: input/output declarations
+
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
@@ -572,6 +574,9 @@ with the caller (ln. 8--11).
 \label{lst.sub}
 }
 \end{figure}
+
+% TODO: .. will probably expect that duplicating the  emit inc => &v; line 
+% would result in v==3.
 
 On the one hand, this form of subroutines has a significant limitation that it 
 cannot express recursive calls: an \code{emit} to itself is always ignored, 
