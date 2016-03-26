@@ -282,7 +282,8 @@ synchronous and imperative mindset of Esterel but diverges in fundamental
 semantic aspects.
 %
 Overall, \CEU has a simple semantics with fine-grained execution control, and a 
-straightforward implementation targeting resource-constrained systems.
+straightforward single-threaded implementation targeting resource-constrained 
+systems.
 %
 The list that follows summarizes the semantic peculiarities of our design:
 %
@@ -1275,7 +1276,7 @@ The finalization ensures that the transmission also aborts (ln. 7).
 %
 In the example in Figure~\ref{lst.fin.ceu}.b, the call to \code{\_fopen} 
 returns an external file resource as a pointer.
-If the block aborts (ln. 12) during the \code{await 1s} (ln. 9), the file 
+If the block aborts (ln. 12) during the \code{await A} (ln. 9), the file 
 remains open as a \emph{memory leak}.
 The finalization ensures that the file closes properly (ln. 6).
 %
@@ -1321,7 +1322,7 @@ par/or do
       _fclose(f);
    end
    _fwrite(..., f);
-   await 1s;
+   await A;
    _fwrite(..., f);
 with
    <...>
@@ -1423,6 +1424,8 @@ reasoning about the execution behavior more difficult.
 \subsection{ Discussion }
 \label{sec.ceu.dicsussion}
 
+TODO add a remark about tasks/async/thread in "Discussion"
+
 TODO Link the sections, connect the dots, draw conclusions, eliminate remaining xxx.
 
 Timers allows for an internal, defined by the programmer in charge of the 
@@ -1437,18 +1440,10 @@ For constrained embedded development, we believe that deterministic
 shared-memory concurrency is beneficial, given the extensive use of memory 
 mapped ports for \emph{I/O} and the lack of hardware support for real 
 parallelism.
+
 TODO: we could detect that trails do not share memory and execute in multiple 
 threads
 
-On the one hand, enforcing an execution order for concurrent operations may 
-seen arbitrary and also precludes true parallelism.
-On the other hand, it provides a priority scheme for trails, and makes 
-shared-memory concurrency more tractable.
-%
-For constrained embedded development, we believe that deterministic 
-shared-memory concurrency is beneficial, given the extensive use of memory 
-mapped ports for \emph{I/O} and the lack of hardware support for real 
-parallelism.
 %For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
 %parallelism is inherent.
 
@@ -1617,7 +1612,7 @@ state.
 
 \CEU favors a fine-grained use of trails, being common to use trails that await 
 a single event.
-For this reason, \CEU{} does not allocate per-trail stacks; instead, all data 
+For this reason, \CEU does not allocate per-trail stacks; instead, all data 
 resides in fixed memory slots---this is true for the program variables as well 
 as for temporary values and runtime flags.
 %For instance, the first trail in the guiding example requires temporary slots 
@@ -1957,6 +1952,39 @@ The subsequent \emph{dispatch} pass executes the finalization code.
 Escaping a \code{loop} that contains parallel compositions also triggers the 
 same abortion process.
 
+\subsection{Single-Threaded Dispatching}
+
+The implementation of \CEU dispatches active trails sequentially in a single 
+thread, taking no advantage of multi-core CPUs.
+%
+This decision comes not only from the fact that \CEU targets constrained 
+embedded systems with a single CPU, but also because \CEU imposes deterministic 
+execution for intra-reaction statements.
+
+Nonetheless, as discussed in Section~\ref{sec.ceu.analysis}, the temporal 
+analysis of \CEU infers precisely trails that are concurrent yet do not share 
+resources.
+Hence, these non-conflicting trails could potentially execute with real 
+parallelism in multiple cores.
+%
+However, our experiments with a multi-threaded implementation in multi-core 
+CPUs execute slower than the single-threaded implementation in the same CPUs.
+Considering that we use \CEU primarily in control-dominated applications, this 
+result is not surprising~\cite{esterel.multicore.1,esterel.multicore.2}.
+We believe that
+    the continuous fork-and-rejoin overhead due to small reactions
+as well as
+    the excessive locality of data due to stackless threads sharing contiguous static memory
+seem to prevent any speed-up gains.
+
+If we consider data-dominated applications, multi-core implementations can 
+offer considerable speed-up gains.
+However, data-intensive computations do not typically require a disciplined 
+step-wise execution and can actually execute in asynchronous calls.
+Esterel provides a \code{task} primitive for this 
+purpose~\cite{esterel.primer}, and \CEU provides an equivalent 
+\code{async/thread} primitive (which are out of the scope of this paper).
+
 \subsection{Interaction with the Environment}
 \label{sec.impl.environment}
 
@@ -2268,7 +2296,7 @@ the begin of the virtual machine memory space.
 
 %\subsection{Semantics}
 
-\CEU has a strong influence from Esterel and embraces the disciplined 
+\CEU has a strong influence from Esterel, embracing its disciplined 
 synchronous-reactive model with support for lexical composition of lines of 
 execution.
 %
@@ -2277,7 +2305,7 @@ However, there are fundamental semantic differences that prevents the design of
 %
 In particular, Esterel has a notion of time similar to digital circuits in 
 which multiple signals can be active at a clock tick.
-In fact, Esterel is also used in hardware design.
+%In fact, Esterel is also used in hardware design.
 %
 In \CEU, instead of clock ticks, the occurrence of a single external event that 
 defines a time unit.
