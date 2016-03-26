@@ -1986,6 +1986,13 @@ However, the code generation phase does not inspect C calls and also has no
 extra analysis such as for worst-case reaction 
 times~\cite{esterel.wcrt,esterel.fixed}.
 
+Single-thread dispatching may not be suitable for hard real-time activities.
+In a previous work~\cite{ceu.sensys13}, we measure how synchronous lengthy 
+computations in C (e.g., hashing and compression) can block the scheduler and 
+affect higher-priority activities such as a radio driver.
+In such cases, the system requires careful testing to avoid undersized hardware 
+deployment.
+
 \subsection{Interaction with the Environment}
 \label{sec.impl.environment}
 
@@ -2213,83 +2220,6 @@ System calls use \code{VM.push} for immediate return values (ln. 16--22).
 }
 \end{figure}
 
-\begin{comment}
-Basically, they map
-
-Basically, it is composed by instructions to define a pending trail (\code{tkins}),
-a pending event(using \code{set\_c} to set a value in the memory),
-a check operation to verify the \code{par/and} termination(\code{chkret}),
-a pending timer event (\code{clken}), and some others like to clear trails data or suspend execution.
-All pending entries are managed by the scheduler, that also responds for timer and input events.
-All trails are executed as a TinyOS task, this ensure that each trail runs to completion avoiding race condition between then.
-
-During compilation process the script is broken in trails in the same way it is 
-done in the \CEU compiler explained in Section 4.
-The Terra virtual machine implements a similar \CEU scheduler to execute the 
-script trails, but the VM
-uses the real trails address instead of labels. In this way is possible to jump directly to each script
-partitions without using a dispatcher.
-
-Figure~\ref{lst.impl.assembly} presents the bytecode generated for the initial 
-part for the example of Figure~\ref{lst.impl.trails}.
-After initializing the trail and event slots in the memory, the VM engine starts the execution from the \code{main} label.
-In this example it registers in the trails slots the label addresses for the two block of the \code{par/and} control (lines 3--6).
-The scheduler, first, executes the code in the label \code{and\_sub\_1} that registers the label \code{awk\_e} into the slot of event \code{e} (lines 8--10).
-Then, executes the code in the label \code{and\_sub\_2} that registers the label \code{awk\_temp} into the slot of the event \code{I\_TEMP} (lines 17--18).
-In this moment the VM engine suspends its execution waiting for some new input or timer event.
-In the case of this example, the engine waits for the \code{I\_TEMP} event to continue the script execution.
-
-
-\begin{figure}
-\begin{minipage}[t]{0.91\linewidth}
-\begin{lstlisting}[language=C,numbers=left,xleftmargin=2.5em,keywords={tkins,end,set_c,ushort,ubyte,exec}]
-  <...> // Initializes the trails and events slots
-
-:main -- Activate TRAILs 0 & 1
-  tkins and_sub_1           // Activate TRAIL 0 - lbl and_sub_1
-  tkins and_sub_2           // Activate TRAIL 1 - lbl and_sub_2
-  end                       // Suspend execution
-
-:and_sub_1
-  set_c ushort slot_e awk_e // await e
-  end                       // Suspend execution
-
-:awk_e
-  set_c ubyte slot_1 1      // Close TRAIL 0 - lbl and_sub_1
-  exec chkret               // goto check par/and termination
-
-:and_sub_2
-  set_c ushort I_TEMP awk_temp // await TEMP
-  end                       // Suspend execution
-
-  <....> // Other entries: chkret, awk_TEMP, etc..
-\end{lstlisting}
-\end{minipage}
-\caption{
-%{\small %\textmd{
-Assembly code for a \code{par/and} control structure.
-%}%}
-\label{lst.impl.assembly}
-}
-\end{figure}
-
-Instead of generating code in \C, Terra generates the vmt assembly code using 
-the original \CEU labels for trails entry points.
-In the final phase for code generation, Terra compiler generates the vmt 
-bytecode file using the program address in place of \CEU labels.
-The use of address allows the \CEU scheduler to execute directly a trail 
-without a index table to replace the switch-case.
-Related to memory layout and trail allocation, Terra uses the same data 
-organization approach for all \CEU controls and variables.
-All \CEU data and control structures for a specific program are determined at 
-compile time.
-Terra arranges all these structures in the beginning of virtual machine memory 
-space.
-The original \CEU run time control functions are maintained with a small 
-modification where accesses to control structures have an off-set relative to 
-the begin of the virtual machine memory space.
-\end{comment}
-
 \section{Related Work}
 \label{sec.related}
 
@@ -2386,26 +2316,6 @@ To reduce code size, the \VM has a specialized instruction set to deal with
 events and concurrency constructs that are particular to Esterel.
 However, the proposed \VM is only a proof of concept, with no support for 
 arithmetic operations, external system calls, or remote reprogramming.
-
-\begin{comment}
-- Kiel Esterel compiler
-
-- We are not concerned with WCET:
-Predictable system design is concerned with the challenge o
-f building sys-
-tems in such a way that requirements can be guaranteed from th
-e design. This
-means that an off-line analysis should demonstrate satisfa
-ction of timing require-
-ments, subject to assumptions made on operating conditions
-foreseen for the sys-
-tem [Stankovic and Ramamritham 1990]
-
-http://embedded.cs.uni-saarland.de/publications/BuildingTimingPredictableEmbeddedSystems.pdf
-survey of timeing-predictable embedded systems,
-synchronous languages do some at the lang semantic level
-\cite{pret.building}
-\end{comment}
 
 \section{Conclusion}
 \label{sec.conclusion}
