@@ -1199,12 +1199,6 @@ In Esterel and \CEU, the finalize clauses (ln. a:10 and b:5) are automatically
 called if the enclosing blocks (ln. a:3--1 and b:3--10) are externally aborted 
 (ln. a:12 and b:12).
 
-We completely missed the "finalize" construct of Esterel and recognize the 
-similarity with our proposal.
-We now emphasize that Céu tracks pointers entering and leaving the program to 
-enforce appropriate use of "finalize" (as part of the section about interfacing 
-with C).
-
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
@@ -1984,6 +1978,13 @@ step-wise execution and can actually execute in asynchronous calls.
 Esterel provides a \code{task} primitive for this 
 purpose~\cite{esterel.primer}, and \CEU provides an equivalent 
 \code{async/thread} primitive (which are out of the scope of this paper).
+
+Since loops in \CEU must contain \code{await} statements, reactions run in 
+bounded time, which guarantees that successive calls to \code{dispatch} never 
+block the scheduler for long.
+However, the code generation phase does not inspect C calls and also has no 
+extra analysis such as for worst-case reaction 
+times~\cite{esterel.wcrt,esterel.fixed}.
 
 \subsection{Interaction with the Environment}
 \label{sec.impl.environment}
