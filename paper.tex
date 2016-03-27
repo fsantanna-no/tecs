@@ -663,6 +663,8 @@ simultaneity either.
 We discuss internal events in Section~\ref{sec.ceu.ints} and timers in 
 Section~\ref{sec.ceu.timers}.
 
+TODO: recover the logical notion of simultaneaty substituting 200ms with TICK
+
 The synchronous hypothesis for \CEU holds if the reactions run faster than the 
 rate of incoming input events.
 Otherwise, the system will accumulate delays between the real occurrence and 
@@ -1418,6 +1420,13 @@ reasoning about the execution behavior more difficult.
 \subsection{ Discussion }
 \label{sec.ceu.dicsussion}
 
+TODO: move POE to here, simpler more natural for software dev
+
+- static analsysis also simpler
+    - highlight that is not only important to have a comptutally-sound 
+      algorithm, but that something that programmers can understand
+- same with 1st-class timers, also, too much common to be ignored
+
 TODO add a remark about tasks/async/thread in "Discussion"
 
 TODO Link the sections, connect the dots, draw conclusions, eliminate remaining xxx.
@@ -1429,6 +1438,7 @@ On the one hand, enforcing an execution order for concurrent operations may
 seen arbitrary and also precludes true parallelism.
 On the other hand, it provides a priority scheme for trails, and makes 
 shared-memory concurrency more tractable.
+    - again, simple
 %
 For constrained embedded development, we believe that deterministic 
 shared-memory concurrency is beneficial, given the extensive use of memory 
