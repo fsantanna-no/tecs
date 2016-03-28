@@ -582,14 +582,14 @@ From a rigorous point of view, event occurrences are infinitesimal, having zero
 probability of being simultaneous.
 This way, we believe that the notion of simultaneity should not be imposed by 
 the language, but explicitly defined for each use case.
-In Section~\ref{sec.ceu.discussion}, we present a specification to detect 
-simultaneous button clicks.
-%
 Note that in the case of Esterel, simultaneity depends on the imprecise 
 definition of ticks.
 For instance, in Figure~\ref{fig.ticks}, the events \code{B} and \code{C} are
 simultaneous, even though \code{A} and \code{B} actually happen much closer to 
 one another.
+After introducing internal events and first-class timers, we show an example 
+that detects simultaneous button clicks in Section~\ref{sec.ceu.discussion}.
+%
 \item \textbf{Unique input events imply mutual exclusion:}
 Because they are atomic, reactions to different events never overlap.
 The possibility to reason about each input individually is a prerequisite for 
@@ -665,16 +665,21 @@ delimiting instructions.
 \label{sec.ceu.ints}
 
 Esterel makes no semantic distinctions between internal and external signals.
-In particular, programs can emit different external input signals 
-simultaneously, with all coexisting during a reaction.
+In particular, programs can emit external and internal signals simultaneously, 
+with all coexisting during the entire reaction.
 %
-In \CEU, a reaction starts from an external input event and programs cannot 
-emit inputs at all.
-Therefore, the occurring input event is unique during the entire reaction, 
-resulting in intrinsic queue-based handling.
+%In \CEU, a reaction starts from an external input event and programs cannot 
+%emit inputs at all.
+%Therefore, the occurring input event is unique during the entire reaction, 
+%resulting in intrinsic queue-based handling.
 %
-In contrast, programs can emit internal events but these follow a stack-based 
-execution policy, similar to subroutine calls in typical programming languages.
+In \CEU, subsequent external events coming from the environment define a 
+timeline, which programs cannot interfere by emitting new external events.
+%
+Howerver, \CEU supports internal events which programs can \code{emit} in 
+addition to \code{await}.
+In contrast with external events, internal events follow a stack-based 
+execution policy similar to subroutine calls in typical programming languages.
 %
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
 Esterel (a) and \CEU (b).
@@ -1352,6 +1357,109 @@ reasoning about the execution behavior more difficult.
 \subsection{ Discussion }
 \label{sec.ceu.dicsussion}
 
+\CEU aims to offer a simpler semantics than Esterel while keeping the power of 
+synchronous languages, with a tractable concurrency model, reactive and 
+deterministic execution, and safe support for orthogonal abortion of lines of 
+execution.
+
+The notion of time based on events instead of ticks 
+(Section~\ref{sec.ceu.exts}) is widespread~\cite{sync_async.whynotthreads} and 
+popular in many software communities, such as web frameworks (e.g., 
+\emph{jQuery}~\cite{js.jquery} and \emph{Node.js}~\cite{js.node}), GUI toolkits 
+(e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java Swing}~\cite{java.swing}), 
+and Games~\cite{gamepatterns}.
+%
+Like \CEU, event-driven programming is essentially synchronous, i.e., events go 
+through a queue and are dispatched sequentially and atomically to prevent race 
+conditions.
+%
+We believe that for software design, this approach is more familiar to 
+programmers and simplifies the reasoning about concurrency.
+For instance, the uniqueness of external events in \CEU is a prerequisite for 
+the temporal analysis for concurrent statements.
+
+With the event-based semantics, \CEU does not impose a notion of simultaneity 
+for events, requiring each application to define it only when necessary.
+%
+Figure~\ref{lst.simultaneous} emulates a \code{milddle\_click} event (ln. 3) in 
+terms of ``simultaneous'' occurrences of \code{LEFT\_CLICK} and 
+\code{RIGHT\_CLICK} (ln. 1--2).
+If both events occur, we emit the internal event \code{middle\_click} (ln.  
+6--7).
+However, if one of them occurs and the \emph{200ms} timer expires (ln. 9--10), 
+we abort the whole behavior with the \code{par/or} (ln. 5--11) and try again 
+with the enclosing \code{loop} (ln. 4).
+%
+In this specification, ``simultaneous'' means ``within 200 milliseconds'', 
+which is a huge amount of time for a language-defined tick, and which would 
+break the synchronous hypothesis.
+%
+Note that a similar implementation for Esterel would not rely on the tick 
+notion of simultaneity either.
+%
+Note also that the application in \CEU could define an external input 
+\code{TICK} and change the expiring event from \code{200ms} to \code{TICK} (ln.  
+10) to recover the abstract notion of simultaneity.
+
+\begin{figure}
+\begin{minipage}[t]{0.57\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3em,mathescape=true]
+input void LEFT_CLICK;
+input void RIGHT_CLICK;
+event void middle_click;
+loop do
+    par/or do
+        AWAIT_AND(LEFT_CLICK, RIGHT_CLICK);
+        emit middle_click;
+    with
+        AWAIT_OR(LEFT_CLICK, RIGHT_CLICK);
+        await 200 ms;
+    end
+end
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.43\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3em,firstnumber=13]
+#define AWAIT_AND(e1, e2)   \
+    par/and do              \
+        await e1;           \
+    with                    \
+        await e2;           \
+    end
+#define AWAIT_OR(e1, e2)    \
+    par/or do               \
+        await e1;           \
+    with                    \
+        await e2;           \
+    end
+\end{lstlisting}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{ Application defines that a \code{middle\_click} event occurs whenever 
+both \code{LEFT\_CLICK} and \code{RIGHT\_CLICK} occur within 200 milliseconds.
+%
+The macros \code{AWAIT\_AND} (ln. 13--18) and \code{AWAIT\_OR} (ln. 19--24) are 
+simple expansions to a \code{par/and} and \code{par/or} for better readability.
+\label{lst.simultaneous}
+}
+\end{figure}
+
+internal events
+    - flexible, coroutines, resumable exceptions
+    - yet simple, programmers understand stacks
+    - most of the time doesn't matter
+
+Intra-reaction determinism is another
+The temporal analsysi (Section~\ref{sec.ceu.analysis}).
+
+
+The temporal analsysi (Section~\ref{sec.ceu.analysis}).
+simple, programmers understand
+
+targets control-intensive applications and provides abstractions that can 
+express program flow specifications concisely.
+
 lexical order pragamatics
     - again, familiar to programmers
         - register order
@@ -1394,73 +1502,6 @@ threads
 
 %For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
 %parallelism is inherent.
-
-\begin{figure}
-\begin{minipage}[t]{0.57\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3em,mathescape=true]
-input void LEFT_CLICK;
-input void RIGHT_CLICK;
-event void middle_click;
-loop do
-    par/or do
-        AWAIT_AND(LEFT_CLICK, RIGHT_CLICK);
-        emit middle_click;
-    with
-        AWAIT_OR(LEFT_CLICK, RIGHT_CLICK);
-        await 200 ms;
-    end
-end
-\end{lstlisting}
-\end{minipage}
-%
-\begin{minipage}[t]{0.43\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3em,firstnumber=13]
-#define AWAIT_AND(e1, e2)   \
-    par/and do              \
-        await e1;           \
-    with                    \
-        await e2;           \
-    end
-#define AWAIT_OR(e1, e2)    \
-    par/or do               \
-        await e1;           \
-    with                    \
-        await e2;           \
-    end
-\end{lstlisting}
-\end{minipage}
-%\rule{8.4cm}{0.37pt}
-\caption{ Application defines that a \code{middle\_click} event occurs whenever 
-both \code{LEFT\_CLICK} and \code{RIGHT\_CLICK} occur within 200 milliseconds.
-\label{lst.simultaneous}
-}
-\end{figure}
-
-Figure~\ref{lst.simultaneous} emulates a \code{milddle\_click} event (ln. 3) in 
-terms of \code{LEFT\_CLICK} and \code{RIGHT\_CLICK} (ln. 1--2).
-If both events occur, we emit the internal event \code{middle\_click} (ln.  
-6--7).
-However, if one of them occurs and the \emph{200ms} timer expires (ln. 9--10), 
-we abort the whole behavior with the \code{par/or} (ln. 5--11) and try again 
-with the enclosing \code{loop} (ln. 4).
-%
-We discuss internal events in Section~\ref{sec.ceu.ints} and timers in 
-Section~\ref{sec.ceu.timers}.
-%
-The macros \code{AWAIT\_AND} (ln. 13--18) and \code{AWAIT\_OR} (ln. 19--24) are 
-simple expansions to a \code{par/and} and \code{par/or} for better readability.
-%
-In this specification, ``simultaneous'' means ``within 200 milliseconds'', 
-which is a huge amount of time for a language-defined tick, and which would 
-break the synchronous hypothesis.
-%
-Note that a similar implementation for Esterel would not rely on the tick 
-notion of simultaneity either.
-%
-Note also that the application in \CEU could define an external input 
-\code{TICK} and change the expiring event from \code{200ms} to \code{TICK} (ln.  
-10) to recover the abstract notion of simultaneity.
-
 
 \section{Implementation}
 \label{sec.impl}
@@ -2263,21 +2304,6 @@ defines a time unit.
 %
 \CEU also distinguishes external events from stack-based internal events, which 
 provide a limited form of coroutines supporting reactive statements.
-
-The event-driven approach of \CEU is widespread~\cite{sync_async.whynotthreads} 
-and popular in many software communities, such as web frameworks (e.g., 
-\emph{jQuery}~\cite{js.jquery} and \emph{Node.js}~\cite{js.node}), GUI toolkits 
-(e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java Swing}~\cite{java.swing}), 
-and Games~\cite{gamepatterns}.
-%
-Like \CEU, event-driven programming is essentially synchronous, i.e., events go 
-through a queue and are dispatched sequentially and atomically to prevent race 
-conditions.
-%
-We believe that for software design, this approach is more familiar to 
-programmers and simplifies the reasoning about concurrency.
-For instance, the uniqueness of external events in \CEU is a prerequisite for 
-the temporal analysis that enables safe shared-memory concurrency.
 
 Many synchronous languages have been designed to interoperate with \C, such as 
 \emph{Reactive C}~\cite{rp.rc}, Protothreads~\cite{wsn.protothreads}, 
