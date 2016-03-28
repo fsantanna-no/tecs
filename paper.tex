@@ -119,8 +119,7 @@ escapeinside={||},
 %Applications}
 
 % Title portion
-\title{The Design, Semantics, and Implementation of the Synchronous Language 
-\CEU}
+\title{The Design and Implementation of the Synchronous Language \CEU}
 
 \author{
 Francisco Sant'Anna
@@ -285,7 +284,7 @@ Overall, \CEU has a simple semantics with fine-grained execution control, and a
 straightforward single-threaded implementation targeting resource-constrained 
 systems.
 %
-The list that follows summarizes the semantic peculiarities of our design:
+The list that follows summarizes the contributions behind the design of \CEU:
 %
 \begin{itemize}
 %
@@ -305,11 +304,6 @@ finalization for external resources (Section~\ref{sec.ceu.c}).
 (Section~\ref{sec.ceu.timers}).
 \end{itemize}
 %
-We discuss the design of \CEU and present a formal semantics for a small 
-synchronous kernel that represents a subset of the language covering these new 
-functionalities.
-% TODO: why? stack, fin, principalmente
-%
 We also present a lightweight implementation of \CEU with two back ends:
 one aiming for resource efficiency and interoperability with \C,
 and another based on a virtual machine that allows remote reprogramming.
@@ -319,8 +313,8 @@ and \emph{MICAz} sensor nodes based on 8-bit microcontrollers%
 \footnote{
 Both \emph{Arduino} and \emph{MICAz} use the 8-bit \emph{ATmega328} 
 microcontroller with 32K of FLASH and 2K of SRAM.
-}, showing that the peculiarities in the semantics of \CEU do not pose 
-practical obstacles.%:\url{http://www.atmel.com/devices/atmega328.aspx}}
+}, showing the practical aspect of our clean semantics.
+%:\url{http://www.atmel.com/devices/atmega328.aspx}}
 
 In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context 
 of wireless sensor networks, developing a number of applications, protocols, 
@@ -338,8 +332,8 @@ packets~\cite{ceu.terra}.
 The rest of the paper is organized as follows:
 Section~\ref{sec.ceu} discusses the design of \CEU, focusing on the fundamental 
 differences to Esterel.
-Section~\ref{sec.sem} presents a formal semantics for the control primitives of 
-\CEU.
+%Section~\ref{sec.sem} presents a formal semantics for the control primitives 
+%of \CEU.
 Section~\ref{sec.impl} presents the \C and \VM implementation back ends.
 Section~\ref{sec.related} discusses other synchronous languages targeting 
 embedded systems.
@@ -579,9 +573,9 @@ follow:
 \item \textbf{A ``tick'' is too abstract and imprecise:}
 Outside the domain of hardware specification, a tick has no natural counterpart 
 in the real world.
-Also, since no time regularity is required for ticks~\cite{esterel.multiclock}, 
-the two approaches for Esterel in Figure~\ref{fig.ticks} lead to different 
-behaviors for the same sequence of inputs.
+Also, since ticks require no time regularity~\cite{esterel.multiclock}, the two 
+approaches for Esterel in Figure~\ref{fig.ticks} are legitimate, but lead to 
+different behaviors for the same sequence of inputs.
 %
 \item \textbf{Events are never simultaneous:}
 From a rigorous point of view, event occurrences are infinitesimal, having zero 
@@ -650,20 +644,23 @@ If both events occur, we emit the internal event \code{middle\_click} (ln.
 However, if one of them occurs and the \emph{200ms} timer expires (ln. 9--10), 
 we abort the whole behavior with the \code{par/or} (ln. 5--11) and try again 
 with the enclosing \code{loop} (ln. 4).
-The macros \code{AWAIT\_AND} (ln. 13--18) and \code{AWAIT\_OR} (ln. 19--24) are 
-simple expansions to a \code{par/and} and \code{par/or} for better readability.
-%
-Here, ``simultaneous'' means ``within 200 milliseconds'', which is a huge 
-amount of time for a language-defined tick, and which would break the 
-synchronous hypothesis.
-%
-A similar implementation for Esterel would not rely on the tick notion of 
-simultaneity either.
 %
 We discuss internal events in Section~\ref{sec.ceu.ints} and timers in 
 Section~\ref{sec.ceu.timers}.
-
-TODO: recover the logical notion of simultaneaty substituting 200ms with TICK
+%
+The macros \code{AWAIT\_AND} (ln. 13--18) and \code{AWAIT\_OR} (ln. 19--24) are 
+simple expansions to a \code{par/and} and \code{par/or} for better readability.
+%
+In this specification, ``simultaneous'' means ``within 200 milliseconds'', 
+which is a huge amount of time for a language-defined tick, and which would 
+break the synchronous hypothesis.
+%
+Note that a similar implementation for Esterel would not rely on the tick 
+notion of simultaneity either.
+%
+Note also that the application in \CEU could define an external input 
+\code{TICK} and change the expiring event from \code{200ms} to \code{TICK} (ln.  
+10) to recover the abstract notion of simultaneity.
 
 The synchronous hypothesis for \CEU holds if the reactions run faster than the 
 rate of incoming input events.
@@ -1420,12 +1417,24 @@ reasoning about the execution behavior more difficult.
 \subsection{ Discussion }
 \label{sec.ceu.dicsussion}
 
+lexical order pragamatics
+    - again, familiar to programmers
+        - register order
+    - paralax, logging
+        - simple, understandeable, imperative
+        - multiple calls to compose, printf, are not commutative
+        - define with intimidating name
+    - implementation aspects in Section XX
+
 TODO: move POE to here, simpler more natural for software dev
 
 - static analsysis also simpler
     - highlight that is not only important to have a comptutally-sound 
       algorithm, but that something that programmers can understand
 - same with 1st-class timers, also, too much common to be ignored
+
+- understandable semantics
+    - implementable
 
 TODO add a remark about tasks/async/thread in "Discussion"
 
@@ -2330,8 +2339,8 @@ arithmetic operations, external system calls, or remote reprogramming.
 \section{Conclusion}
 \label{sec.conclusion}
 
-We presented the design, semantics, and implementation of \CEU, a synchronous 
-reactive language inspired by Esterel targeting constrained embedded systems.
+We presented the design and implementation of \CEU, a synchronous reactive 
+language inspired by Esterel targeting constrained embedded systems.
 
 \CEU is a concurrency-safe language, employing a static analysis that encompass 
 all control constructs and ensures that the high degree of concurrency in 
@@ -2375,8 +2384,6 @@ graduate students in research projects and two hands-on courses on
 Our experience shows that students take advantage of the sequential-imperative 
 style of \CEU and can implement non-trivial concurrent applications in a few 
 weeks.
-
-% Idexx
 
 \begin{comment}
 We are also extending and applying \CEU in more dynamic domains, such as GUIs 
