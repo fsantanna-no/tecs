@@ -582,8 +582,8 @@ From a rigorous point of view, event occurrences are infinitesimal, having zero
 probability of being simultaneous.
 This way, we believe that the notion of simultaneity should not be imposed by 
 the language, but explicitly defined for each use case.
-In the end of the section, we present a specification to detect 
-``simultaneous'' button clicks.
+In Section~\ref{sec.ceu.discussion}, we present a specification to detect 
+simultaneous button clicks.
 %
 Note that in the case of Esterel, simultaneity depends on the imprecise 
 definition of ticks.
@@ -595,72 +595,6 @@ Because they are atomic, reactions to different events never overlap.
 The possibility to reason about each input individually is a prerequisite for 
 the temporal analysis to be discussed in Section~\ref{sec.ceu.analysis}.
 \end{itemize}
-
-\begin{figure}
-\begin{minipage}[t]{0.57\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3em,mathescape=true]
-input void LEFT_CLICK;
-input void RIGHT_CLICK;
-event void middle_click;
-loop do
-    par/or do
-        AWAIT_AND(LEFT_CLICK, RIGHT_CLICK);
-        emit middle_click;
-    with
-        AWAIT_OR(LEFT_CLICK, RIGHT_CLICK);
-        await 200 ms;
-    end
-end
-\end{lstlisting}
-\end{minipage}
-%
-\begin{minipage}[t]{0.43\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3em,firstnumber=13]
-#define AWAIT_AND(e1, e2)   \
-    par/and do              \
-        await e1;           \
-    with                    \
-        await e2;           \
-    end
-#define AWAIT_OR(e1, e2)    \
-    par/or do               \
-        await e1;           \
-    with                    \
-        await e2;           \
-    end
-\end{lstlisting}
-\end{minipage}
-%\rule{8.4cm}{0.37pt}
-\caption{ Application defines that a \code{middle\_click} event occurs whenever 
-both \code{LEFT\_CLICK} and \code{RIGHT\_CLICK} occur within 200 milliseconds.
-\label{lst.simultaneous}
-}
-\end{figure}
-
-Figure~\ref{lst.simultaneous} emulates a \code{milddle\_click} event (ln. 3) in 
-terms of \code{LEFT\_CLICK} and \code{RIGHT\_CLICK} (ln. 1--2).
-If both events occur, we emit the internal event \code{middle\_click} (ln.  
-6--7).
-However, if one of them occurs and the \emph{200ms} timer expires (ln. 9--10), 
-we abort the whole behavior with the \code{par/or} (ln. 5--11) and try again 
-with the enclosing \code{loop} (ln. 4).
-%
-We discuss internal events in Section~\ref{sec.ceu.ints} and timers in 
-Section~\ref{sec.ceu.timers}.
-%
-The macros \code{AWAIT\_AND} (ln. 13--18) and \code{AWAIT\_OR} (ln. 19--24) are 
-simple expansions to a \code{par/and} and \code{par/or} for better readability.
-%
-In this specification, ``simultaneous'' means ``within 200 milliseconds'', 
-which is a huge amount of time for a language-defined tick, and which would 
-break the synchronous hypothesis.
-%
-Note that a similar implementation for Esterel would not rely on the tick 
-notion of simultaneity either.
-%
-Note also that the application in \CEU could define an external input 
-\code{TICK} and change the expiring event from \code{200ms} to \code{TICK} (ln.  
-10) to recover the abstract notion of simultaneity.
 
 The synchronous hypothesis for \CEU holds if the reactions run faster than the 
 rate of incoming input events.
@@ -675,6 +609,7 @@ For the fixed-length-tick approach of Esterel, a breach in the synchronous
 hypothesis causes timing violations, which can be avoided with \emph{worst case 
 reaction time} analysis to infer an appropriate value for the tick 
 length~\cite{esterel.fixed}.
+% TODO: Such analsysis is orthogonal
 
 \begin{comment}
 > Multiclock Esterel
@@ -762,7 +697,7 @@ program also terminates.
 \end{enumerate}
 }
 
-\begin{figure}
+\begin{figure}[b]
 \begin{minipage}[t]{0.43\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 input A;    // external
@@ -868,15 +803,7 @@ These \emph{delayed awaits} avoid corner cases of instantaneous termination and
 re-execution of statements in the same reaction (known as \emph{schizophrenic 
 statements}~\cite{esterel.constructive}).
 
-The example in Figure~\ref{lst.await} illustrates delayed awaits, which 
-prevents infinite execution by design.
-Both sides of the \code{par/or} have an \code{await} statement to avoid 
-instantaneous termination (ln. 4,7).
-However, if the \code{emit} (ln. 6) could awake the \code{await} (ln. 4) in the 
-same reaction that reaches them, the \code{par/or} would terminate and restart 
-the \code{loop} instantaneously, resulting in infinite execution.
-
-\begin{figure}
+\begin{figure}[b]
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
 event void e,f;
 loop do
@@ -893,25 +820,15 @@ end
 }
 \end{figure}
 
-In atypical scenarios requiring immediate awake, delayed awaits can be 
-circumvented by manually copying or transforming the code to execute on awake.
-%
-For instance, sometimes we need to execute a block of code immediately, and 
-then, periodically from internal event requests, as illustrated in 
-Figure~\ref{lst.delay}.
-In this case, the \code{await} moved to the end of the loop (ln. 10) makes the 
-periodic code to also execute immediately (ln. 9), and then in reactions to 
-each \code{emit} request (ln. 5).
-If the periodic \code{emit} depends on a condition, then the code 
-transformation becomes more intricate, requiring an extra condition test around 
-the periodic code to prevent its immediate execution.
-%
-On the one hand, we transfer the burden of dealing with these specific corner 
-cases to the programmer.
-On the other hand, we simplify the semantics of the language and eliminate the 
-need for complex analysis to deal with schizophrenic statements.
+The example in Figure~\ref{lst.await} illustrates delayed awaits, which 
+prevents infinite execution by design.
+Both sides of the \code{par/or} have an \code{await} statement to avoid 
+instantaneous termination (ln. 4,7).
+However, if the \code{emit} (ln. 6) could awake the \code{await} (ln. 4) in the 
+same reaction that reaches them, the \code{par/or} would terminate and restart 
+the \code{loop} instantaneously, resulting in infinite execution.
 
-\begin{figure}[t]
+\begin{figure}
 %\begin{minipage}[t]{0.50\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3em]
 event void e;
@@ -958,6 +875,24 @@ the \code{await} inside the \code{loop}.
 \label{lst.delay}
 }
 \end{figure}
+
+In atypical scenarios requiring immediate awake, delayed awaits can be 
+circumvented by manually copying or transforming the code to execute on awake.
+%
+For instance, sometimes we need to execute a block of code immediately, and 
+then, periodically from internal event requests, as illustrated in 
+Figure~\ref{lst.delay}.
+In this case, the \code{await} moved to the end of the loop (ln. 10) makes the 
+periodic code to also execute immediately (ln. 9), and then in reactions to 
+each \code{emit} request (ln. 5).
+If the periodic \code{emit} depends on a condition, then the code 
+transformation becomes more intricate, requiring an extra condition test around 
+the periodic code to prevent its immediate execution.
+%
+On the one hand, we transfer the burden of dealing with these specific corner 
+cases to the programmer.
+On the other hand, we simplify the semantics of the language and eliminate the 
+need for complex analysis to deal with schizophrenic statements.
 
 %\newpage %TTT
 
@@ -1104,7 +1039,7 @@ Evidently, programs should only resort to \C for asynchronous functionality,
 such as non-blocking I/O, or simple \code{struct} accessors, but never for 
 control purposes.
 
-\begin{figure}[b]
+\begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em]
 native do
@@ -1198,6 +1133,37 @@ In Esterel and \CEU, the finalize clauses (ln. a:10 and b:5) are automatically
 called if the enclosing blocks (ln. a:3--1 and b:3--10) are externally aborted 
 (ln. a:12 and b:12).
 
+\CEU goes one step further and enforces the use of \code{finalize} for system 
+calls that deal with pointers representing resources:
+%
+\begin{itemize}
+\item If a system call \textbf{receives} a pointer from \CEU, the pointer 
+represents a \textbf{local} resource that requires finalization.
+\item If a system call \textbf{returns} a pointer to \CEU, the pointer 
+represents an \textbf{external} resource that requires finalization.
+\end{itemize}
+%
+\CEU tracks the interaction of system calls with pointers and requires 
+finalization clauses to accompany them.
+%
+In the example in Figure~\ref{lst.fin.ceu}.a, the local variable \code{msg} 
+(ln. 2) is an internal resource passed as a pointer to \code{\_send\_request} 
+(ln. 5), which is an asynchronous call that transmits the buffer in the 
+background.
+If the block aborts (ln. 11) before receiving an acknowledge from the 
+environment (ln. 9), the local \code{msg} goes out of scope and the external 
+transmission now holds a \emph{dangling pointer}.
+The finalization ensures that the transmission also aborts (ln. 7).
+%
+In the example in Figure~\ref{lst.fin.ceu}.b, the call to \code{\_fopen} 
+returns an external file resource as a pointer.
+If the block aborts (ln. 12) during the \code{await A} (ln. 9), the file 
+remains open as a \emph{memory leak}.
+The finalization ensures that the file closes properly (ln. 6).
+%
+In both cases, the code does not compile if the programmer forgets to use the
+\code{finalize} construct.
+
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
@@ -1244,37 +1210,6 @@ occurs.
 \label{lst.fin}
 }
 \end{figure}
-
-\CEU goes one step further and enforces the use of \code{finalize} for system 
-calls that deal with pointers representing resources:
-%
-\begin{itemize}
-\item If a system call \textbf{receives} a pointer from \CEU, the pointer 
-represents a \textbf{local} resource that requires finalization.
-\item If a system call \textbf{returns} a pointer to \CEU, the pointer 
-represents an \textbf{external} resource that requires finalization.
-\end{itemize}
-%
-\CEU tracks the interaction of system calls with pointers and requires 
-finalization clauses to accompany them.
-%
-In the example in Figure~\ref{lst.fin.ceu}.a, the local variable \code{msg} 
-(ln. 2) is an internal resource passed as a pointer to \code{\_send\_request} 
-(ln. 5), which is an asynchronous call that transmits the buffer in the 
-background.
-If the block aborts (ln. 11) before receiving an acknowledge from the 
-environment (ln. 9), the local \code{msg} goes out of scope and the external 
-transmission now holds a \emph{dangling pointer}.
-The finalization ensures that the transmission also aborts (ln. 7).
-%
-In the example in Figure~\ref{lst.fin.ceu}.b, the call to \code{\_fopen} 
-returns an external file resource as a pointer.
-If the block aborts (ln. 12) during the \code{await A} (ln. 9), the file 
-remains open as a \emph{memory leak}.
-The finalization ensures that the file closes properly (ln. 6).
-%
-In both cases, the code does not compile if the programmer forgets to use the
-\code{finalize} construct.
 
 Note that the illustrative example of Figure~\ref{lst.fin} does not manipulate 
 pointers (i.e., the resource is a \emph{singleton}).
@@ -1459,6 +1394,72 @@ threads
 
 %For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
 %parallelism is inherent.
+
+\begin{figure}
+\begin{minipage}[t]{0.57\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3em,mathescape=true]
+input void LEFT_CLICK;
+input void RIGHT_CLICK;
+event void middle_click;
+loop do
+    par/or do
+        AWAIT_AND(LEFT_CLICK, RIGHT_CLICK);
+        emit middle_click;
+    with
+        AWAIT_OR(LEFT_CLICK, RIGHT_CLICK);
+        await 200 ms;
+    end
+end
+\end{lstlisting}
+\end{minipage}
+%
+\begin{minipage}[t]{0.43\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3em,firstnumber=13]
+#define AWAIT_AND(e1, e2)   \
+    par/and do              \
+        await e1;           \
+    with                    \
+        await e2;           \
+    end
+#define AWAIT_OR(e1, e2)    \
+    par/or do               \
+        await e1;           \
+    with                    \
+        await e2;           \
+    end
+\end{lstlisting}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{ Application defines that a \code{middle\_click} event occurs whenever 
+both \code{LEFT\_CLICK} and \code{RIGHT\_CLICK} occur within 200 milliseconds.
+\label{lst.simultaneous}
+}
+\end{figure}
+
+Figure~\ref{lst.simultaneous} emulates a \code{milddle\_click} event (ln. 3) in 
+terms of \code{LEFT\_CLICK} and \code{RIGHT\_CLICK} (ln. 1--2).
+If both events occur, we emit the internal event \code{middle\_click} (ln.  
+6--7).
+However, if one of them occurs and the \emph{200ms} timer expires (ln. 9--10), 
+we abort the whole behavior with the \code{par/or} (ln. 5--11) and try again 
+with the enclosing \code{loop} (ln. 4).
+%
+We discuss internal events in Section~\ref{sec.ceu.ints} and timers in 
+Section~\ref{sec.ceu.timers}.
+%
+The macros \code{AWAIT\_AND} (ln. 13--18) and \code{AWAIT\_OR} (ln. 19--24) are 
+simple expansions to a \code{par/and} and \code{par/or} for better readability.
+%
+In this specification, ``simultaneous'' means ``within 200 milliseconds'', 
+which is a huge amount of time for a language-defined tick, and which would 
+break the synchronous hypothesis.
+%
+Note that a similar implementation for Esterel would not rely on the tick 
+notion of simultaneity either.
+%
+Note also that the application in \CEU could define an external input 
+\code{TICK} and change the expiring event from \code{200ms} to \code{TICK} (ln.  
+10) to recover the abstract notion of simultaneity.
 
 
 \section{Implementation}
@@ -1813,7 +1814,7 @@ On initialization, \code{TRAIL-0} is set to execute the \code{Main} entry point
 (ln. 13), while all others are set to \code{INACTIVE} (in the example, only 
 one, in ln. 14).
 
-\begin{figure}[t]
+\begin{figure}[b]
 \begin{minipage}[t]{0.31\linewidth}
 \begin{lstlisting}
 input void A;
