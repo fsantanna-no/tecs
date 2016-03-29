@@ -24,6 +24,8 @@
 \newcommand{\VM}{\emph{VM}\xspace}
 \newcommand{\CEU}{\textsc{C\'{e}u}\xspace}
 \newcommand{\code}[1] {{\small{\texttt{#1}}}}
+\newcommand{\ax}{\code{[a]}\xspace}
+\newcommand{\bx}{\code{[b]}\xspace}
 \newcommand{\MM}[1] {\textcircled{\tiny{\textsf{#1}}}}
 
 \newcommand{\ST}{\1\xrightarrow[~n~]{}\1}
@@ -393,8 +395,8 @@ general:
 computations that run in unbounded time (e.g., cryptography, image processing) 
 do not fit the zero-delay hypothesis, and cannot be directly implemented.
 
-Figure~\ref{lst.abro} shows side-by-side the implementations in Esterel (a) and 
-\CEU (b) for the following control specification:
+Figure~\ref{lst.abro} shows side-by-side the implementations in Esterel \ax and 
+\CEU \bx for the following control specification:
 %
 \emph{``Emit an output O as soon as two inputs A and B have occurred.
 Reset this behavior each time the input R occurs''}~\cite{esterel.primer}.
@@ -428,7 +430,7 @@ end
 
 .
 \end{lstlisting}
-\centering\small{(a) Esterel}
+\centering\small{\ax Esterel}
 \end{minipage}
 %
 \begin{minipage}[t]{0.48\linewidth}
@@ -446,7 +448,7 @@ loop do
    end
 end
 \end{lstlisting}
-\centering\small{(b) \CEU}
+\centering\small{\bx \CEU}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ A control specification implemented in Esterel and \CEU:
@@ -693,7 +695,7 @@ In contrast with external events, internal events follow a stack-based
 execution policy similar to subroutine calls in typical programming languages.
 %
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
-Esterel (a) and \CEU (b).
+Esterel \ax and \CEU \bx.
 %
 In Esterel, when \code{A} occurs, \code{B} is emitted (ln. 4--5) and both 
 events become active, resulting in the invocation of \code{f()} and \code{g()} 
@@ -727,7 +729,7 @@ $\|$
     call g();
 ]]
 \end{lstlisting}
-\centering\small{(a) Esterel}
+\centering\small{\ax Esterel}
 \end{minipage}
 %
 \begin{minipage}[t]{0.53\linewidth}
@@ -743,7 +745,7 @@ with
     _g();
 end
 \end{lstlisting}
-\centering\small{(b) \CEU}
+\centering\small{\bx \CEU}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ Internal signals (events) in Esterel and \CEU: similar syntax, but 
@@ -955,7 +957,7 @@ with
     x = x * 2;
 end
 \end{lstlisting}
-\centering\small{(a)}
+\centering\small{\ax}
 \end{minipage}
 %
 \begin{minipage}[t]{0.50\linewidth}
@@ -970,13 +972,13 @@ with
     y = y * 2;
 end
 \end{lstlisting}
-\centering\small{(b)}
+\centering\small{\bx}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ Shared-memory concurrency in \CEU:
-Example (a) is safe because the trails access \code{x} atomically in different 
+Example \ax is safe because the trails access \code{x} atomically in different 
 reactions;
-Example (b) is unsafe because both trails access \code{y} in the same reaction.
+Example \bx is unsafe because both trails access \code{y} in the same reaction.
 \label{lst.shared}
 }
 \end{figure}
@@ -988,14 +990,14 @@ For instance, consider the two examples in Figure~\ref{lst.shared}, both of
 which define a shared variable (ln. 2), and assign to it in parallel trails 
 (ln.  5, 8).
 %
-In the example \code{(a)}, the two assignments to \code{x} execute from 
-reactions to different events \code{A} and \code{B} which, by definition, 
-cannot occur simultaneously (Section~\ref{sec.ceu.exts}).
+In the example \ax, the two assignments to \code{x} execute from reactions to 
+different events \code{A} and \code{B} which, by definition, cannot occur 
+simultaneously (Section~\ref{sec.ceu.exts}).
 Hence, for the sequence \code{A->B}, \code{x} becomes \code{(1+1)*2->4}, while 
 for \code{B->A}, \code{x} becomes \code{(1*2)+1->3}.
 %
-In the example \code{(b)}, the two assignments to \code{y} are simultaneous 
-because they execute in reaction to the same event \code{A}.
+In the example \bx, the two assignments to \code{y} are simultaneous because 
+they execute in reaction to the same event \code{A}.
 Since \CEU employs lexical order for intra-reaction statements, the execution 
 is still deterministic, and \code{y} always becomes \code{(1+1)*2->4}.
 %
@@ -1018,12 +1020,12 @@ parallel react to the same input event.
 Considering the examples in Figure~\ref{lst.shared}:
 %
 \begin{itemize}
-\item The assignments to \code{x} in lines 2 and 5 in \code{(a)}
+\item The assignments to \code{x} in lines 2 and 5 in \ax
       \textbf{cannot} be concurrent because they are not in parallel trails.
-\item The assignments to \code{x} in lines 5 and 8 in \code{(a)}
+\item The assignments to \code{x} in lines 5 and 8 in \ax
       \textbf{cannot} be concurrent because they \textbf{cannot} execute during 
       the same reaction.
-\item The assignments to \code{y} in lines 5 and 8 in \code{(b)}
+\item The assignments to \code{y} in lines 5 and 8 in \bx
       \textbf{can} be concurrent because they are in parallel trails and 
       \textbf{can} execute during the same reaction.
 \end{itemize}
@@ -1070,7 +1072,7 @@ with
     _g(_id(_NUM));
 end
 \end{lstlisting}
-\centering\small{(a) Definition and use of external symbols}
+\centering\small{\ax Definition and use of external symbols}
 \end{minipage}
 %
 \begin{minipage}[t]{0.44\linewidth}
@@ -1087,10 +1089,10 @@ native @safe  _f with _g;
 
 .
 \end{lstlisting}
-\centering\small{(b) Annotations for the external symbols in (a).}
+\centering\small{\bx Annotations for the external symbols in \ax.}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
-\caption{ The unsafe program in (a) only compiles with the annotations in (b).
+\caption{ The unsafe program in \ax only compiles with the annotations in \bx.
 \label{lst.c}
 }
 \end{figure}
@@ -1113,7 +1115,7 @@ suspicious concurrent accesses between \code{\_f} and all symbols in the second
 trail.
 
 The code in Figure~\ref{lst.c}.b uses annotations to provide hints to the 
-compiler about the semantics of the \C symbols in use in \code{(a)}:
+compiler about the semantics of the \C symbols in use in \ax:
 %
 \begin{itemize}
 \item \code{\_NUM} is a constant symbol, meaning that it is safe to use it 
@@ -1124,8 +1126,7 @@ compiler about the semantics of the \C symbols in use in \code{(a)}:
       conflict and they can be safely called concurrently.
 \end{itemize}
 
-With the annotations in \code{(b)}, the program in \code{(a)} compiles 
-successfully.
+With the annotations in \bx, the program in \ax compiles successfully.
 
 Esterel's \code{abort} and \CEU's \code{par/or} statements distinguish how 
 synchronous languages can abort awaiting lines of execution without tweaking 
@@ -1140,20 +1141,20 @@ For this reason, Esterel and \CEU provide a \code{finalize} construct to
 unconditionally execute a series of statements even if the enclosing block is 
 aborted and does not terminate normally.
 
-The example in Figure~\ref{lst.fin} in Esterel (\code{(a)}) and \CEU 
-(\code{(b)}) uses the \code{lock} and \code{unlock} calls which represent 
-accesses to an external resource.
-The normal behavior is to \code{lock} the resource (ln. \code{(a)}:4 and 
-\code{(b)}:3), perform some operations in subsequent reactions to input 
-\code{A} (ln. \code{(a)}:5--8 and \code{(b)}:7--10), and then \code{unlock} the 
-resource (ln. \code{(a)}:10 and \code{(b)}:5).
-However, if the aborting input \code{B} (ln. \code{(a)}:12 and \code{(b)}:12) 
-occurs after the \code{lock} but before the reactions to \code{A}, we still 
-want to call \code{unlock} to safely release the resource.
+The example in Figure~\ref{lst.fin} in Esterel \ax and \CEU \bx uses the 
+\code{lock} and \code{unlock} calls which represent accesses to an external 
+resource.
+The normal behavior is to \code{lock} the resource (ln. \ax:4 and \bx:3), 
+perform some operations in subsequent reactions to input \code{A} (ln.  
+\ax:5--8 and \bx:7--10), and then \code{unlock} the resource (ln.  \ax:10 and 
+\bx:5).
+However, if the aborting input \code{B} (ln. \ax:12 and \bx:12) occurs after 
+the \code{lock} but before the reactions to \code{A}, we still want to call 
+\code{unlock} to safely release the resource.
 %
-In Esterel and \CEU, the finalize clauses (ln. \code{(a)}:10 and \code{(b)}:5) 
-are automatically called if the enclosing blocks (ln. \code{(a)}:3--1 and 
-\code{(b)}:3--10) are externally aborted (ln. \code{(a)}:12 and \code{(b)}:12).
+In Esterel and \CEU, the finalize clauses (ln. \ax:10 and \bx:5) are 
+automatically called if the enclosing blocks (ln. \ax:3--1 and \bx:3--10) are 
+externally aborted (ln. \ax:12 and \bx:12).
 
 \CEU goes one step further and enforces the use of \code{finalize} for system 
 calls that deal with pointers representing resources:
@@ -1203,7 +1204,7 @@ abort
 when B
 .
 \end{lstlisting}
-\centering\small{(a) Esterel}
+\centering\small{\ax Esterel}
 \end{minipage}
 %
 \begin{minipage}[t]{0.48\linewidth}
@@ -1222,7 +1223,7 @@ with
     await B;
 end
 \end{lstlisting}
-\centering\small{(b) \CEU}
+\centering\small{\bx \CEU}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{
@@ -1259,7 +1260,7 @@ with
 end
 .
 \end{lstlisting}
-\centering\small{(a) Local resource finalization}
+\centering\small{\ax Local resource finalization}
 \end{minipage}
 %
 \begin{minipage}[t]{0.48\linewidth}
@@ -1278,7 +1279,7 @@ with
    <...>
 end
 \end{lstlisting}
-\centering\small{(b) External resource finalization}
+\centering\small{\bx External resource finalization}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{
@@ -1334,7 +1335,7 @@ v = 2;
 
 .
 \end{lstlisting}
-\centering\small{(a)}
+\centering\small{\ax}
 \end{minipage}
 %
 \begin{minipage}[t]{0.51\linewidth}
@@ -1349,7 +1350,7 @@ with
     v = 2;
 end
 \end{lstlisting}
-\centering\small{(b)}
+\centering\small{\bx}
 \end{minipage}
 %\rule{8.5cm}{0.37pt}
 \caption{ First-class timers in \CEU.
@@ -1621,7 +1622,7 @@ end
 await A;
 y = 3;
 \end{lstlisting}
-\centering\small{(a)}
+\centering\small{\ax}
 \end{minipage}
 %
 %
@@ -1639,7 +1640,7 @@ Stmts I={.} O={A}
     Await_A I={A,B} O={A}
     Set_y I={A} O={A}
 \end{lstlisting}
-\centering\small{(b)}
+\centering\small{\bx}
 \end{minipage}
 %
 %\rule{14cm}{0.37pt}
@@ -1861,7 +1862,7 @@ In the final generated code in \C, each trail segment label representing an
 entry point becomes a \emph{switch case} with the associated code to execute.
 %
 Figure~\ref{lst.impl.trails} illustrates the generation process.
-For the program in (a), the compiler extracts the entry points and associated 
+For the program in \ax, the compiler extracts the entry points and associated 
 trails, e.g., the label \code{Awake\_e} will execute on \code{TRAIL-0} (ln. 7).
 %
 For each statement that pauses (\code{emit} and \code{await}), resumes 
@@ -1870,7 +1871,7 @@ and \code{break}), the compiler splits the trail into segments with associated
 entry points.
 %
 The entry points translate to an \code{enum} in the generated code (ln. 1--10, 
-in (b)).
+in \bx).
 The state of trails translates to a vector of type \code{trail\_t} with the 
 maximum number of simultaneous trails (ln. 12--15).
 On initialization, \code{TRAIL-0} is set to execute the \code{Main} entry point 
@@ -1906,7 +1907,7 @@ await A;
 
 .
 \end{lstlisting}
-\centering\small{(a)}
+\centering\small{\ax}
 \end{minipage}
 %
 \begin{minipage}[t]{0.31\linewidth}
@@ -1937,7 +1938,7 @@ trail_t TRLS[2] = {
 
 .
 \end{lstlisting}
-\centering\small{(b)}
+\centering\small{\bx}
 \end{minipage}
 %
 \begin{minipage}[t]{0.37\linewidth}
@@ -1972,9 +1973,9 @@ void dispatch (trail_t* t) {
 \end{minipage}
 \caption{
 %{\small %\textmd{
-(a) Static allocation of trails: the comments identify the trail indexes 
+\ax Static allocation of trails: the comments identify the trail indexes 
 inferred by the compiler;
-(b) Entry-point labels: each trail segment has an associated numeric identifier 
+\bx Entry-point labels: each trail segment has an associated numeric identifier 
 generated by the compiler.
 (c) Dispatch function: uses a \code{switch} to associate each segment 
 identifier with the corresponding code to execute.
@@ -2256,7 +2257,7 @@ function int getRadioID (void);
 
 .
 \end{lstlisting}
-\centering\small{(a)}
+\centering\small{\ax}
 \end{minipage}
 %
 \begin{minipage}[t]{0.49\linewidth}
@@ -2284,14 +2285,14 @@ void VM.function(int id, void* params) {
     }
 }
 \end{lstlisting}
-\centering\small{(b)}
+\centering\small{\bx}
 \end{minipage}
 %
 \caption{
 %{\small %\textmd{
-(a) \CEU interface with customized \VM.
+\ax \CEU interface with customized \VM.
 %
-(b) The routine \code{VM.out} redirects all output events to the corresponding 
+\bx The routine \code{VM.out} redirects all output events to the corresponding 
 OS calls (ln.  1--8).
 %
 Each \emph{TinyOS} event callback calls \code{VM.enqueue} for the corresponding 
