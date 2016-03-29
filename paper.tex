@@ -610,7 +610,7 @@ Section~\ref{sec.ceu.analysis}.
 The synchronous hypothesis for \CEU holds if the reactions run faster than the 
 rate of incoming input events.
 Otherwise, the application continuously accumulates delays between the real 
-occurrence and actual reaction to events.
+occurrence and actual reaction of a given event.
 %
 This is also the case for the variable-length-tick approach of Esterel, since 
 the more inputs to handle, the longer the reaction takes, and the more inputs 
@@ -687,8 +687,8 @@ with all coexisting during the entire reaction.
 In \CEU, subsequent external events coming from the environment define a 
 timeline, which programs cannot interfere by emitting new external events.
 %
-Howerver, \CEU supports internal events which programs can \code{emit} in 
-addition to \code{await}.
+To cope with intra-reaction communication, \CEU supports internal events which 
+programs can \code{emit} and \code{await}.
 In contrast with external events, internal events follow a stack-based 
 execution policy similar to subroutine calls in typical programming languages.
 %
@@ -896,7 +896,7 @@ In atypical scenarios requiring immediate awake, delayed awaits can be
 circumvented by manually copying or transforming the code to execute on awake.
 %
 For instance, sometimes we need to execute a block of code immediately, and 
-then, periodically from internal event requests, as illustrated in 
+then periodically from internal event requests, as illustrated in 
 Figure~\ref{lst.delay}.
 In this case, the \code{await} moved to the end of the loop (ln. 10) makes the 
 periodic code to also execute immediately (ln. 9), and then in reactions to 
@@ -932,7 +932,7 @@ it''~\cite{esterel.primer}.
 %
 A number of Esterel-based synchronous languages, such as 
 \emph{SOL}~\cite{wsn.sol},
-\emph{SC}~\cite{rp.sychc}, and
+\emph{SC}~\cite{rp.synchc}, and
 \emph{PRET-C}~\cite{rp.pretc},
 enforce intra-reaction determinism with an arbitrary execution order for 
 statements in multiple lines of execution.
@@ -985,8 +985,8 @@ Even so, we consider that enforcing an arbitrary execution order can be
 misleading in some cases.
 %
 For instance, consider the two examples in Figure~\ref{lst.shared}, both of 
-which define a shared variable (ln. 2), and assign to it parallel trails (ln.  
-5, 8).
+which define a shared variable (ln. 2), and assign to it in parallel trails 
+(ln.  5, 8).
 %
 In the example \code{(a)}, the two assignments to \code{x} execute from 
 reactions to different events \code{A} and \code{B} which, by definition, 
@@ -994,14 +994,13 @@ cannot occur simultaneously (Section~\ref{sec.ceu.exts}).
 Hence, for the sequence \code{A->B}, \code{x} becomes \code{(1+1)*2->4}, while 
 for \code{B->A}, \code{x} becomes \code{(1*2)+1->3}.
 %
-In the example \code{(b)}, the two assignments to \code{y} execute from a 
-reaction to the same event \code{A}, and are simultaneous from an external 
-point of view.
+In the example \code{(b)}, the two assignments to \code{y} are simultaneous 
+because they execute in reaction to the same event \code{A}.
 Since \CEU employs lexical order for intra-reaction statements, the execution 
 is still deterministic, and \code{y} always becomes \code{(1+1)*2->4}.
 %
-However, any (apparently innocuous) change in the order of trails can change 
-the semantics of a program, which we consider unsafe.
+However, an (apparently innocuous) change in the order of trails changes the 
+semantics of the program, which we consider unsafe.
 
 To mitigate this threat, \CEU performs a temporal analysis at compile time and 
 detects concurrent accesses to shared variables, as follows:
@@ -1030,15 +1029,16 @@ Considering the examples in Figure~\ref{lst.shared}:
 \end{itemize}
 %
 The algorithm for the analysis, which is depicted in 
-Section~\ref{sec.impl.analsyis}, inspects all possible \code{await} statements 
-that precede a variable access and hold the associated awaking events.
+Section~\ref{sec.impl.analysis}, inspects all possible \code{await} statements 
+that precede a variable access and keep a list with all corresponding awaking 
+events.
 Then, it checks all accesses in parallel trails to see if they share an awaking 
 event.
 If it is the case, the compiler warns about the suspicious accesses.
 
 Note that this analysis is only possible due to the uniqueness of input events 
 within reactions.
-Otherwise, any two trail segments in parallel could be concurrent, even if they 
+Otherwise, any two trail segments in parallel can be concurrent, even if they 
 react to different input events.
 
 \subsection{ Safe Integration with \C }
@@ -1051,9 +1051,9 @@ Therefore, access to \C is seamless and, more importantly, easily trackable.
 Similarly to Esterel, which supports the \code{call} primitive for external 
 code, calls are assumed to be instantaneous~\cite{esterel.primer}.
 %
-Evidently, programs should only resort to \C for asynchronous functionality, 
+This way, programs should only resort to \C for asynchronous functionality, 
 such as non-blocking I/O, or simple \code{struct} accessors, but never for 
-control purposes.
+control purposes (the compiler can restrict the available symbols in \C).
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
@@ -1070,7 +1070,7 @@ with
     _g(_id(_NUM));
 end
 \end{lstlisting}
-\centering\small{(a)}
+\centering\small{(a) Definition and use of external symbols}
 \end{minipage}
 %
 \begin{minipage}[t]{0.44\linewidth}
@@ -1087,19 +1087,19 @@ native @safe  _f with _g;
 
 .
 \end{lstlisting}
-\centering\small{(b)}
+\centering\small{(b) Annotations for the external symbols in (a).}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
-\caption{ TODO
+\caption{ The unsafe program in (a) only compiles with the annotations in (b).
 \label{lst.c}
 }
 \end{figure}
 
-In addition, \CEU also employs the temporal analysis for calls and accesses to 
-external symbols in \C.
+We extend the temporal analysis of \CEU for calls and accesses to external 
+symbols in \C.
 %
 As an example, the program in Figure~\ref{lst.c}.a defines four external 
-symbols inside a \code{native} block for standard declarations in \C (ln.  
+symbols inside a \code{native} block with standard declarations in \C (ln.  
 1--6).
 %
 The \code{par/and} (ln. 7--11) creates two trails that react concurrently 
@@ -1108,9 +1108,9 @@ the first trail calls the symbol \code{\_f},
 while the second calls \code{\_g} and \code{\_id}, and also accesses 
 \code{\_NUM}.
 %
-Since \CEU does not inspect any code defined in \C, it has no idea about the 
-meaning of the symbols and complains about suspicious concurrent accesses 
-between \code{\_f} against all symbols in the second trail.
+Since \CEU does not inspect any code defined in \C, it complains about 
+suspicious concurrent accesses between \code{\_f} and all symbols in the second 
+trail.
 
 The code in Figure~\ref{lst.c}.b uses annotations to provide hints to the 
 compiler about the semantics of the \C symbols in use in \code{(a)}:
@@ -1124,7 +1124,10 @@ compiler about the semantics of the \C symbols in use in \code{(a)}:
       conflict and they can be safely called concurrently.
 \end{itemize}
 
-Esterel's \code{abort} and \CEU's \code{par/or} statements illustrate how 
+With the annotations in \code{(b)}, the program in \code{(a)} compiles 
+successfully.
+
+Esterel's \code{abort} and \CEU's \code{par/or} statements distinguish how 
 synchronous languages can abort awaiting lines of execution without tweaking 
 them with synchronization primitives.
 In contrast, traditional (asynchronous) multi-threaded languages cannot express 
@@ -1133,21 +1136,24 @@ thread termination safely~\cite{esterel.preemption,sync_async.threadsstop}.
 Still, aborting lines of execution that deal with external resources is 
 challenging because they may end up in an inconsistent state.
 %
-For this reason, Esterel and \CEU provide a \code{finalize} construct with a 
-clause that executes even if the enclosing block aborts and does not terminate 
-normally.
+For this reason, Esterel and \CEU provide a \code{finalize} construct to 
+unconditionally execute a series of statements even if the enclosing block is 
+aborted and does not terminate normally.
 
-Figure~\ref{lst.fin} uses \code{lock} and \code{unlock} calls to represent an 
-external resource.
-The normal behavior is to \code{lock} the resource, perform some operations in 
-subsequent reactions to input \code{A}, and then \code{unlock} the resource.
-However, if the aborting input \code{B} occurs after the \code{lock} but before 
-the reactions to \code{A}, we still want to call \code{unlock} to safely 
-release the resource.
+The example in Figure~\ref{lst.fin} in Esterel (\code{(a)}) and \CEU 
+(\code{(b)}) uses the \code{lock} and \code{unlock} calls which represent 
+accesses to an external resource.
+The normal behavior is to \code{lock} the resource (ln. \code{(a)}:4 and 
+\code{(b)}:3), perform some operations in subsequent reactions to input 
+\code{A} (ln. \code{(a)}:5--8 and \code{(b)}:7--10), and then \code{unlock} the 
+resource (ln. \code{(a)}:10 and \code{(b)}:5).
+However, if the aborting input \code{B} (ln. \code{(a)}:12 and \code{(b)}:12) 
+occurs after the \code{lock} but before the reactions to \code{A}, we still 
+want to call \code{unlock} to safely release the resource.
 %
-In Esterel and \CEU, the finalize clauses (ln. a:10 and b:5) are automatically 
-called if the enclosing blocks (ln. a:3--1 and b:3--10) are externally aborted 
-(ln. a:12 and b:12).
+In Esterel and \CEU, the finalize clauses (ln. \code{(a)}:10 and \code{(b)}:5) 
+are automatically called if the enclosing blocks (ln. \code{(a)}:3--1 and 
+\code{(b)}:3--10) are externally aborted (ln. \code{(a)}:12 and \code{(b)}:12).
 
 \CEU goes one step further and enforces the use of \code{finalize} for system 
 calls that deal with pointers representing resources:
@@ -1366,7 +1372,7 @@ depend on the execution timings for the code marked as \code{<...>}, making the
 reasoning about the execution behavior more difficult.
 
 \subsection{ Discussion }
-\label{sec.ceu.dicsussion}
+\label{sec.ceu.discussion}
 
 TODO: queue-based/unique in the semantics of the language and not in the 
 library
