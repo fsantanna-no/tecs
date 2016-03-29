@@ -282,33 +282,36 @@ synchronous and imperative mindset of Esterel but diverges in fundamental
 semantic aspects.
 %
 Overall, \CEU has a simple semantics with fine-grained control for 
-intra-reaction execution which is amenable to a simple temporal analysis to 
-improve safety:
+intra-reaction execution which is amenable to a simple temporal analysis that
+improves safety.
 %
 The list that follows summarizes the contributions behind the design of \CEU:
 %
 \begin{itemize}
 %
 \item Unique and queue-based external events, which define the notion of time 
-in \CEU (Section~\ref{sec.ceu.exts}).
+in \CEU.
+% (Section~\ref{sec.ceu.exts}).
 %
 \item Stack-based internal events for intra-reaction communication, which also
-provides a limited form of coroutines (Section~\ref{sec.ceu.ints}).
+provides a limited form of coroutines.
+% (Section~\ref{sec.ceu.ints}).
 %
-\item Static temporal analysis to detect suspicious concurrent statements 
-(Section~\ref{sec.ceu.analysis}).
+\item Static temporal analysis to detect suspicious concurrent statements.
+%(Section~\ref{sec.ceu.analysis}).
 %
 \item Safe integration with \C which enforces finalization for external 
-resources (Section~\ref{sec.ceu.c}).
+resources.
+% (Section~\ref{sec.ceu.c}).
 %
-\item First-class synchronized timers with a dedicated syntax 
-(Section~\ref{sec.ceu.timers}).
+\item First-class synchronized timers with a dedicated syntax.
+%(Section~\ref{sec.ceu.timers}).
 \end{itemize}
 %
 We also present a lightweight single-threaded implementation of \CEU with two 
 back ends:
 one aiming for resource efficiency and interoperability with \C,
-and another based on a virtual machine that allows remote reprogramming.
+and another as a virtual machine that allows remote reprogramming.
 %
 Our implementations target resource-constrained devices, such as \emph{Arduino} 
 and \emph{MICAz} sensor nodes based on 8-bit microcontrollers%
@@ -322,9 +325,9 @@ In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context
 of wireless sensor networks, developing a number of applications, protocols, 
 and device drivers.
 %
-We evaluated the expressiveness of \CEU in comparison to event-driven code in 
-\C and attested a reduction in source code size (around 25\%) with a small 
-increase in memory usage (around 5--10\% for \emph{text} and 
+We evaluated the expressiveness of \CEU in comparison to hand-crafted 
+event-driven code in \C and attested a reduction in source code size (around 
+25\%) with a small increase in memory usage (around 5--10\% for \emph{text} and 
 \emph{data})~\cite{ceu.sensys13}.
 %
 For the \VM back end, applications have a bytecode footprint in the order of 
@@ -398,8 +401,8 @@ Reset this behavior each time the input R occurs''}~\cite{esterel.primer}.
 %
 The first phrase of the specification, awaiting and emitting the events, is 
 translated almost identically in the two languages (ln. 3--8, in both 
-implementations), given that Esterel's `$\|$' and \CEU's \code{par/and} 
-constructs are equivalent.
+implementations), i.e., Esterel's `$\|$' and \CEU's \code{par/and} constructs 
+are equivalent.
 %
 For the second phrase, the reset behavior, the Esterel version uses a 
 \code{abort-when} (ln. 2--9), which, in this case, serves the same purpose of 
@@ -454,8 +457,8 @@ end
 
 % TODO: par/or vs abort, strong/weak abortion
 
-In the sections that follow, we discuss the main differences between \CEU and 
-Esterel:
+In the subsections that follow, we discuss the main differences between \CEU 
+and Esterel:
 Unique and queue-based external events
     (\ref{sec.ceu.exts});
 Stack-based internal events
@@ -467,6 +470,8 @@ Safe integration with \C
 and
 First-class synchronized timers
     (\ref{sec.ceu.timers}).
+We finish with a summary of our design
+    (\ref{sec.ceu.discussion}).
 
 \subsection{ Unique and Queue-Based External Events }
 \label{sec.ceu.exts}
@@ -474,10 +479,9 @@ First-class synchronized timers
 Esterel defines time as a discrete sequence of logical unit instants or 
 ``ticks''.
 At each tick, the program reacts to an arbitrary number of simultaneous input 
-events (including zero), depending on external stimuli the environment 
-provides.
+events, depending on external stimuli the environment provides.
 In contrast, \CEU defines time as a discrete sequence of reactions to
-external stimuli.
+unique input events.
 At each input event, which constitutes a logical unit of time, the program 
 reacts exclusively to it.
 The execution of a program in \CEU is as follows~\cite{ceu.sensys13}:
@@ -499,7 +503,7 @@ A program must react to an occurring event completely before handling the next.
 Based on the synchronous hypothesis, a program takes no time on step 2 and is 
 always idle on step 3.
 In practice, if a new external input event occurs while a reaction chain is 
-running (step 2), it is enqueued to run in the next reaction.
+running (step 2), it is enqueued to occur in the next reaction.
 
 \begin{figure}[!htb]
 \centering
@@ -517,15 +521,15 @@ Esterel and \CEU use discrete logical units of time in which the occurring
 events (which are the same in all boxes) have to fit somehow:
 %
 \begin{itemize}
-\item \code{Box-1}:
-Esterel with fixed-length ticks,
+\item \code{[Box-1]}:
+``Esterel with fixed-length ticks'',
 within which reactions to occurring inputs have to fit~\cite{esterel.fixed}.
 %
 We assume a \code{R(boot)} reaction at \code{tick-0} which happens before any 
 input.
 %
 The input \code{A} ``physically'' occurs during the boot reaction but, because 
-time is discrete, its corresponding reaction only executes inthe next tick.
+time is discrete, its corresponding reaction only executes in the next tick.
 %
 Note that \code{R(A)} takes more time than \code{tick-1}, causing a 
 \emph{timing violation}~\cite{esterel.fixed} that invades \code{tick-2}.
@@ -541,30 +545,31 @@ occur ``simultaneously'' during the idle \code{tick-3}.
 However, the program can only detect one occurrence of \code{E}, which is 
 considered in \code{R(D+E)}.
 %
-\item \code{Box-2}:
-Esterel with variable-length ticks that adjust to the CPU time the 
+\item \code{[Box-2]}:
+``Esterel with variable-length ticks'', which are adjusted to the CPU time the 
 corresponding reaction takes to complete~\cite{esterel.variable}.
 This approach avoids the time violation for \code{R(A)} and also results in
 smaller idle periods.
 For instance, the occurrence of \code{D} interrupts the idle \code{tick-3} to 
-start reaction \code{R(D)} on \code{tick-4}.
+react alone as \code{R(D)} on \code{tick-4}.
 Similarly to the fixed-tick approach, only one of the two simultaneous 
 occurrences of \code{E} is considered on \code{tick-5}, now because \code{R(D)} 
 takes too long.
 %
-\item \code{Box-3}:
-\CEU with unique and queue-based policy for input events.
+\item \code{[Box-3]}:
+``\CEU with unique and queue-based input events''.
 We also assume a \code{R(boot)} reaction before any input.
 %
 Because the occurrence of event \code{A} is unique during \code{tick-0}, the 
 behavior in \CEU is similar to \code{Box-2} for the first two units of time 
 (\code{boot-0} and \code{A-1}).
 %
-However, \CEU does not consider the events \code{B} and \code{C} simultaneous, 
-which are handled in subsequent reactions \code{R(B)} and \code{R(C)}.
+However, \CEU does not consider the events \code{B} and \code{C} as 
+simultaneous, and handles each in subsequent reactions \code{R(B)} and 
+\code{R(C)}.
 %
-We assume that the CPU time for \code{R(B+C)} in Esterel is roughly the same as 
-\code{R(B)+R(C)} in \CEU.
+We assume the CPU times for \code{R(B+C)} in Esterel and \code{R(B)+R(C)} in 
+\CEU to be roughly the same.
 This way, the first idle period in \code{Box-2} and \code{Box-3} coincide.
 %
 Finally, \CEU recognizes and reacts to the two instances of \code{E} 
