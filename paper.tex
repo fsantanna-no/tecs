@@ -472,8 +472,8 @@ Safe integration with \C
 and
 First-class synchronized timers
     (\ref{sec.ceu.timers}).
-We finish with a summary of our design
-    (\ref{sec.ceu.discussion}).
+%We finish with a summary of our design
+    %(\ref{sec.ceu.discussion}).
 
 \subsection{ Unique and Queue-Based External Events }
 \label{sec.ceu.exts}
@@ -599,7 +599,7 @@ discrete ticks.
 For instance, in Figure~\ref{fig.ticks} (\code{box-1} and \code{box-2}), the 
 events \code{B} and \code{C} are simultaneous, even though \code{A} and 
 \code{B} actually happen much closer to one another.
-In Section~\ref{sec.ceu.discussion}, after introducing internal events and 
+In Section~\ref{sec.ceu.timers}, after introducing internal events and 
 first-class timers, we show an example that detects simultaneous button clicks.
 %
 \item \textbf{Unique input events imply mutual exclusion:}
@@ -706,8 +706,9 @@ In \CEU, the occurrence of \code{A} makes the program behave as follows:
 {\small
 \begin{enumerate}
 \setlength{\itemsep}{0pt}
-\item 1st trail awakes (ln. 4), emits \code{b}, and pauses.
+\item 1st trail awakes (ln. 4), broadcasts \code{b}, and pauses.
 \item 2nd trail awakes (ln. 8), calls \code{\_g()}, and terminates.
+\item No other trails awake to \code{b}.
 \item 1st trail (on top of the stack) resumes, calls \code{\_f()}, and 
     terminates.
 \item Both trails have terminated, so the \code{par/and} rejoins, and the 
@@ -957,7 +958,7 @@ with
     x = x * 2;
 end
 \end{lstlisting}
-\centering\small{\ax}
+\centering\small{\ax Accesses to \code{x} are safe}
 \end{minipage}
 %
 \begin{minipage}[t]{0.50\linewidth}
@@ -972,7 +973,7 @@ with
     y = y * 2;
 end
 \end{lstlisting}
-\centering\small{\bx}
+\centering\small{\bx Accesses to \code{y} are unsafe}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ Shared-memory concurrency in \CEU:
@@ -1053,9 +1054,12 @@ Therefore, access to \C is seamless and, more importantly, easily trackable.
 Similarly to Esterel, which supports the \code{call} primitive for external 
 code, calls are assumed to be instantaneous~\cite{esterel.primer}.
 %
-This way, programs should only resort to \C for asynchronous functionality, 
-such as non-blocking I/O, or simple \code{struct} accessors, but never for 
-control purposes (the compiler can restrict the available symbols in \C).
+This way, programs should only resort to \C for asynchronous functionality%
+\footnote{
+In \CEU, it is possible to restrict the available \C symbols as a compile-time 
+option.
+}, such as non-blocking I/O, or simple \code{struct} accessors, but never for 
+control purposes.
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
@@ -1072,7 +1076,7 @@ with
     _g(_id(_NUM));
 end
 \end{lstlisting}
-\centering\small{\ax Definition and use of external symbols}
+\centering\small{\ax Definitions and uses of symbols}
 \end{minipage}
 %
 \begin{minipage}[t]{0.44\linewidth}
@@ -1089,7 +1093,7 @@ native @safe  _f with _g;
 
 .
 \end{lstlisting}
-\centering\small{\bx Annotations for the external symbols in \ax.}
+\centering\small{\bx Annotations for the symbols in \ax}
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ The unsafe program in \ax only compiles with the annotations in \bx.
@@ -1097,8 +1101,8 @@ native @safe  _f with _g;
 }
 \end{figure}
 
-We extend the temporal analysis of \CEU for calls and accesses to external 
-symbols in \C.
+The temporal analysis of Section~\ref{sec.ceu.analysis} also considers calls 
+and accesses to external symbols in \C.
 %
 As an example, the program in Figure~\ref{lst.c}.a defines four external 
 symbols inside a \code{native} block with standard declarations in \C (ln.  
@@ -1106,16 +1110,15 @@ symbols inside a \code{native} block with standard declarations in \C (ln.
 %
 The \code{par/and} (ln. 7--11) creates two trails that react concurrently 
 during the boot reaction (ln. 8,10):
-the first trail calls the symbol \code{\_f},
-while the second calls \code{\_g} and \code{\_id}, and also accesses 
-\code{\_NUM}.
+the first trail calls symbol \code{\_f},
+while the second calls \code{\_g} and \code{\_id}, and also reads \code{\_NUM}.
 %
-Since \CEU does not inspect any code defined in \C, it complains about 
-suspicious concurrent accesses between \code{\_f} and all symbols in the second 
-trail.
+Since \CEU does not inspect any code in \C, it complains about suspicious 
+concurrent accesses between \code{\_f} and all symbols in the second trail.
 
 The code in Figure~\ref{lst.c}.b uses annotations to provide hints to the 
-compiler about the semantics of the \C symbols in use in \ax:
+compiler about the semantics of the \C symbols in use in \ax.
+With the annotations in \bx, the program in \ax compiles successfully:
 %
 \begin{itemize}
 \item \code{\_NUM} is a constant symbol, meaning that it is safe to use it 
@@ -1126,13 +1129,12 @@ compiler about the semantics of the \C symbols in use in \ax:
       conflict and they can be safely called concurrently.
 \end{itemize}
 
-With the annotations in \bx, the program in \ax compiles successfully.
-
-Esterel's \code{abort} and \CEU's \code{par/or} statements distinguish how 
-synchronous languages can abort awaiting lines of execution without tweaking 
-them with synchronization primitives.
+Esterel's \code{abort} and \CEU's \code{par/or} statements distinguish 
+synchronous from asynchronous languages with respect to orthogonal abortion of
+lines of execution (i.e., without tweaking them with synchronization 
+primitives)~\cite{esterel.preemption}.
 In contrast, traditional (asynchronous) multi-threaded languages cannot express 
-thread termination safely~\cite{esterel.preemption,sync_async.threadsstop}.
+thread termination safely~\cite{sync_async.threadsstop}.
 %
 Still, aborting lines of execution that deal with external resources is 
 challenging because they may end up in an inconsistent state.
@@ -1372,37 +1374,15 @@ A similar program in a language without first-class support for timers would
 depend on the execution timings for the code marked as \code{<...>}, making the 
 reasoning about the execution behavior more difficult.
 
-\subsection{ Discussion }
-\label{sec.ceu.discussion}
+In Section~\ref{sec.ceu.exts}, we argue that events occurrences are 
+infinitesimal and can never be absolutely simultaneous.
+However, the ``sensation of simultaneity'' is not infinitesimal, but increases 
+with the inaccuracy of the observer (e.g., a human being).
+Therefore, simultaneity should be defined with respect to the observer, which 
+varies from case to case.
 
-TODO: queue-based/unique in the semantics of the language and not in the 
-library
-
-permeates all aspects
-
-\CEU aims to offer a simpler semantics than Esterel while keeping the power of 
-synchronous languages, with a tractable concurrency model, reactive and 
-deterministic execution, and safe support for orthogonal abortion of lines of 
-execution.
-
-The notion of time based on events instead of ticks 
-(Section~\ref{sec.ceu.exts}) is widespread~\cite{sync_async.whynotthreads} and 
-popular in many software communities, such as web frameworks (e.g., 
-\emph{jQuery}~\cite{js.jquery} and \emph{Node.js}~\cite{js.node}), GUI toolkits 
-(e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java Swing}~\cite{java.swing}), 
-and Games~\cite{gamepatterns}.
-%
-Like \CEU, event-driven programming is essentially synchronous, i.e., events go 
-through a queue and are dispatched sequentially and atomically to prevent race 
-conditions.
-%
-We believe that for software design, this approach is more familiar to 
-programmers and simplifies the reasoning about concurrency.
-For instance, the uniqueness of external events in \CEU is a prerequisite for 
-the temporal analysis for concurrent statements.
-
-With the event-based semantics, \CEU does not impose a notion of simultaneity 
-for events, requiring each application to define it only when necessary.
+First-class timers simplify the implementation of application-defined 
+simultaneity.
 %
 Figure~\ref{lst.simultaneous} emulates a \code{milddle\_click} event (ln. 3) in 
 terms of ``simultaneous'' occurrences of \code{LEFT\_CLICK} and 
@@ -1467,64 +1447,6 @@ simple expansions to a \code{par/and} and \code{par/or} for better readability.
 \label{lst.simultaneous}
 }
 \end{figure}
-
-internal events
-    - flexible, coroutines, resumable exceptions
-    - yet simple, programmers understand stacks
-    - most of the time doesn't matter
-
-Intra-reaction determinism is another
-The temporal analsysi (Section~\ref{sec.ceu.analysis}).
-
-
-The temporal analsysi (Section~\ref{sec.ceu.analysis}).
-simple, programmers understand
-
-targets control-intensive applications and provides abstractions that can 
-express program flow specifications concisely.
-
-lexical order pragamatics
-    - again, familiar to programmers
-        - register order
-    - paralax, logging
-        - simple, understandeable, imperative
-        - multiple calls to compose, printf, are not commutative
-        - define with intimidating name
-    - implementation aspects in Section XX
-
-TODO: move POE to here, simpler more natural for software dev
-
-- static analsysis also simpler
-    - highlight that is not only important to have a comptutally-sound 
-      algorithm, but that something that programmers can understand
-- same with 1st-class timers, also, too much common to be ignored
-
-- understandable semantics
-    - implementable
-
-TODO add a remark about tasks/async/thread in "Discussion"
-
-TODO Link the sections, connect the dots, draw conclusions, eliminate remaining xxx.
-
-Timers allows for an internal, defined by the programmer in charge of the 
-specification, definition of simultaneity.
-
-On the one hand, enforcing an execution order for concurrent operations may 
-seen arbitrary and also precludes true parallelism.
-On the other hand, it provides a priority scheme for trails, and makes 
-shared-memory concurrency more tractable.
-    - again, simple
-%
-For constrained embedded development, we believe that deterministic 
-shared-memory concurrency is beneficial, given the extensive use of memory 
-mapped ports for \emph{I/O} and the lack of hardware support for real 
-parallelism.
-
-TODO: we could detect that trails do not share memory and execute in multiple 
-threads
-
-%For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
-%parallelism is inherent.
 
 \section{Implementation}
 \label{sec.impl}
@@ -2328,6 +2250,21 @@ defines a time unit.
 \CEU also distinguishes external events from stack-based internal events, which 
 provide a limited form of coroutines supporting reactive statements.
 
+The event-driven approach of \CEU is widespread~\cite{sync_async.whynotthreads} 
+and popular in many software communities, such as web frameworks (e.g., 
+\emph{jQuery}~\cite{js.jquery} and \emph{Node.js}~\cite{js.node}), GUI toolkits 
+(e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java Swing}~\cite{java.swing}), 
+and Games~\cite{gamepatterns}.
+%
+Like \CEU, event-driven programming is essentially synchronous, i.e., events go 
+through a queue and are dispatched sequentially and atomically to prevent race 
+conditions.
+%
+We believe that for software design, this approach is more familiar to 
+programmers and simplifies the reasoning about concurrency.
+For instance, the uniqueness of external events in \CEU is a prerequisite for 
+the temporal analysis that enables safe shared-memory concurrency.
+
 Many synchronous languages have been designed to interoperate with \C, such as 
 \emph{Reactive C}~\cite{rp.rc}, Protothreads~\cite{wsn.protothreads}, 
 \emph{PRET-C}~\cite{rp.pretc} and \emph{SC}~\cite{rp.synchc}.
@@ -2386,8 +2323,181 @@ events and concurrency constructs that are particular to Esterel.
 However, the proposed \VM is only a proof of concept, with no support for 
 arithmetic operations, external system calls, or remote reprogramming.
 
+\begin{comment}
+%\subsection{ Discussion }
+\label{sec.ceu.discussion}
+
+TODO: related
+- simplicity
+    - intra-reaction det
+    - internal events?
+        - more fine grained
+
+% SIMPLE
+
+\CEU aims to offer a simpler semantics than Esterel without giving up its 
+tractable synchronous concurrency model:
+
+% unique external events
+
+The notion of time based on events instead of ticks 
+(Section~\ref{sec.ceu.exts}) is widespread~\cite{sync_async.whynotthreads} and 
+popular in many software communities, such as web frameworks (e.g., 
+\emph{jQuery}~\cite{js.jquery} and \emph{Node.js}~\cite{js.node}), GUI toolkits 
+(e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java Swing}~\cite{java.swing}), 
+and Games~\cite{gamepatterns}.
+%
+Like \CEU, event-driven programming is essentially synchronous, i.e., events go 
+through a queue and are dispatched sequentially and atomically to prevent race 
+conditions.
+%
+We believe that for software design, this approach is more familiar to 
+programmers and simplifies the reasoning about concurrency.
+For instance, the uniqueness of external events in \CEU is a prerequisite for 
+the temporal analysis for concurrent statements.
+
+% internal events
+
+Internal events
+
+% lexical order
+
+    - flexible, coroutines, resumable exceptions
+    - yet simple, programmers understand stacks
+    - most of the time doesn't matter
+
+Intra-reaction determinism is another
+The temporal analsysi (Section~\ref{sec.ceu.analysis}).
+
+
+The temporal analsysi (Section~\ref{sec.ceu.analysis}).
+simple, programmers understand
+
+targets control-intensive applications and provides abstractions that can 
+express program flow specifications concisely.
+
+lexical order pragamatics
+    - again, familiar to programmers
+        - register order
+    - paralax, logging
+        - simple, understandeable, imperative
+        - multiple calls to compose, printf, are not commutative
+        - define with intimidating name
+    - implementation aspects in Section XX
+
+TODO: move POE to here, simpler more natural for software dev
+
+- static analsysis also simpler
+    - highlight that is not only important to have a comptutally-sound 
+      algorithm, but that something that programmers can understand
+- same with 1st-class timers, also, too much common to be ignored
+
+- understandable semantics
+    - implementable
+
+TODO add a remark about tasks/async/thread in "Discussion"
+
+TODO Link the sections, connect the dots, draw conclusions, eliminate remaining xxx.
+
+Timers allows for an internal, defined by the programmer in charge of the 
+specification, definition of simultaneity.
+
+On the one hand, enforcing an execution order for concurrent operations may 
+seen arbitrary and also precludes true parallelism.
+On the other hand, it provides a priority scheme for trails, and makes 
+shared-memory concurrency more tractable.
+    - again, simple
+%
+For constrained embedded development, we believe that deterministic 
+shared-memory concurrency is beneficial, given the extensive use of memory 
+mapped ports for \emph{I/O} and the lack of hardware support for real 
+parallelism.
+
+TODO: we could detect that trails do not share memory and execute in multiple 
+threads
+
+%For Esterel, however, is also used in hardware design~\cite{rp.twelve} where 
+%parallelism is inherent.
+
+Furthermore, our broad safety analysis, encompassing all proposed concurrency 
+mechanisms, ensures that the high degree of concurrency in WSNs does not pose 
+safety threats to applications.
+%
+%Even with the restrictions that were needed to enable this analysis, \CEU was 
+%shown to be expressive enough to imply in a decrease in code complexity for a 
+%range of typical WSN applications.
+%
+%By restricting the expressiveness of the language, we could enable a broad 
+%safety analysis in programs at compile time.
+%The analysis encompasses all proposed concurrency mechanisms, such as parallel 
+%compositions, first-class timers, and communication via events.
+%
+
+% SAFE
+
+Esterel XXX
+thanks to the uniqueness of events, pointer tracking, and first-class timers, 
+\CEU also provides additional safety protections:
+%
+No concurrency in accesses to shared variables and system calls sharing a 
+resource
+Finalization for blocks going out of scope
+Auto-adjustment for timers in sequence and synchronization for timers in parallel
+
+
+These properties are desirable in any application and are guaranteed as 
+preconditions in \CEU by design.
+Ensuring or even extracting these properties from less restricted languages 
+requires significant manual analysis.
+
+% LIMITATIONS
+
+Even though the achieved expressiveness and overhead of \CEU meet the 
+requirements of WSNs, its design imposes two inherent limitations:
+the lack of dynamic loading which would forbid the static analysis,
+and the lack of hard real-time guarantees.
+
+Regarding the first limitation, dynamic features are already discouraged due to 
+resource constraints.
+For instance, even object-oriented languages targeting WSNs forbid dynamic 
+allocation~\cite{wsn.flowtalk,wsn.virgil}.
+%
+Given that we focus on system-level development which does not require rich 
+dynamic functionality, we leave for a future work an in-depth discussion about 
+this issue.
+Note that queues, stacks, and other simple dynamic data structures for handling 
+message packets can be made available to \CEU through its safe integration with 
+$C$.
+
+To deal with the second limitation, which can be critical in the presence of 
+lengthy computations, we can consider the following approaches:
+(1) manually placing \code{pause} statements in unbounded loops;
+(2) integrating \CEU with a preemptive system.
+%
+The first option requires the lengthy operations to be rewritten in \CEU using
+\code{pause} statements so that other trails can be interleaved with them.
+This option is the one recommended in many related work that provide a similar 
+cooperative primitive (e.g. \code{pause}~\cite{esterel.primer}, 
+\code{PT\_YIELD}~\cite{wsn.protothreads}, \code{yield}~\cite{wsn.sol}, 
+\code{post}~\cite{wsn.nesc}).
+%
+Considering the second option, \CEU and preemptive threads are not mutually 
+exclusive.
+% and the second option is appealing to be explored in a future work.
+For instance, TOSThreads~\cite{wsn.tosthreads} proposes a message-based 
+integration with \emph{nesC} that is safe and matches the semantics of \CEU 
+external events.
+\end{comment}
+
 \section{Conclusion}
 \label{sec.conclusion}
+
+% CONTRIBS
+    - queue in the semantics
+    - permeates all aspects
+    - As far as we know, \CEU is the first Esterel-based language to HAVE?
+      queue-based/unique in the semantics of the language and not in the
+      library
 
 We presented the design and implementation of \CEU, a synchronous reactive 
 language inspired by Esterel targeting constrained embedded systems.
