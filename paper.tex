@@ -144,19 +144,16 @@ Adriano Branco
 %       currently affiliated with NASA.
 
 \begin{abstract}
-\CEU is a reactive language inspired by Esterel that targets constrained 
-embedded platforms and ensures safe concurrency by handling threats at compile 
-time.
+\CEU is a synchronous language inspired by Esterel which aims to offer a 
+simpler semantics and more fine-grained control over the program execution.
 %
-Based on the synchronous programming model, our design allows for a simple 
-reasoning about concurrency that enables compile-time analysis and results in 
-deterministic and memory-safe programs.
+\CEU employs an event-triggered notion of time that allows for a simple
+reasoning about reactions in parallel and enables compile-time analysis to 
+produce deterministic and concurrency-safe programs.
 %
-% TODO: some uses?
-%
-We discuss the design of \CEU and propose a formal semantics for its particular 
-control mechanisms, such as parallel compositions, finalization, and internal 
-events.
+We discuss the particularities of our design in comparison to Esterel, such as 
+stack-based internal events, temporal analysis for concurrent statements, safe 
+integration with \C, and first-class timers.
 %
 We also present two implementation back ends:
 one aiming for resource efficiency and interoperability with \C,
@@ -402,21 +399,21 @@ Figure~\ref{lst.abro} shows side-by-side the implementations in Esterel \ax and
 Reset this behavior each time the input R occurs''}~\cite{esterel.primer}.
 %
 The first phrase of the specification, awaiting and emitting the events, is 
-translated almost identically in the two languages (ln. 3--8, in both 
+translated almost identically in the two languages (ln. 5--10, in both 
 implementations), i.e., Esterel's `$\|$' and \CEU's \code{par/and} constructs 
 are equivalent.
 %
 For the second phrase, the reset behavior, the Esterel version uses a 
-\code{abort-when} (ln. 2--9), which, in this case, serves the same purpose of 
-\CEU's \code{par/or} (ln. 2--11):
+\code{abort-when} (ln. 4--11), which, in this case, serves the same purpose of 
+\CEU's \code{par/or} (ln. 4--13):
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
 restarts the enclosing \code{loop}.
-
-% TODO: input/output declarations
 
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
+input  A, B;
+output O;
 loop
    abort
       [
@@ -435,6 +432,8 @@ end
 %
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em]
+input  void A, B;
+output void O;
 loop do
    par/or do
       par/and do
@@ -689,8 +688,8 @@ with all coexisting during the entire reaction.
 In \CEU, subsequent external events coming from the environment define a 
 timeline, which programs cannot interfere by emitting new external events.
 %
-To cope with intra-reaction communication, \CEU supports internal events which 
-programs can \code{emit} and \code{await}.
+To cope with deterministic intra-reaction communication, \CEU supports internal 
+events which programs can \code{emit} and \code{await}.
 In contrast with external events, internal events follow a stack-based 
 execution policy similar to subroutine calls in typical programming languages.
 %
@@ -708,7 +707,7 @@ In \CEU, the occurrence of \code{A} makes the program behave as follows:
 \setlength{\itemsep}{0pt}
 \item 1st trail awakes (ln. 4), broadcasts \code{b}, and pauses.
 \item 2nd trail awakes (ln. 8), calls \code{\_g()}, and terminates.
-\item No other trails awake to \code{b}.
+      \emph{(No other trails awake to \code{b}.)}
 \item 1st trail (on top of the stack) resumes, calls \code{\_f()}, and 
     terminates.
 \item Both trails have terminated, so the \code{par/and} rejoins, and the 
@@ -719,7 +718,7 @@ program also terminates.
 \begin{figure}[b]
 \begin{minipage}[t]{0.43\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
-input A;    // external
+input  A;   // external
 signal B;   // internal
 [[
     await A;
@@ -2498,6 +2497,12 @@ external events.
     - As far as we know, \CEU is the first Esterel-based language to HAVE?
       queue-based/unique in the semantics of the language and not in the
       library
+    - stack
+        - deterministic intra-reaction execution
+    - imposed intra-reaction execution
+        - for inter-reaction commm
+        - for intra-reaction commm
+        - for stmts
 
 We presented the design and implementation of \CEU, a synchronous reactive 
 language inspired by Esterel targeting constrained embedded systems.
