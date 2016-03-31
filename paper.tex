@@ -253,7 +253,7 @@ first to appear and succeed, influencing a number of embedded languages, such
 as \emph{Reactive-C}~\cite{rp.rc}, \emph{OSM}~\cite{wsn.osm}, 
 \emph{Sync-C}~\cite{rp.synchc}, and \emph{PRET-C}~\cite{rp.pretc}.
 
-% TODO: SCCharts?, SynchCharts?
+% TODO-no: SCCharts?, SynchCharts?
 
 Despite its success and influence, Esterel has an overly complex semantics that 
 requires careful static analysis such as to detect and refuse programs with 
@@ -456,10 +456,11 @@ end
 }
 \end{figure}
 
-% TODO: par/or vs abort, strong/weak abortion
+% TODO-no: par/or vs abort, strong/weak abortion
 
 In the subsections that follow, we discuss the main differences between \CEU 
 and Esterel:
+%
 Unique and queue-based external events
     (\ref{sec.ceu.exts});
 Stack-based internal events
@@ -473,6 +474,10 @@ First-class synchronized timers
     (\ref{sec.ceu.timers}).
 %We finish with a summary of our design
     %(\ref{sec.ceu.discussion}).
+%
+We provide the formal specification of the semantics of \CEU in a separate 
+work~\cite{ceu.phd}.
+
 
 \subsection{ Unique and Queue-Based External Events }
 \label{sec.ceu.exts}
@@ -621,7 +626,7 @@ For the fixed-length-tick approach of Esterel, a breach in the synchronous
 hypothesis causes timing violations, which can be avoided with \emph{worst case 
 reaction time} analysis to infer an appropriate value for the tick 
 length~\cite{esterel.fixed}.
-% TODO: Such analsysis is orthogonal
+% TODO-no: Such analsysis is orthogonal
 
 \begin{comment}
 > Multiclock Esterel
@@ -657,7 +662,7 @@ hypothesis, a logical instant must be computed within some desired reaction
 time T.
 
 4. WORST CASE REACTION TIME ANALYSIS
-TODO: requires this, what about this in the context of MThreads??
+TODO-no: requires this, what about this in the context of MThreads??
 Towards Direct Execution of Esterel Programs on Reactive Processors
 3.1 Preserving the Synchrony Hypothesis
 The synchronous model implies that reactions to input signals are instantaneous 
@@ -670,7 +675,7 @@ The duration of one tick is determined by the time required to execute all the
 instantaneous instructions that are placed between any two consecutive await 
 (i.e. TAWAIT, SAWAIT or CAWAIT) or halt instructions which are the tick 
 delimiting instructions.
-(TODO: tem figuras)
+(TODO-no: tem figuras)
 \end{comment}
 
 \subsection{ Stack-Based Internal Events }
@@ -789,7 +794,7 @@ with the caller (ln. 8--11).
 }
 \end{figure}
 
-% TODO: .. will probably expect that duplicating the  emit inc => &v; line 
+% TODO-no: .. will probably expect that duplicating the  emit inc => &v; line 
 % would result in v==3.
 
 On the one hand, this form of subroutines has a significant limitation that it 
@@ -1240,7 +1245,7 @@ pointers (i.e., the resource is a \emph{singleton}).
 That case is an example of a bad and unsafe API to expose to \CEU because the 
 compiler will not enforce the use of finalization.
 %
-%TODO: @nohold
+%TODO-no: @nohold
 %Note also that \CEU environments rely on \C libraries that only provide 
 %asynchronous I/O and non-blocking functions~\cite{ceu.sensys13}.
 
@@ -1399,9 +1404,10 @@ break the synchronous hypothesis.
 Note that a similar implementation for Esterel would not rely on the tick 
 notion of simultaneity either.
 %
-Note also that the application in \CEU could define an external input 
-\code{TICK} and change the expiring event from \code{200ms} to \code{TICK} (ln.  
-10) to recover the abstract notion of simultaneity.
+Conversely, an environment for \CEU could provide \code{TICK} input and 
+broadcast it periodically to allow applications to recover the abstract notion 
+of simultaneity (e.g., changing ln. 10 to \code{await TICK}).
+%the expiring event from \code{200ms} to \code{TICK} in ln.  10).
 
 \begin{figure}
 \begin{minipage}[t]{0.57\linewidth}
@@ -1460,6 +1466,25 @@ the \emph{code generation phase} converts the \emph{AST} to standard \C code
 and packs it with platform-dependent functionality (e.g., system calls) and the 
 runtime of \CEU, compiling everything with \emph{gcc} to generate the final 
 binary.
+
+In a previous work~\cite{ceu.sensys13}, we evaluate the implementation of \CEU
+in comparison to hand-crafted event-driven code in \emph{nesC}~\cite{wsn.nesc} 
+(a \C variant) available in a stable codebase%
+\footnote{TinyOS repository: \url{http://github.com/tinyos/tinyos-release/}}.
+%
+Figure~\ref{fig.eval} compares source size (\emph{tokens}), binary size 
+(\emph{ROM}), and memory usage (\emph{RAM}) for a number of standardized 
+network protocols and a radio driver.
+The small increase in resource usage shows that \CEU fits the context of 
+constrained embedded systems which is typically reserved to \C only.
+
+\begin{figure*}[t]
+\includegraphics[width=\textwidth,clip=true,trim=-80px 385px 300px 40px]{eval}
+\caption{ Resource usage for \CEU and \emph{nesC} in the domain of sensor 
+networks.
+\label{fig.eval}
+}
+\end{figure*}
 
 In the sections that follow, we discuss the implementation highlights related 
 to the peculiarities of \CEU:
@@ -2338,6 +2363,10 @@ TODO: related
     - intra-reaction det
     - internal events?
         - more fine grained
+
+- TODO: no available Esterel compiler for the constrained target platform
+    - we compare with C, which is a benchmark, technically unbeatable for 
+      resource efficiency
 
 % SIMPLE
 
