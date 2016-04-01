@@ -303,7 +303,7 @@ provides a limited form of coroutines.
 resources.
 % (Section~\ref{sec.ceu.c}).
 %
-\item First-class synchronized timers with a dedicated syntax.
+\item First-class timers with dedicated syntax and automatic synchronization.
 %(Section~\ref{sec.ceu.timers}).
 \end{itemize}
 %
@@ -1528,47 +1528,61 @@ simple expansions to a \code{par/and} and \code{par/or} for better readability.
 
 \subsection{Summary}
 
-\CEU aims to offer a simpler semantics than Esterel without giving up its 
-tractable synchronous concurrency model:
-
-\CEU is a synchronous language inspired by Esterel which aims to offer a 
-simpler semantics and more fine-grained control over the program execution.
+\CEU aims to offer a deterministic and simpler semantics than Esterel with a 
+more fine-grained control over the program execution.
 %
-\CEU employs an event-triggered notion of time that allows for a simple
-reasoning about reactions in parallel and enables compile-time analysis to 
-produce deterministic and concurrency-safe programs.
-%
-We discuss the particularities of our design in comparison to Esterel, such as 
-stack-based internal events, temporal analysis for concurrent statements, safe 
-integration with \C, and first-class timers.
-%
-We also present two implementation back ends:
-one aiming for resource efficiency and interoperability with \C,
-and another based on a virtual machine that allows remote reprogramming.
-
-Overall, \CEU has a simple semantics with fine-grained control for 
-intra-reaction execution which is amenable to a simple temporal analysis that
-improves safety.
-
-
-Contributions:
+The list that follows enumerate the contributions of our design in this 
+direction:
 %
 \begin{itemize}
-\item \textbf{Event-triggered notion of time bound to the semantics of the 
-language}, which allows ....
-\item \textbf{Deterministic and fine-grained intra-reaction execution and 
-communication}, lexical, stack-based internal events
-\item \textbf{Static temporal analysis for concurrent statements}, which
-      prevent logical race conditions on shared variables and system calls.
-\item \textbf{Safe integration with \C}, with enforced resource clean up.
-\item \textbf{First-class timers} with dedicated syntax and automatic 
-synchronization.
+%
+\item Event-triggered notion of time bound to the semantics of the language.
+Event-driven programming is popular in many domains, such as server and GUI 
+development.
+We believe that programmers are more familiar with this notion of time, which 
+simplifies the reasoning about concurrency.
+For instance, the uniqueness of external events is a prerequisite for the 
+temporal analysis of \CEU.
+%
+\item Deterministic intra-reaction execution and communication.
+Determinism in \CEU is all-inclusive and does not depend on additional levels 
+of static analysis.
+It encompasses the whole language, including memory accesses, system calls, and 
+the expressive stack-based internal events.
+For instance, programmers can always figure out which statement executes next, 
+making runtime analysis and debugging easier.
+%
+\item Static temporal analysis for concurrent statements.
+Although execution is deterministic, the compiler of \CEU still advises about 
+suspicious statements reacting concurrently to the same event.
+This way, the complier forces the programmer to serialize the statements 
+accordingly.
+%
+\item Safe integration with \C.
+\CEU forces the programmer to deal with pointers representing resources through 
+finalization clauses.
+When dealing with concurrent system calls, programmers can provide the compiler 
+with annotations to remove false positives from the temporal analysis or to 
+allow non commutative concurrent behavior.
+%
+\item First-class timers with dedicated syntax and automatic synchronization.
+Given the omnipresence of timers in embedded systems, a dedicated syntax can 
+simplify the development and readability of programs.
+Furthermore, automatic synchronization releases the programmer from the burden 
+of accumulating timers in sequence and comparing timers in parallel.
+%
 \end{itemize}
 
-Limitations:
+The design decisions XXX, raise some important limitations as follows:
 %
 \begin{itemize}
-\item purely reactive execution,
+\item Purely reactive execution.
+    hardware
+A limitation of event-triggered execution is that all program behavior must be purely
+reactive, given that no code can execute in the absence of inputs. Tick-triggered execu-
+tion allows for active behavior, since code can execute regulary on every tick. Although
+it supports asynchronous active execution [Sant’Anna et al. 2012], we still consider
+ ́ as purely reactive since its synchronous core cannot express active behavior.
 \item bounded-only reactions,
 \item sequential
 \end{itemize}
@@ -1580,12 +1594,6 @@ and extend it with memory-isolated parallelizabe asynchronous execution.
     - As far as we know, \CEU is the first Esterel-based language to HAVE?
       queue-based/unique in the semantics of the language and not in the
       library
-    - stack
-        - deterministic intra-reaction execution
-    - imposed intra-reaction execution
-        - for inter-reaction commm
-        - for intra-reaction commm
-        - for stmts
 
 \section{Implementation}
 \label{sec.impl}
@@ -2431,10 +2439,10 @@ Like \CEU, event-driven programming is essentially synchronous, i.e., events go
 through a queue and are dispatched sequentially and atomically to prevent race 
 conditions.
 %
-We believe that for software design, this approach is more familiar to 
-programmers and simplifies the reasoning about concurrency.
-For instance, the uniqueness of external events in \CEU is a prerequisite for 
-the temporal analysis that enables safe shared-memory concurrency.
+%We believe that for software design, this approach is more familiar to 
+%programmers and simplifies the reasoning about concurrency.
+%For instance, the uniqueness of external events in \CEU is a prerequisite for 
+%the temporal analysis that enables safe shared-memory concurrency.
 
 Many synchronous languages have been designed to interoperate with \C, such as 
 \emph{Reactive C}~\cite{rp.rc}, Protothreads~\cite{wsn.protothreads}, 
