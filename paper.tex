@@ -490,7 +490,8 @@ In contrast, \CEU defines time as a discrete sequence of reactions to
 unique input events.
 At each input event, which constitutes a logical unit of time, the program 
 reacts exclusively to it.
-The execution of a program in \CEU is as follows~\cite{ceu.sensys13}:
+The event-triggered execution of a program in \CEU is as 
+follows~\cite{ceu.sensys13}:
 %
 \begin{enumerate}
 \item The program initiates the ``boot reaction'' in a single trail (but 
@@ -627,6 +628,16 @@ hypothesis causes timing violations, which can be avoided with \emph{worst case
 reaction time} analysis to infer an appropriate value for the tick 
 length~\cite{esterel.fixed}.
 % TODO-no: Such analsysis is orthogonal
+
+A limitation of event-triggered execution is that all program behavior must be 
+purely reactive, given that no code can execute in the absence of inputs.
+%
+Tick-triggered execution allows for active behavior, since code can execute 
+regulary on every tick.
+%
+Although it supports asynchronous active execution~\cite{ceu.tr}, we still 
+consider \CEU as purely reactive since its synchronous core cannot express 
+active behavior.
 
 \begin{comment}
 > Multiclock Esterel
@@ -1453,6 +1464,44 @@ simple expansions to a \code{par/and} and \code{par/or} for better readability.
 }
 \end{figure}
 
+\subsection{Summary}
+
+Contributions:
+%
+\begin{itemize}
+\item \textbf{Event-triggered notion of time bound to the semantics of the 
+language}, which allows ....
+\item \textbf{Deterministic and fine-grained intra-reaction execution and 
+communication}, lexical, stack-based internal events
+\item \textbf{Static temporal analysis for concurrent statements}, which
+      prevent logical race conditions on shared variables and system calls.
+\item \textbf{Safe integration with \C}, with enforced resource clean up.
+\item \textbf{First-class timers} with dedicated syntax and automatic 
+synchronization.
+\end{itemize}
+
+Limitations:
+%
+\begin{itemize}
+\item purely reactive execution,
+\item bounded-only reactions,
+\item sequential
+\end{itemize}
+%
+We believe that a simple-tractable synchronous core
+and extend it with memory-isolated parallelizabe asynchronous execution.
+
+    - permeates all aspects
+    - As far as we know, \CEU is the first Esterel-based language to HAVE?
+      queue-based/unique in the semantics of the language and not in the
+      library
+    - stack
+        - deterministic intra-reaction execution
+    - imposed intra-reaction execution
+        - for inter-reaction commm
+        - for intra-reaction commm
+        - for stmts
+
 \section{Implementation}
 \label{sec.impl}
 
@@ -2260,6 +2309,8 @@ System calls use \code{VM.push} for immediate return values (ln. 16--22).
 \section{Related Work}
 \label{sec.related}
 
+TODO: comparison with Esterel
+
 %\emph{(As subsecoes serao retiradas do texto ao final...)}
 
 %\subsection{Semantics}
@@ -2522,26 +2573,26 @@ exclusive.
 For instance, TOSThreads~\cite{wsn.tosthreads} proposes a message-based 
 integration with \emph{nesC} that is safe and matches the semantics of \CEU 
 external events.
+
+TODO: search "limitation" in the paper and condense all
+
+A limitation of event-triggered execution is that all program behavior must be 
+purely reactive, given that no code can execute in the absence of inputs.
+%
+Tick-triggered execution allows for active behavior, since code can execute 
+regulary on every tick.
+%
+Although it supports asynchronous active execution~\cite{ceu.tr}, we still 
+consider \CEU as purely reactive since its synchronous core cannot express 
+active behavior.
+
 \end{comment}
 
 \section{Conclusion}
 \label{sec.conclusion}
 
-% CONTRIBS
-    - queue in the semantics
-    - permeates all aspects
-    - As far as we know, \CEU is the first Esterel-based language to HAVE?
-      queue-based/unique in the semantics of the language and not in the
-      library
-    - stack
-        - deterministic intra-reaction execution
-    - imposed intra-reaction execution
-        - for inter-reaction commm
-        - for intra-reaction commm
-        - for stmts
-
-We presented the design and implementation of \CEU, a synchronous reactive 
-language inspired by Esterel targeting constrained embedded systems.
+We presented the design, semantics, and implementation of \CEU, a synchronous 
+reactive language inspired by Esterel targeting constrained embedded systems.
 
 \CEU is a concurrency-safe language, employing a static analysis that encompass 
 all control constructs and ensures that the high degree of concurrency in 
@@ -2585,15 +2636,6 @@ graduate students in research projects and two hands-on courses on
 Our experience shows that students take advantage of the sequential-imperative 
 style of \CEU and can implement non-trivial concurrent applications in a few 
 weeks.
-
-\begin{comment}
-We are also extending and applying \CEU in more dynamic domains, such as GUIs 
-and games~\cite{ceu.mod15}, by relaxing some restrictions in the language.
-In particular, programs in these domains typically require unbounded memory and 
-execution time, such as for dealing with dynamic collections.
-We provide unsafe annotations to circumvent the rigid semantics of \CEU, 
-requiring them to be explicit and trackable at the same time.
-\end{comment}
 
 % Bibliography
 \bibliographystyle{ACM-Reference-Format-Journals}
