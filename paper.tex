@@ -1144,6 +1144,68 @@ With the annotations in \bx, the program in \ax compiles successfully:
       conflict and they can be safely called concurrently.
 \end{itemize}
 
+From our experience, however, we find that it is not uncommon to require 
+stateful and non-commutative calls to execute concurrently.
+%
+This is the case for logging (e.g., calls to \code{\_printf} in parallel) or 
+redrawing objects in the screen.
+%
+Figure~\ref{fig.redraw}.a shows an abstract code to animate and redraw objects 
+\code{back} and \code{fore} in the screen in trails in parallel.
+In typical graphical APIs, consecutive calls to \code{\_redraw} overwrites 
+conflicting pixels.
+This way, \code{\_redraw} is non commutative and the code does not compile 
+correctly.
+%
+However, since the \code{back} object should be redrawn before the \code{fore} 
+object, we want to rely on \CEU's intra-reaction deterministic execution based 
+on lexical order.
+Therefore, in Figure~\ref{fig.redraw}, we redefine the redrawing function to an 
+``intimidating'' name \code{\_redraw\_non\_commutative} to be explicit about 
+its effect (ln. 2), and annotate it as safe (ln. 4--5) to compile successfully.
+
+\begin{figure}
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}
+par do
+    <...> // animate and redraw "back"
+        _redraw(back);
+with
+    <...> // animate and redraw "fore"
+        _redraw(fore);
+end
+
+
+
+
+.
+\end{lstlisting}
+\centering\small{\ax \code{\_redraw} \textbf{cannot} be concurrent}
+\end{minipage}
+%
+\begin{minipage}[t]{0.55\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em]
+native do
+    #define redraw_non_commutative redraw
+end
+@safe _redraw_non_commutative with
+      _redraw_non_commutative;
+par do
+    <...> // animate and redraw "back"
+        _redraw_non_commutative(back);
+with
+    <...> // animate and redraw "fore"
+        _redraw_non_commutative(fore);
+end
+\end{lstlisting}
+\centering\small{\bx \code{\_redraw\_non\_commutative} \textbf{can} be concurrent}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{ Making the non-commutative redrawing calls from \ax to compile in \bx.
+\label{lst.c}
+}
+\end{figure}
+
 Esterel's \code{abort} and \CEU's \code{par/or} statements distinguish 
 synchronous from asynchronous languages with respect to orthogonal abortion of
 lines of execution (i.e., without tweaking them with synchronization 
@@ -1466,6 +1528,29 @@ simple expansions to a \code{par/and} and \code{par/or} for better readability.
 
 \subsection{Summary}
 
+\CEU aims to offer a simpler semantics than Esterel without giving up its 
+tractable synchronous concurrency model:
+
+\CEU is a synchronous language inspired by Esterel which aims to offer a 
+simpler semantics and more fine-grained control over the program execution.
+%
+\CEU employs an event-triggered notion of time that allows for a simple
+reasoning about reactions in parallel and enables compile-time analysis to 
+produce deterministic and concurrency-safe programs.
+%
+We discuss the particularities of our design in comparison to Esterel, such as 
+stack-based internal events, temporal analysis for concurrent statements, safe 
+integration with \C, and first-class timers.
+%
+We also present two implementation back ends:
+one aiming for resource efficiency and interoperability with \C,
+and another based on a virtual machine that allows remote reprogramming.
+
+Overall, \CEU has a simple semantics with fine-grained control for 
+intra-reaction execution which is amenable to a simple temporal analysis that
+improves safety.
+
+
 Contributions:
 %
 \begin{itemize}
@@ -1534,6 +1619,10 @@ networks.
 \label{fig.eval}
 }
 \end{figure*}
+
+- TODO: no available Esterel compiler for the constrained target platform
+    - we compare with C, which is a benchmark, technically unbeatable for 
+      resource efficiency
 
 In the sections that follow, we discuss the implementation highlights related 
 to the peculiarities of \CEU:
@@ -2415,38 +2504,7 @@ TODO: related
     - internal events?
         - more fine grained
 
-- TODO: no available Esterel compiler for the constrained target platform
-    - we compare with C, which is a benchmark, technically unbeatable for 
-      resource efficiency
-
 % SIMPLE
-
-\CEU aims to offer a simpler semantics than Esterel without giving up its 
-tractable synchronous concurrency model:
-
-% unique external events
-
-The notion of time based on events instead of ticks 
-(Section~\ref{sec.ceu.exts}) is widespread~\cite{sync_async.whynotthreads} and 
-popular in many software communities, such as web frameworks (e.g., 
-\emph{jQuery}~\cite{js.jquery} and \emph{Node.js}~\cite{js.node}), GUI toolkits 
-(e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java Swing}~\cite{java.swing}), 
-and Games~\cite{gamepatterns}.
-%
-Like \CEU, event-driven programming is essentially synchronous, i.e., events go 
-through a queue and are dispatched sequentially and atomically to prevent race 
-conditions.
-%
-We believe that for software design, this approach is more familiar to 
-programmers and simplifies the reasoning about concurrency.
-For instance, the uniqueness of external events in \CEU is a prerequisite for 
-the temporal analysis for concurrent statements.
-
-% internal events
-
-Internal events
-
-% lexical order
 
     - flexible, coroutines, resumable exceptions
     - yet simple, programmers understand stacks
@@ -2465,10 +2523,6 @@ express program flow specifications concisely.
 lexical order pragamatics
     - again, familiar to programmers
         - register order
-    - paralax, logging
-        - simple, understandeable, imperative
-        - multiple calls to compose, printf, are not commutative
-        - define with intimidating name
     - implementation aspects in Section XX
 
 TODO: move POE to here, simpler more natural for software dev
