@@ -1408,15 +1408,16 @@ automatically, resulting in more robust applications.
 In the example in Figure~\ref{lst.timers}.a, suppose that after the first 
 \code{await} request, the underlying system gets busy and takes 15ms to check 
 for expiring awaits.
-The \CEU scheduler will notice that the \code{await 10ms} has not only already 
-expired, but is delayed with \code{delta=5ms}.
-Then, the awaiting trail awakes, sets \code{v=1}, and invokes \code{await 1ms}.
+The \CEU scheduler will notice that the \code{await 10ms} (ln. 2) has not only 
+already expired, but is delayed with \code{delta=5ms}.
+Then, the awaiting trail awakes, sets \code{v=1} (ln. 3), and invokes 
+\code{await 1ms} (ln. 4).
 As the current delta is still higher than the requested timeout (i.e. $5ms > 
 1ms$), the trail is rescheduled for execution, now with \code{delta=4ms}.
 
 \begin{figure}
 \begin{minipage}[t]{0.45\linewidth}
-\begin{lstlisting}
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em]
 var int v;
 await 10ms;
 v = 1;
@@ -1430,11 +1431,11 @@ v = 2;
 \centering\small{\ax}
 \end{minipage}
 %
-\begin{minipage}[t]{0.51\linewidth}
-\begin{lstlisting}
+\begin{minipage}[t]{0.55\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em]
 par/or do
     await 10ms;
-    <...>         // any non-awaiting sequence
+    <...>       // any non-awaiting sequence
     await  1ms;
     v = 1;
 with
@@ -1453,12 +1454,13 @@ end
 \CEU also considers that time is a physical quantity that can be added and 
 compared.
 For instance, for the example in Figure~\ref{lst.timers}.b, although the 
-scheduler cannot guarantee that the first trail terminates exactly in 11ms, it 
-can at least ensure that the program always terminates with \code{v=1}.
+scheduler cannot guarantee that the first trail terminates exactly in 11ms (ln.  
+2,4), it can at least ensure that the program always terminates with 
+\code{v=1}.
 %
 Given that any non-awaiting sequence is considered to take no time in the 
-synchronous model, the first trail is guaranteed to terminate before the second 
-trail, because $10+1 < 12$.
+synchronous model, the first trail (ln. 2--5) is guaranteed to terminate before 
+the second trail (ln. 7--8), because $10+1 < 12$.
 %
 A similar program in a language without first-class support for timers would 
 depend on the execution timings for the code marked as \code{<...>}, making the 
