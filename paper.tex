@@ -144,12 +144,12 @@ Adriano Branco
 %       currently affiliated with NASA.
 
 \begin{abstract}
-\CEU is a synchronous language inspired by Esterel which aims to offer a 
-simpler semantics and more fine-grained control over the program execution.
+\CEU is a synchronous language inspired by Esterel with support for a simpler 
+semantics and more fine-grained execution control.
 %
-\CEU employs an event-triggered notion of time that allows for a simple
-reasoning about reactions in parallel and enables compile-time analysis to 
-produce deterministic and concurrency-safe programs.
+\CEU employs an event-triggered notion of time which enables compile-time 
+analysis for simultaneous reactions to produce deterministic and 
+concurrency-safe programs.
 %
 We discuss the particularities of our design in comparison to Esterel, such as 
 stack-based internal events, temporal analysis for concurrent statements, safe 
@@ -280,6 +280,7 @@ In this work, we present \CEU, a new programming language that inherits the
 synchronous and imperative mindset of Esterel but diverges in fundamental 
 semantic aspects.
 %
+% TODO: simple simple
 Overall, \CEU has a simple semantics with fine-grained control for 
 intra-reaction execution which is amenable to a simple temporal analysis that
 improves safety.
@@ -317,7 +318,7 @@ and \emph{MICAz} sensor nodes based on 8-bit microcontrollers%
 \footnote{
 Both \emph{Arduino} and \emph{MICAz} use the 8-bit \emph{ATmega328} 
 microcontroller with 32K of FLASH and 2K of SRAM.
-}, showing the practical aspect of our clean semantics.
+}, showing the practical aspect of our simple semantics.
 %:\url{http://www.atmel.com/devices/atmega328.aspx}}
 
 In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context 
@@ -381,7 +382,7 @@ Internal computations within a reaction (e.g. expressions, assignments, and
 system calls) are considered to take no time in accordance with the synchronous 
 hypothesis~\cite{rp.hypothesis}.
 An \code{await} is the only statement that halts a running reaction and allows 
-a program to advance in this notion of time.
+a program to advance in this discrete notion of time.
 %
 To ensure that reactions run in bounded time and programs always progress, 
 loops are statically required to contain at least one \code{await} statement in 
@@ -400,8 +401,8 @@ Reset this behavior each time the input R occurs''}~\cite{esterel.primer}.
 %
 The first phrase of the specification, awaiting and emitting the events, is 
 translated almost identically in the two languages (ln. 5--10, in both 
-implementations), i.e., Esterel's `$\|$' and \CEU's \code{par/and} constructs 
-are equivalent.
+implementations), as Esterel's `$\|$' and \CEU's \code{par/and} constructs are 
+equivalent.
 %
 For the second phrase, the reset behavior, the Esterel version uses a 
 \code{abort-when} (ln. 4--11), which, in this case, serves the same purpose of 
@@ -507,10 +508,10 @@ follows~\cite{ceu.sensys13}:
 %
 A program must react to an occurring event completely before handling the next.
 %
-Based on the synchronous hypothesis, a program takes no time on step 2 and is 
-always idle on step 3.
+Based on the synchronous hypothesis, a program takes a negligible time on step 
+2 and is always idle on step 3.
 In practice, if a new external input event occurs while a reaction chain is 
-running (step 2), it is enqueued to occur in the next reaction.
+running, it is enqueued to occur in the next reaction.
 
 \begin{figure}[!htb]
 \centering
@@ -520,17 +521,17 @@ running (step 2), it is enqueued to occur in the next reaction.
 }
 \end{figure}
 
-Figure~\ref{fig.ticks} compares the discrete notions of time in Esterel and 
-\CEU.
+Figure~\ref{fig.ticks} compares the discrete notions of time in two variations 
+of Esterel and in \CEU.
 The box \code{Real World} shows event occurrences over a continuous timeline 
 divided in units of 10 milliseconds.
-Esterel and \CEU use discrete logical units of time in which the occurring 
-events (which are the same in all boxes) have to fit somehow:
+The other boxes define distinct discrete logical units of time in which the 
+same occurring events fit differently.
 %
 \begin{itemize}
 \item \code{[Box-1]}:
 ``Esterel with fixed-length ticks'',
-within which reactions to occurring inputs have to fit~\cite{esterel.fixed}.
+within which reactions must fit~\cite{esterel.fixed}.
 %
 We assume a \code{R(boot)} reaction at \code{tick-0} which happens before any 
 input.
@@ -548,9 +549,8 @@ Since no new events occur during \code{tick-2}, the CPU stays idle during the
 whole \code{tick-3}.
 %
 Finally, one instance of event \code{D} and two instances of event \code{E} 
-occur ``simultaneously'' during the idle \code{tick-3}.
-However, the program can only detect one occurrence of \code{E}, which is 
-considered in \code{R(D+E)}.
+occur during the idle \code{tick-3}.
+However, only one occurrence of \code{E} is considered in \code{R(D+E)}.
 %
 \item \code{[Box-2]}:
 ``Esterel with variable-length ticks'', which are adjusted to the CPU time the 
@@ -602,10 +602,11 @@ the language, but defined explicitly for each use case.
 In the case of Esterel, simultaneity depends on the imprecise length of 
 discrete ticks.
 For instance, in Figure~\ref{fig.ticks} (\code{box-1} and \code{box-2}), the 
-events \code{B} and \code{C} are simultaneous, even though \code{A} and 
-\code{B} actually happen much closer to one another.
+events \code{B} and \code{C} are considered simultaneous, even though \code{A} 
+and \code{B} ``physically'' happen much closer to one another.
 In Section~\ref{sec.ceu.timers}, after introducing internal events and 
-first-class timers, we show an example that detects simultaneous button clicks.
+first-class timers, we show an example to detect simultaneous button clicks in 
+\CEU.
 %
 \item \textbf{Unique input events imply mutual exclusion:}
 Reactions to multiple events never overlap because they are atomic.
@@ -635,9 +636,9 @@ purely reactive, given that no code can execute in the absence of inputs.
 Tick-triggered execution allows for active behavior, since code can execute 
 regulary on every tick.
 %
-Although it supports asynchronous active execution~\cite{ceu.tr}, we still 
-consider \CEU as purely reactive since its synchronous core cannot express 
-active behavior.
+Although \CEU supports asynchronous active execution~\cite{ceu.tr}, we still 
+consider it as purely reactive since its synchronous core cannot express active 
+behavior.
 
 \begin{comment}
 > Multiclock Esterel
@@ -693,39 +694,40 @@ delimiting instructions.
 \label{sec.ceu.ints}
 
 Esterel makes no semantic distinctions between internal and external signals.
-In particular, programs can emit external and internal signals simultaneously, 
-with all coexisting during the entire reaction.
+%In particular, programs can emit external and internal signals simultaneously, 
+%with all coexisting during the entire reaction.
 %
 %In \CEU, a reaction starts from an external input event and programs cannot 
 %emit inputs at all.
 %Therefore, the occurring input event is unique during the entire reaction, 
 %resulting in intrinsic queue-based handling.
 %
-In \CEU, subsequent external events coming from the environment define a 
-timeline, which programs cannot interfere by emitting new external events.
+%In \CEU, subsequent external events coming from the environment define a 
+%timeline, which programs cannot interfere by emitting new external events.
 %
-To cope with deterministic intra-reaction communication, \CEU supports internal 
-events which programs can \code{emit} and \code{await}.
-In contrast with external events, internal events follow a stack-based 
-execution policy similar to subroutine calls in typical programming languages.
+%To cope with deterministic intra-reaction communication, \CEU supports 
+%internal events which programs can \code{emit} and \code{await}.
+In \CEU, in contrast with queue-based external events, internal events follow a 
+stack-based execution policy similar to subroutine calls in typical programming 
+languages.
 %
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
 Esterel \ax and \CEU \bx.
 %
 In Esterel, when \code{A} occurs, \code{B} is emitted (ln. 4--5) and both 
 events become active, resulting in the invocation of \code{f()} and \code{g()} 
-in no particular order.
+(ln. 6,9) in no particular order.
 %
 In \CEU, the occurrence of \code{A} makes the program behave as follows:
 %
 {\small
 \begin{enumerate}
 \setlength{\itemsep}{0pt}
-\item 1st trail awakes (ln. 4), broadcasts \code{b}, and pauses.
-\item 2nd trail awakes (ln. 8), calls \code{\_g()}, and terminates.
+\item 1st trail awakes, broadcasts \code{b}, and pauses (ln. 4--5).
+\item 2nd trail awakes, calls \code{\_g()}, and terminates (ln. 8--9).
       \emph{(No other trails awake to \code{b}.)}
 \item 1st trail (on top of the stack) resumes, calls \code{\_f()}, and 
-    terminates.
+    terminates (ln. 5--6).
 \item Both trails have terminated, so the \code{par/and} rejoins, and the 
 program also terminates.
 \end{enumerate}
@@ -770,7 +772,9 @@ different semantics.
 }
 \end{figure}
 
-Internal events provide a fine-grained intra-reaction control mechanism.
+Internal events define fine-grained micro reactions which stack one on top of 
+another inside the reaction to an external event.
+%Internal events provide a fine-grained intra-reaction control mechanism.
 For instance, it brings a limited form of subroutines, as depicted in 
 Figure~\ref{lst.sub}.
 The subroutine \code{inc} is defined as a loop (ln. 3--6) that continuously 
@@ -857,11 +861,12 @@ end
 The example in Figure~\ref{lst.await} illustrates delayed awaits, which 
 prevents infinite execution by design.
 Both sides of the \code{par/or} have an \code{await} statement to avoid 
-instantaneous termination (ln. 4,7).
+instantaneous termination (ln. 4,7) of the enclosing \code{loop} (ln 2--9).
 However, if the \code{emit} (ln. 6) could awake the \code{await} (ln. 4) in the 
 same reaction that reaches them, the \code{par/or} would terminate and restart 
 the \code{loop} instantaneously, resulting in infinite execution.
-
+%
+\begin{comment}
 \begin{figure}
 %\begin{minipage}[t]{0.50\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3em]
@@ -909,10 +914,12 @@ the \code{await} inside the \code{loop}.
 \label{lst.delay}
 }
 \end{figure}
-
+\end{comment}
+%
 In atypical scenarios requiring immediate awake, delayed awaits can be 
 circumvented by manually copying or transforming the code to execute on awake.
 %
+\begin{comment}
 For instance, sometimes we need to execute a block of code immediately, and 
 then periodically from internal event requests, as illustrated in 
 Figure~\ref{lst.delay}.
@@ -922,9 +929,10 @@ each \code{emit} request (ln. 5).
 If the periodic \code{emit} depends on a condition, then the code 
 transformation becomes more intricate, requiring an extra condition test around 
 the periodic code to prevent its immediate execution.
+\end{comment}
 %
-On the one hand, we transfer the burden of dealing with these specific corner 
-cases to the programmer.
+On the one hand, we transfer the burden of dealing with these corner cases to 
+the programmer.
 On the other hand, we simplify the semantics of the language and eliminate the 
 need for complex analysis to deal with schizophrenic statements.
 
@@ -1150,7 +1158,7 @@ stateful and non-commutative calls to execute concurrently.
 This is the case for logging (e.g., calls to \code{\_printf} in parallel) or 
 redrawing objects in the screen.
 %
-Figure~\ref{fig.redraw}.a shows an abstract code to animate and redraw objects 
+Figure~\ref{lst.redraw}.a shows an abstract code to animate and redraw objects 
 \code{back} and \code{fore} in the screen in trails in parallel.
 In typical graphical APIs, consecutive calls to \code{\_redraw} overwrites 
 conflicting pixels.
@@ -1160,7 +1168,7 @@ correctly.
 However, since the \code{back} object should be redrawn before the \code{fore} 
 object, we want to rely on \CEU's intra-reaction deterministic execution based 
 on lexical order.
-Therefore, in Figure~\ref{fig.redraw}, we redefine the redrawing function to an 
+Therefore, in Figure~\ref{lst.redraw}, we redefine the redrawing function to an 
 ``intimidating'' name \code{\_redraw\_non\_commutative} to be explicit about 
 its effect (ln. 2), and annotate it as safe (ln. 4--5) to compile successfully.
 
@@ -1202,7 +1210,7 @@ end
 \end{minipage}
 %\rule{8.4cm}{0.37pt}
 \caption{ Making the non-commutative redrawing calls from \ax to compile in \bx.
-\label{lst.c}
+\label{lst.redraw}
 }
 \end{figure}
 
@@ -1573,27 +1581,27 @@ of accumulating timers in sequence and comparing timers in parallel.
 %
 \end{itemize}
 
-The design decisions XXX, raise some important limitations as follows:
+Our synchronous and deterministic approach also leads to some limitations as 
+follows:
 %
 \begin{itemize}
-\item Purely reactive execution.
-    hardware
-A limitation of event-triggered execution is that all program behavior must be purely
-reactive, given that no code can execute in the absence of inputs. Tick-triggered execu-
-tion allows for active behavior, since code can execute regulary on every tick. Although
-it supports asynchronous active execution [Sant’Anna et al. 2012], we still consider
- ́ as purely reactive since its synchronous core cannot express active behavior.
-\item bounded-only reactions,
-\item sequential
+\item Execution is purely reactive as a result of event-triggered reactions.
+Since only occurrences of events can start reactions, programs cannot execute 
+proactively in the absence of events.
+\item Reactions must execute in bounded time due to the synchronous hypothesis.
+As a synchronous language, \CEU requires that CPU times for reactions are 
+negligible in comparison to the rate of incoming events.
+\item Execution is sequential because of intra-reaction determinism.
+The deterministic semantics of \CEU does not make parallelization easy (to be 
+discussed in Section~\ref{sec.impl.single}).
 \end{itemize}
 %
-We believe that a simple-tractable synchronous core
-and extend it with memory-isolated parallelizabe asynchronous execution.
-
-    - permeates all aspects
-    - As far as we know, \CEU is the first Esterel-based language to HAVE?
-      queue-based/unique in the semantics of the language and not in the
-      library
+Nonetheless, we advocate for a tractable synchronous reactive core that 
+supports shared memory with deterministic execution.
+%
+To deal with the limitations, we recommend for memory-isolated parallelizable 
+asynchronous primitives as language extensions, but which are not in the scope 
+of this paper.
 
 \section{Implementation}
 \label{sec.impl}
@@ -1638,6 +1646,7 @@ the temporal analysis for determinism (Section~\ref{sec.impl.analysis}),
 static memory allocation for data and trails (Sections~\ref{sec.impl.data} 
 and~\ref{sec.impl.trails}),
 static scheduling and trail finalization (Section~\ref{sec.impl.scheduler}),
+single-threaded dispatching (Section~\ref{sec.impl.single}),
 interaction with the environment (Section~\ref{sec.impl.environment}),
 and the \VM back end (Section~\ref{sec.terra}),
 
@@ -2130,6 +2139,7 @@ Escaping a \code{loop} that contains parallel compositions also triggers the
 same abortion process.
 
 \subsection{Single-Threaded Dispatching}
+\label{sec.impl.single}
 
 The implementation of \CEU dispatches active trails sequentially in a single 
 thread, taking no advantage of multi-core CPUs.
@@ -2406,7 +2416,12 @@ System calls use \code{VM.push} for immediate return values (ln. 16--22).
 \section{Related Work}
 \label{sec.related}
 
-TODO: comparison with Esterel
+TODO: most about comparison with Esterel
+    - TODO: related work?
+    - As far as we know, \CEU is the first Esterel-based language to HAVE?
+      queue-based/unique in the semantics of the language and not in the
+      library
+
 
 %\emph{(As subsecoes serao retiradas do texto ao final...)}
 
