@@ -733,7 +733,7 @@ program also terminates.
 \end{enumerate}
 }
 
-\begin{figure}[b]
+\begin{figure}
 \begin{minipage}[t]{0.43\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 input  A;   // external
@@ -772,8 +772,10 @@ different semantics.
 }
 \end{figure}
 
-Internal events define fine-grained micro reactions which stack one on top of 
-another inside the reaction to an external event.
+% TODO
+Nested \code{emit} invocations (e.g., suppose we \code{emit c} after the 
+\code{await a} in line 8) results in fine-grained micro reactions stacked one 
+on top of the other, all inside the same reaction to an external event.
 %Internal events provide a fine-grained intra-reaction control mechanism.
 For instance, it brings a limited form of subroutines, as depicted in 
 Figure~\ref{lst.sub}.
@@ -947,7 +949,7 @@ Hence, an important goal of \CEU is to ensure a reliable behavior for programs
 with concurrent lines of execution sharing memory and interacting with the 
 environment.
 
-Esterel is only deterministic with respect to reactive control: ``the same 
+Esterel is only deterministic with respect to external behavior: ``the same 
 sequence of inputs always produces the same sequence of 
 outputs''~\cite{esterel.primer}.
 %
@@ -964,9 +966,9 @@ enforce intra-reaction determinism with an arbitrary execution order for
 statements in multiple lines of execution.
 %, e.g., based on lexical order or manual priority assignment.
 %
-\CEU also takes the deterministic approach and when multiple trails are active 
-during the same reaction, they are scheduled in the order they appear in the 
-program source code.
+\CEU also takes the deterministic approach and, when multiple trails are active 
+during the same reaction, they are scheduled in lexical order, i.e., in the 
+order they appear in the program source code.
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
@@ -1014,18 +1016,18 @@ For instance, consider the two examples in Figure~\ref{lst.shared}, both of
 which define a shared variable (ln. 2), and assign to it in parallel trails 
 (ln.  5, 8).
 %
-In the example \ax, the two assignments to \code{x} execute from reactions to 
-different events \code{A} and \code{B} which, by definition, cannot occur 
+In the example \ax, the two assignments to \code{x} only execute in reactions 
+to different events \code{A} and \code{B} which, by definition, cannot occur 
 simultaneously (Section~\ref{sec.ceu.exts}).
-Hence, for the sequence \code{A->B}, \code{x} becomes \code{(1+1)*2->4}, while 
-for \code{B->A}, \code{x} becomes \code{(1*2)+1->3}.
+Hence, for the sequence \code{A->B}, \code{x} becomes \code{4=(1+1)*2}, while 
+for \code{B->A}, \code{x} becomes \code{3=(1*2)+1}.
 %
 In the example \bx, the two assignments to \code{y} are simultaneous because 
 they execute in reaction to the same event \code{A}.
 Since \CEU employs lexical order for intra-reaction statements, the execution 
-is still deterministic, and \code{y} always becomes \code{(1+1)*2->4}.
+is still deterministic, and \code{y} always becomes \code{4=(1+1)*2}.
 %
-However, an (apparently innocuous) change in the order of trails changes the 
+However, an (apparently innocuous) change in the order of trails modifies the 
 semantics of the program, which we consider unsafe.
 
 To mitigate this threat, \CEU performs a temporal analysis at compile time to 
@@ -1045,7 +1047,7 @@ Considering the examples in Figure~\ref{lst.shared}:
 %
 \begin{itemize}
 \item The assignments to \code{x} in lines 2 and 5 in \ax
-      \textbf{cannot} be concurrent because they are not in parallel trails.
+      \textbf{cannot} be concurrent because they are \textbf{not} in parallel trails.
 \item The assignments to \code{x} in lines 5 and 8 in \ax
       \textbf{cannot} be concurrent because they \textbf{cannot} execute during 
       the same reaction.
@@ -1062,9 +1064,9 @@ Then, it checks all accesses in parallel trails to see if they share an awaking
 event.
 If it is the case, the compiler warns about the suspicious accesses.
 
-Note that this analysis is only possible due to the uniqueness of input events 
+Note that such analysis is only possible due to the uniqueness of input events 
 within reactions.
-Otherwise, any two trail segments in parallel can be concurrent, even if they 
+Otherwise, any two trail segments in parallel could be concurrent, even if they 
 react to different input events.
 
 \subsection{ Safe Integration with \C }
@@ -1074,15 +1076,16 @@ In \CEU, any identifier prefixed with an underscore is repassed \emph{as is} to
 the \C compiler that generates the final binary.
 Therefore, access to \C is seamless and, more importantly, easily trackable.
 %
-Similarly to Esterel, which supports the \code{call} primitive for external 
-code, calls are assumed to be instantaneous~\cite{esterel.primer}.
+Similarly to Esterel with the \code{call} primitive, external calls are assumed 
+to be instantaneous~\cite{esterel.primer}.
 %
-This way, programs should only resort to \C for asynchronous functionality%
+This way, programs should only resort to \C for asynchronous functionality, 
+such as non-blocking I/O, or simple \code{struct} accessors, but never for 
+control purposes.%
 \footnote{
 In \CEU, it is possible to restrict the available \C symbols as a compile-time 
 option.
-}, such as non-blocking I/O, or simple \code{struct} accessors, but never for 
-control purposes.
+}
 
 \begin{figure}
 \begin{minipage}[t]{0.50\linewidth}
@@ -1105,8 +1108,8 @@ end
 \begin{minipage}[t]{0.44\linewidth}
 \begin{lstlisting}
 native @const _NUM;
-native @pure  _id;
-native @safe  _f with _g;
+native @pure  _id();
+native @safe  _f() with _g();
 
 
 
@@ -1124,63 +1127,66 @@ native @safe  _f with _g;
 }
 \end{figure}
 
-The temporal analysis of Section~\ref{sec.ceu.analysis} also considers calls 
-and accesses to external symbols in \C.
+\subsubsection{Temporal Analysis}
+
+As a safety measure, the temporal analysis of Section~\ref{sec.ceu.analysis} 
+also considers calls and accesses to external symbols in \C.
 %
 As an example, the program in Figure~\ref{lst.c}.a defines four external 
 symbols inside a \code{native} block with standard declarations in \C (ln.  
 1--6).
 %
-The \code{par/and} (ln. 7--11) creates two trails that react concurrently 
-during the boot reaction (ln. 8,10):
-the first trail calls symbol \code{\_f},
-while the second calls \code{\_g} and \code{\_id}, and also reads \code{\_NUM}.
+During the boot reaction, two trails react concurrently inside the 
+\code{par/and} (ln. 7--11):
+the first trail calls symbol \code{\_f} (ln. 8),
+while the second calls \code{\_g} and \code{\_id}, and also reads \code{\_NUM} 
+(ln. 10).
 %
 Since \CEU does not inspect any code in \C, it complains about suspicious 
 concurrent accesses between \code{\_f} and all symbols in the second trail.
 
-The code in Figure~\ref{lst.c}.b uses annotations to provide hints to the 
-compiler about the semantics of the \C symbols in use in \ax.
-With the annotations in \bx, the program in \ax compiles successfully:
+\subsubsection{Annotations}
+
+The annotations in Figure~\ref{lst.c}.b provides hints to the compiler about 
+the semantics of the \C symbols in code \ax, which now compiles successfully:
 %
 \begin{itemize}
 \item \code{\_NUM} is a constant symbol, meaning that it is safe to use it 
       concurrently with any other symbol in the program.
 \item \code{\_id} is a pure function, also meaning that it is safe to call it
       concurrently with any other symbol in the program.
-\item Both \code{\_f} and \code{\_g} are impure, but their effects do not 
-      conflict and they can be safely called concurrently.
+\item Both \code{\_f} and \code{\_g} are impure, but have non-conflicting 
+      commutative effects, and can be safely called concurrently.
 \end{itemize}
 
-From our experience, however, we find that it is not uncommon to require 
-stateful and non-commutative calls to execute concurrently.
+From our experience, we find that it is not uncommon to also require 
+non-commutative calls to execute concurrently.
 %
-This is the case for logging (e.g., calls to \code{\_printf} in parallel) or 
-redrawing objects in the screen.
+This is the case for logging (e.g., calls to \code{\_printf} in trails in 
+parallel) and for redrawing objects in the screen.
 %
-Figure~\ref{lst.redraw}.a shows an abstract code to animate and redraw objects 
-\code{back} and \code{fore} in the screen in trails in parallel.
+Figure~\ref{lst.redraw}.a shows an abstract code to animate and redraw the 
+objects \code{background} and \code{foreground} in trails in parallel.
 In typical graphical APIs, consecutive calls to \code{\_redraw} overwrites 
-conflicting pixels.
-This way, \code{\_redraw} is non commutative and the code does not compile 
-correctly.
+conflicting pixels, which makes it non commutative and prevents the code to 
+compile.
 %
-However, since the \code{back} object should be redrawn before the \code{fore} 
-object, we want to rely on \CEU's intra-reaction deterministic execution based 
-on lexical order.
-Therefore, in Figure~\ref{lst.redraw}, we redefine the redrawing function to an 
-``intimidating'' name \code{\_redraw\_non\_commutative} to be explicit about 
-its effect (ln. 2), and annotate it as safe (ln. 4--5) to compile successfully.
+However, we want to rely on trails lexical order to always redraw the 
+\code{background} object before the \code{foreground} object.
+%
+Therefore, in Figure~\ref{lst.redraw}.b, we redefine \code{\_redraw} to an 
+``intimidating'' name \code{\_redraw\_non\_commutative} (ln. 2, to be explicit 
+about its effect), and annotate it as safe (ln. 4--5) to compile successfully.
 
 \begin{figure}
 \begin{minipage}[t]{0.45\linewidth}
 \begin{lstlisting}
 par do
-    <...> // animate and redraw "back"
-        _redraw(back);
+    <...> // animate and redraw "background"
+        _redraw(background);
 with
-    <...> // animate and redraw "fore"
-        _redraw(fore);
+    <...> // animate and redraw "foreground"
+        _redraw(foreground);
 end
 
 
@@ -1199,11 +1205,11 @@ end
 @safe _redraw_non_commutative with
       _redraw_non_commutative;
 par do
-    <...> // animate and redraw "back"
-        _redraw_non_commutative(back);
+    <...> // animate and redraw "background"
+        _redraw_non_commutative(background);
 with
     <...> // animate and redraw "fore"
-        _redraw_non_commutative(fore);
+        _redraw_non_commutative(foreground);
 end
 \end{lstlisting}
 \centering\small{\bx \code{\_redraw\_non\_commutative} \textbf{can} be concurrent}
@@ -1214,33 +1220,33 @@ end
 }
 \end{figure}
 
-Esterel's \code{abort} and \CEU's \code{par/or} statements distinguish 
-synchronous from asynchronous languages with respect to orthogonal abortion of
-lines of execution (i.e., without tweaking them with synchronization 
-primitives)~\cite{esterel.preemption}.
-In contrast, traditional (asynchronous) multi-threaded languages cannot express 
-thread termination safely~\cite{sync_async.threadsstop}.
+\subsubsection{Finalization}
+
+Esterel's \code{abort} and \CEU's \code{par/or} statements provide orthogonal 
+abortion of lines of execution, which is a distinctive feature of synchronous 
+language in comparison to asynchronous languages~\cite{esterel.preemption}.
+%In contrast, traditional (asynchronous) multi-threaded languages cannot 
+%express thread termination safely~\cite{sync_async.threadsstop}.
 %
-Still, aborting lines of execution that deal with external resources is 
-challenging because they may end up in an inconsistent state.
+However, aborting lines of execution that deal with external resources is still 
+error prone because they may end up in an inconsistent state.
 %
 For this reason, Esterel and \CEU provide a \code{finalize} construct to 
 unconditionally execute a series of statements even if the enclosing block is 
 aborted and does not terminate normally.
 
-The example in Figure~\ref{lst.fin} in Esterel \ax and \CEU \bx uses the 
-\code{lock} and \code{unlock} calls which represent accesses to an external 
-resource.
+In the example in Figure~\ref{lst.fin} in Esterel \ax and \CEU \bx, the calls 
+to \code{lock} and \code{unlock} represent accesses to an external resource.
 The normal behavior is to \code{lock} the resource (ln. \ax:4 and \bx:3), 
 perform some operations in subsequent reactions to input \code{A} (ln.  
 \ax:5--8 and \bx:7--10), and then \code{unlock} the resource (ln.  \ax:10 and 
 \bx:5).
-However, if the aborting input \code{B} (ln. \ax:12 and \bx:12) occurs after 
+Note that if the aborting input \code{B} (ln. \ax:12 and \bx:12) occurs after 
 the \code{lock} but before the reactions to \code{A}, we still want to call 
 \code{unlock} to safely release the resource.
 %
-In Esterel and \CEU, the finalize clauses (ln. \ax:10 and \bx:5) are 
-automatically called if the enclosing blocks (ln. \ax:3--1 and \bx:3--10) are 
+In Esterel and \CEU, the finalize clause (ln. \ax:10 and \bx:5) execute
+automatically if the enclosing block (ln. \ax:3--1 and \bx:3--10) is
 externally aborted (ln. \ax:12 and \bx:12).
 
 \CEU goes one step further and enforces the use of \code{finalize} for system 
@@ -1265,14 +1271,13 @@ environment (ln. 9), the local \code{msg} goes out of scope and the external
 transmission now holds a \emph{dangling pointer}.
 The finalization ensures that the transmission also aborts (ln. 7).
 %
-In the example in Figure~\ref{lst.fin.ceu}.b, the call to \code{\_fopen} 
-returns an external file resource as a pointer.
+In the example in Figure~\ref{lst.fin.ceu}.b, the call to \code{\_fopen} (ln.  
+4) returns an external file resource as a pointer.
 If the block aborts (ln. 12) during the \code{await A} (ln. 9), the file 
 remains open as a \emph{memory leak}.
 The finalization ensures that the file closes properly (ln. 6).
 %
-In both cases, the code does not compile if the programmer forgets to use the
-\code{finalize} construct.
+In both cases, the code does not compile without the \code{finalize} construct.
 
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
@@ -1321,7 +1326,7 @@ occurs.
 }
 \end{figure}
 
-Note that the illustrative example of Figure~\ref{lst.fin} does not manipulate 
+Note that the illustrative example in Figure~\ref{lst.fin} does not manipulate 
 pointers (i.e., the resource is a \emph{singleton}).
 That case is an example of a bad and unsafe API to expose to \CEU because the 
 compiler will not enforce the use of finalization.
@@ -1400,14 +1405,14 @@ lead to incorrect behavior in programs.
 
 The \code{await} statement of \CEU supports wall-clock time and handles deltas 
 automatically, resulting in more robust applications.
-For the example in Figure~\ref{lst.timers}.a, suppose that after the first 
+In the example in Figure~\ref{lst.timers}.a, suppose that after the first 
 \code{await} request, the underlying system gets busy and takes 15ms to check 
 for expiring awaits.
 The \CEU scheduler will notice that the \code{await 10ms} has not only already 
 expired, but is delayed with \code{delta=5ms}.
 Then, the awaiting trail awakes, sets \code{v=1}, and invokes \code{await 1ms}.
-As the current delta is higher than the requested timeout (i.e. $5ms > 1ms$), 
-the trail is rescheduled for execution, now with \code{delta=4ms}.
+As the current delta is still higher than the requested timeout (i.e. $5ms > 
+1ms$), the trail is rescheduled for execution, now with \code{delta=4ms}.
 
 \begin{figure}
 \begin{minipage}[t]{0.45\linewidth}
@@ -1445,8 +1450,8 @@ end
 }
 \end{figure}
 
-\CEU also takes into account the fact that time is a physical quantity that can 
-be added and compared.
+\CEU also considers that time is a physical quantity that can be added and 
+compared.
 For instance, for the example in Figure~\ref{lst.timers}.b, although the 
 scheduler cannot guarantee that the first trail terminates exactly in 11ms, it 
 can at least ensure that the program always terminates with \code{v=1}.
@@ -1461,11 +1466,11 @@ reasoning about the execution behavior more difficult.
 
 In Section~\ref{sec.ceu.exts}, we argue that events occurrences are 
 infinitesimal and can never be absolutely simultaneous.
-However, the ``sensation of simultaneity'' is not infinitesimal, but increases 
-with the inaccuracy of the observer (e.g., a human being).
-Therefore, simultaneity should be defined with respect to the observer, which 
-varies from case to case.
-
+However, the ``sensation of simultaneity'' is not infinitesimal, but actually 
+increases with the inaccuracy of the observer (e.g., a human being).
+Therefore, we consider that simultaneity should be defined with respect to the 
+observer, which varies from case to case.
+%
 First-class timers simplify the implementation of application-defined 
 simultaneity.
 %
@@ -1475,19 +1480,19 @@ terms of ``simultaneous'' occurrences of \code{LEFT\_CLICK} and
 If both events occur, we emit the internal event \code{middle\_click} (ln.  
 6--7).
 However, if one of them occurs and the \emph{200ms} timer expires (ln. 9--10), 
-we abort the whole behavior with the \code{par/or} (ln. 5--11) and try again 
-with the enclosing \code{loop} (ln. 4).
+we abort the whole behavior with the \code{par/or} (ln. 5) and try again with 
+the enclosing \code{loop} (ln. 4).
 %
 In this specification, ``simultaneous'' means ``within 200 milliseconds'', 
-which is a huge amount of time for a language-defined tick, and which would 
-break the synchronous hypothesis.
+which is a huge amount of time for a language-defined tick.
+%, and which would break the synchronous hypothesis.
 %
-Note that a similar implementation for Esterel would not rely on the tick 
+Therefore, a similar implementation for Esterel would not rely on the tick 
 notion of simultaneity either.
 %
-Conversely, an environment for \CEU could provide \code{TICK} input and 
-broadcast it periodically to allow applications to recover the abstract notion 
-of simultaneity (e.g., changing ln. 10 to \code{await TICK}).
+%Conversely, an environment for \CEU could provide \code{TICK} input and 
+%broadcast it periodically to allow applications to recover the abstract notion 
+%of simultaneity (e.g., changing ln. 10 to \code{await TICK}).
 %the expiring event from \code{200ms} to \code{TICK} in ln.  10).
 
 \begin{figure}
@@ -1536,10 +1541,10 @@ simple expansions to a \code{par/and} and \code{par/or} for better readability.
 
 \subsection{Summary}
 
-\CEU aims to offer a deterministic and simpler semantics than Esterel with a 
-more fine-grained control over the program execution.
+\CEU aims to offer a simpler semantics than Esterel with more determinism and 
+fine-grained control over the program execution.
 %
-The list that follows enumerate the contributions of our design in this 
+The list that follows summarizes the contributions of our design in this 
 direction:
 %
 \begin{itemize}
@@ -1547,28 +1552,27 @@ direction:
 \item Event-triggered notion of time bound to the semantics of the language.
 Event-driven programming is popular in many domains, such as server and GUI 
 development.
-We believe that programmers are more familiar with this notion of time, which 
-simplifies the reasoning about concurrency.
-For instance, the uniqueness of external events is a prerequisite for the 
+We believe that programmers are more familiar with dealing with events in 
+isolation, which simplifies the reasoning about concurrency.
+In addition, the uniqueness of external events is a prerequisite for the 
 temporal analysis of \CEU.
 %
 \item Deterministic intra-reaction execution and communication.
 Determinism in \CEU is all-inclusive and does not depend on additional levels 
 of static analysis.
 It encompasses the whole language, including memory accesses, system calls, and 
-the expressive stack-based internal events.
-For instance, programmers can always figure out which statement executes next, 
-making runtime analysis and debugging easier.
+stack-based internal events.
+Programmers can always figure out which statement executes next, making runtime 
+analysis and debugging easier.
 %
 \item Static temporal analysis for concurrent statements.
 Although execution is deterministic, the compiler of \CEU still advises about 
-suspicious statements reacting concurrently to the same event.
-This way, the complier forces the programmer to serialize the statements 
-accordingly.
+suspicious statements that can react concurrently to the same event, forcing 
+the to serialize them accordingly.
 %
 \item Safe integration with \C.
-\CEU forces the programmer to deal with pointers representing resources through 
-finalization clauses.
+\CEU enforces the programmer to deal with pointers representing resources 
+through finalization clauses.
 When dealing with concurrent system calls, programmers can provide the compiler 
 with annotations to remove false positives from the temporal analysis or to 
 allow non commutative concurrent behavior.
@@ -1577,7 +1581,7 @@ allow non commutative concurrent behavior.
 Given the omnipresence of timers in embedded systems, a dedicated syntax can 
 simplify the development and readability of programs.
 Furthermore, automatic synchronization releases the programmer from the burden 
-of accumulating timers in sequence and comparing timers in parallel.
+of adjusting timers in sequence and in parallel.
 %
 \end{itemize}
 
@@ -1986,7 +1990,7 @@ On initialization, \code{TRAIL-0} is set to execute the \code{Main} entry point
 (ln. 13), while all others are set to \code{INACTIVE} (in the example, only 
 one, in ln. 14).
 
-\begin{figure}[b]
+\begin{figure}
 \begin{minipage}[t]{0.31\linewidth}
 \begin{lstlisting}
 input void A;
