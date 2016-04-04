@@ -145,14 +145,14 @@ Adriano Branco
 %       currently affiliated with NASA.
 
 \begin{abstract}
-\CEU is a synchronous language inspired by Esterel with support for a simpler 
-semantics and more fine-grained execution control.
+\CEU is a synchronous language inspired by Esterel with simpler semantics and 
+more fine-grained control over program execution.
 %
-\CEU employs an event-triggered notion of time which enables compile-time 
+\CEU adopts an event-triggered notion of time which enables compile-time 
 analysis for simultaneous reactions to produce deterministic and 
 concurrency-safe programs.
 %
-We discuss the particularities of our design in comparison to Esterel, such as 
+Using Esterel as a base, we discuss the particularities of our design, such as 
 stack-based internal events, temporal analysis for concurrent statements, safe 
 integration with \C, and first-class timers.
 %
@@ -1558,9 +1558,8 @@ simple expansions to a \code{par/and} and \code{par/or} for better readability.
 \end{figure}
 
 \subsection{Summary}
-
 \CEU aims to offer a simpler semantics than Esterel with more determinism and 
-fine-grained control over the program execution.
+fine-grained control over program execution.
 %
 The list that follows summarizes the contributions of our design in this 
 direction:
@@ -2471,10 +2470,10 @@ System calls use \code{VM.push} for immediate return values (ln. 16--22).
 %\subsection{Semantics}
 
 \CEU has a strong influence from Esterel but differ in the most fundamental 
-aspect of notion of time.
+aspect of the notion of time.
 %
-In \CEU, instead of clock ticks, the occurrence of a single external event 
-defines an unit of time.
+In \CEU, instead of clock ticks, atomic external event occurrences define time 
+units.
 %
 The event-driven approach of \CEU is widespread~\cite{sync_async.whynotthreads} 
 and popular in many software communities, such as web frameworks (e.g., 
@@ -2485,13 +2484,13 @@ and Games~\cite{gamepatterns}.
 We consider that this approach is more familiar to programmers and simplifies 
 the reasoning about concurrency.
 %
-As far as we know, \CEU is unique in this notion of time encrusted in the core 
-of the language, which is a prerequisite for the temporal analysis that enables 
-safe shared-memory concurrency.
+As far as we know, \CEU is to encrust this event-triggered notion of time in 
+the core of the language, which is a prerequisite for the temporal analysis 
+that enables safe shared-memory concurrency.
 
 Another unique aspect of \CEU is the distinction between external and internal 
 events.
-Internal events define stack-based micro reactions within external reactions, 
+Internal events support stack-based micro reactions within external reactions, 
 providing more fine-grained control for intra-reaction execution.
 
 Like \CEU, many synchronous languages rely on deterministic scheduling to 
@@ -2507,21 +2506,22 @@ and
 %threads, based on either explicit priorities, or source code lexical order 
 %(similar to \CEU).
 %
-\CEU goes one step further and performs a temporal analysis to detect 
-concurrent trails that actually rely on deterministic scheduling, i.e., the 
-observable behavior of the program changes if they are reordered.
+\CEU goes one step further and performs a temporal analysis to detect trails 
+that, when reordered, change the observable behavior of the program, i.e., 
+trails that actually rely on deterministic scheduling.
+
 %
 %These languages have a tick-based notion of time similar to Esterel, which 
 %prevents the temporal analysis of \CEU.
 %
-\CEU also guarantees deterministic behavior for composition of timers by 
-adjusting residual awaking times from inaccurate system clocks.
+\CEU also guarantees deterministic behavior for timer compositions by adjusting 
+inaccuracies in the system clock.
 
 Regarding resource management, Esterel supports a finalization mechanism to 
 unconditionally execute a series of statements on abortion.
 %
 \CEU also tracks pointers representing resources that cross \C boundaries and
-enforce the programmer to provide corresponding finalizers.
+enforce the programmer to provide associated finalizers.
 
 %\emph{URBI}~\cite{rp.urbi} is a dynamic reactive scripting language with a 
 %rich set of control constructs for time management, event-driven 
@@ -2572,8 +2572,8 @@ arithmetic operations, external system calls, or remote reprogramming.
 \label{sec.conclusion}
 
 We present the design and implementation of \CEU, a synchronous reactive 
-language inspired by Esterel with support for a simpler semantics and more 
-fine-grained control for intra-reaction execution.
+language inspired by Esterel with simpler semantics and more fine-grained 
+control for intra-reaction execution.
 
 \CEU is a concurrency-safe language, employing a static analysis that encompass 
 all control constructs and ensures that the high degree of concurrency in 
@@ -2598,7 +2598,7 @@ restrictions, being equally suitable for constrained systems.
 
 \CEU is a practical language with expressive control constructs, such as 
 lexically scoped parallel compositions, convenient first-class timers, and a 
-unique stack-based internal signaling mechanism.
+unique stack-based mechanism for internal signalling.
 %
 Programs interoperate seamlessly with \C, and can take advantage of existing 
 libraries, lowering the entry barrier for adoption.
@@ -2616,6 +2616,9 @@ graduate students in research projects and two hands-on courses on
 Our experience shows that students take advantage of the sequential-imperative 
 style of \CEU and can implement non-trivial concurrent applications in a few 
 weeks.
+%
+More recently, a company specialized in embedded systems (not related to our 
+research group) released a product based on \CEU.
 
 % Bibliography
 \bibliographystyle{ACM-Reference-Format-Journals}
