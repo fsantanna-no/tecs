@@ -126,7 +126,7 @@ escapeinside={||},
 
 \author{
 Francisco Sant'Anna
-\affil{Departamento de Inform\'atica, PUC--Rio}
+\affil{Departamento de Inform\'atica e Ci\^encia da Computa\c{c}\~ao, UERJ}
 Roberto Ierusalimschy
 \affil{Departamento de Inform\'atica, PUC--Rio}
 Noemi Rodriguez
@@ -148,17 +148,17 @@ Adriano Branco
 \CEU is a synchronous language inspired by Esterel with simpler semantics and 
 more fine-grained control over program execution.
 %
-\CEU adopts an event-triggered notion of time which enables compile-time 
-analysis for simultaneous reactions to produce deterministic and 
-concurrency-safe programs.
+\CEU adopts an event-triggered notion of time that enables compile-time 
+temporal analysis to detect conflicting statements, resulting in deterministic 
+and concurrency-safe programs.
 %
-Using Esterel as a base, we discuss the particularities of our design, such as 
-stack-based internal events, temporal analysis for concurrent statements, safe 
-integration with \C, and first-class timers.
+Using Esterel as a base, we discuss the particularities of our design such as 
+stack-based internal events, the temporal analysis, safe integration with \C, 
+and first-class timers.
 %
 We also present two implementation back ends:
 one aiming for resource efficiency and interoperability with \C,
-and another based on a virtual machine that allows remote reprogramming.
+and another as a virtual machine that allows remote reprogramming.
 \end{abstract}
 
 %
@@ -259,7 +259,7 @@ as \emph{Reactive-C}~\cite{rp.rc}, \emph{OSM}~\cite{wsn.osm},
 Despite its success and influence, Esterel has an overly complex semantics that 
 requires careful static analysis such as to detect and refuse programs with 
 \emph{causality} and \emph{schizophrenia} problems.
-Both problems have an extensive coverage and debate in the literature 
+These problems have an extensive coverage in the literature 
 ~\cite{esterel.constructive,esterel.d7,esterel.d6,esterel.d3,esterel.d5,esterel.d8,esterel.d1,esterel.schizo2}.
 %
 The complex semantics not only challenges the analysis and compilation of 
@@ -268,10 +268,11 @@ programs, but also results in incompatible and non-compliant implementations.
 Above all, it also affects the programmer's understanding about the code, 
 which, ultimately, has to solve the errors when facing corner cases.
 %
-Another drawback of the Esterel semantics consists of the loose and 
-non-deterministic execution for intra-reaction statements, which prevents 
-threads to interact with stateful system calls safely and makes shared-memory 
-concurrency not as straightforward as reading and writing to shared variables.
+Another drawback of the Esterel semantics consists of loose and 
+non-deterministic execution for intra-reaction statements.
+Non determinism prevents threads to interact with stateful system calls safely 
+and makes shared-memory concurrency not as straightforward as reading and 
+writing to shared variables.
 %
 %For instance, although Esterel supports orthogonal abortion of 
 %threads~\cite{esterel.preemption}, it doesn't offer an effective mechanism to 
@@ -283,7 +284,7 @@ semantic aspects.
 %
 % TODO: simple simple
 Overall, \CEU has a simple semantics with fine-grained control for 
-intra-reaction execution which is amenable to a simple temporal analysis that
+intra-reaction execution, and is amenable to a temporal analysis that
 improves safety.
 %
 The list that follows summarizes the contributions behind the design of \CEU:
@@ -319,7 +320,7 @@ and \emph{MICAz} sensor nodes based on 8-bit microcontrollers%
 \footnote{
 Both \emph{Arduino} and \emph{MICAz} use the 8-bit \emph{ATmega328} 
 microcontroller with 32K of FLASH and 2K of SRAM.
-}, showing the practical aspect of our simple semantics.
+}, showing a practical aspect of our simple semantics.
 %:\url{http://www.atmel.com/devices/atmega328.aspx}}
 
 In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context 
@@ -394,8 +395,9 @@ general:
 computations that run in unbounded time (e.g., cryptography, image processing) 
 do not fit the zero-delay hypothesis, and cannot be directly implemented.
 
-Figure~\ref{lst.abro} shows side-by-side the implementations in Esterel \ax and 
-\CEU \bx for the following control specification:
+Figure~\ref{lst.abro} illustrates the syntactic similarities between the 
+languages, showing side-by-side the implementations in Esterel \ax and \CEU \bx 
+for the following control specification:
 %
 \emph{``Emit an output O as soon as two inputs A and B have occurred.
 Reset this behavior each time the input R occurs''}~\cite{esterel.primer}.
@@ -406,7 +408,7 @@ implementations), as Esterel's `$\|$' and \CEU's \code{par/and} constructs are
 equivalent.
 %
 For the second phrase, the reset behavior, the Esterel version uses a 
-\code{abort-when} (ln. 4--11), which, in this case, serves the same purpose of 
+\code{abort-when} (ln. 4--11) which, in this case, serves the same purpose of 
 \CEU's \code{par/or} (ln. 4--13):
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
 restarts the enclosing \code{loop}.
@@ -474,8 +476,8 @@ Safe integration with \C
 and
 First-class synchronized timers
     (\ref{sec.ceu.timers}).
-%We finish with a summary of our design
-    %(\ref{sec.ceu.discussion}).
+We finish with a summary of our design
+    (\ref{sec.ceu.discussion}).
 %
 We provide the formal specification of the semantics of \CEU in a separate 
 work~\cite{ceu.phd}.
