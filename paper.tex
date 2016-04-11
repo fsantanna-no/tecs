@@ -145,14 +145,14 @@ Adriano Branco
 %       currently affiliated with NASA.
 
 \begin{abstract}
-\CEU is a synchronous language inspired by Esterel with simpler semantics and 
+\CEU is a synchronous language inspired by Esterel with a simpler semantics and 
 more fine-grained control over program execution.
 %
-\CEU adopts an event-triggered notion of time that enables compile-time 
-temporal analysis to detect conflicting statements, resulting in deterministic 
-and concurrency-safe programs.
+\CEU uses an event-triggered notion of time that enables compile-time temporal 
+analysis to detect conflicting statements, resulting in deterministic and 
+concurrency-safe programs.
 %
-Using Esterel as a base, we discuss the particularities of our design, such as 
+Using Esterel as a base, we present the particularities of our design, such as 
 stack-based internal events, the temporal analysis, safe integration with \C, 
 and first-class timers.
 %
@@ -279,12 +279,11 @@ writing to shared variables.
 %release resources in use.
 
 In this work, we present \CEU, a new programming language that inherits the 
-synchronous and imperative mindset of Esterel but diverges in fundamental 
+synchronous and imperative mindset of Esterel but diverges in some fundamental 
 semantic aspects.
 %
-% TODO: simple simple
-Overall, \CEU has a simple semantics with fine-grained control for 
-intra-reaction execution, and is amenable to a temporal analysis that
+\CEU has a simple semantics with fine-grained control for intra-reaction 
+execution, and is amenable to a temporal analysis that
 improves safety.
 %
 The list that follows summarizes the contributions behind the design of \CEU:
@@ -333,7 +332,7 @@ event-driven code in \C and attested a reduction in source code size (around
 \emph{data})~\cite{ceu.sensys13}.
 %
 For the \VM back end, applications have a bytecode footprint in the order of 
-hundreds of bytes which can be transmitted over the air in a few 
+hundreds of bytes and can be transmitted over the air in a few 
 packets~\cite{ceu.terra}.
 
 The rest of the paper is organized as follows:
@@ -390,8 +389,8 @@ To ensure that reactions run in bounded time and programs always progress,
 loops are statically required to contain at least one \code{await} statement in 
 all possible paths~\cite{ceu.sensys13,esterel.primer}.
 %
-\CEU shares the same limitations with Esterel and synchronous languages in 
-general:
+\CEU shares the same limitations with (core) Esterel and synchronous languages 
+in general~\cite{esterel.preemption}:
 computations that run in unbounded time (e.g., cryptography, image processing) 
 do not fit the zero-delay hypothesis, and cannot be directly implemented.
 
@@ -399,8 +398,8 @@ Figure~\ref{lst.abro} illustrates the syntactic similarities between the
 languages, showing side-by-side the implementations in Esterel \ax and \CEU \bx 
 for the following control specification:
 %
-\emph{``Emit an output O as soon as two inputs A and B have occurred.
-Reset this behavior each time the input R occurs''}~\cite{esterel.primer}.
+\emph{``Emit an output O as soon as inputs A and B occur.
+Reset this behavior each time input R occurs''}~\cite{esterel.primer}.
 %
 The first phrase of the specification, awaiting and emitting the events, is 
 translated almost identically in the two languages (ln. 5--10, in both 
@@ -456,14 +455,17 @@ end
 %\rule{8.4cm}{0.37pt}
 \caption{ A control specification implemented in Esterel and \CEU:
 \emph{``Emit \code{O} after \code{A} and \code{B}, resetting each \code{R}.''}
+A \code{par/and} terminates when both trails in parallel terminate.
+A \code{par/or}  terminates when any trail terminates, aborting the 
+other.
 \label{lst.abro}
 }
 \end{figure}
 
 % TODO-no: par/or vs abort, strong/weak abortion
 
-In the subsections that follow, we discuss the main differences between \CEU 
-and Esterel:
+In the subsections that follow, we discuss the main differences from \CEU to 
+Esterel:
 %
 Unique and queue-based external events
     (\ref{sec.ceu.exts});
@@ -476,7 +478,7 @@ Safe integration with \C
 and
 First-class synchronized timers
     (\ref{sec.ceu.timers}).
-We finish with a summary of our design
+We finish the section with a summary of our design
     (\ref{sec.ceu.summary}).
 %
 We present the formal specification of the semantics of \CEU in a separate 
@@ -500,8 +502,7 @@ follows~\cite{ceu.sensys13}:
 \begin{enumerate}
 \item The program initiates the ``boot reaction'' in a single trail (but 
       parallel constructs may create new trails).
-\item Active trails execute, one after the other, until they await or 
-      terminate.
+\item Active trails execute until they await or terminate, one after the other.
       This step is named a \emph{reaction chain}, and always runs in bounded 
       time.
 \item The program goes idle and the environment takes control.
@@ -528,13 +529,12 @@ running, it is enqueued to occur in the next reaction.
 Figure~\ref{fig.ticks} compares the discrete notions of time in two variations 
 of Esterel and in \CEU.
 The box \code{Real World} shows event occurrences over a continuous timeline.
-The other boxes show discrete logical units of time in which the same occurring 
-events fit in different ways.
+The other boxes show how the same occurring events fit differently in each 
+logical notion of time.
 %
 \begin{itemize}
 \item \code{[Box-1]}:
-\emph{Esterel with fixed-length ticks},
-in which reactions must fit~\cite{esterel.fixed}.
+\emph{Esterel with fixed-length ticks}~\cite{esterel.fixed}.
 %
 We assume a reaction \code{R(boot)} at \code{tick-0} which happens before any 
 input.
@@ -542,8 +542,8 @@ input.
 The input \code{A} ``physically'' occurs during the boot reaction but, because 
 time is discrete, its corresponding reaction only executes in the next tick.
 %
-Note that \code{R(A)} takes more time than \code{tick-1}, causing a 
-\emph{timing violation}~\cite{esterel.fixed} that invades \code{tick-2}.
+Note that \code{R(A)} takes more time than \code{tick-1} and invades 
+\code{tick-2}, causing a \emph{timing violation}~\cite{esterel.fixed}.
 %
 The events \code{B} and \code{C} occur during \code{tick-1} and are delayed to 
 happen \emph{simultaneously} at \code{tick-2} with \code{R(B+C)}.
@@ -553,26 +553,26 @@ whole \code{tick-3}.
 %
 Finally, one instance of event \code{D} and two instances of event \code{E} 
 occur during the idle \code{tick-3}.
-However, only one occurrence of \code{E} is considered in \code{R(D+E)}.
+However, only one occurrence of \code{E} can be considered in \code{R(D+E)}.
 %
 \item \code{[Box-2]}:
-\emph{Esterel with variable-length ticks}, which are adjusted to the CPU time 
-the corresponding reaction takes to complete~\cite{esterel.variable}.
+\emph{Esterel with variable-length ticks}~\cite{esterel.variable}.
 This approach avoids the time violation for \code{R(A)} and also results in
-smaller idle periods.
+smaller idle periods because it adjusts the tick lengths to match the CPU times 
+for the reactions.
 For instance, the occurrence of \code{D} interrupts the idle \code{tick-3} to 
-react alone as \code{R(D)} on \code{tick-4}.
+react alone as \code{R(D)} at \code{tick-4}.
 Similarly to the fixed-tick approach, only one of the two simultaneous 
-occurrences of \code{E} is considered on \code{tick-5}, now because \code{R(D)} 
+occurrences of \code{E} is considered at \code{tick-5}, now because \code{R(D)} 
 takes too long.
 %
 \item \code{[Box-3]}:
 \emph{\CEU with unique and queue-based input events}.
 We also assume a reaction \code{R(boot)} before any input.
 %
-Because the occurrence of event \code{A} is unique during \code{tick-0}, the 
-behavior in \CEU is similar to \code{Box-2} for the first two reactions 
-(\code{boot-0} and \code{A-1}).
+Because the occurrence of event \code{A} is unique during \code{R(boot)}, the 
+behavior in \CEU is similar to \code{Box-2} for its first two reactions 
+(\code{tick-0} and \code{tick-1}).
 %
 However, \CEU does not consider the events \code{B} and \code{C} as 
 simultaneous, and handles each in subsequent reactions \code{R(B)} and 
@@ -584,6 +584,9 @@ This way, the first idle period in \code{Box-2} and \code{Box-3} coincide.
 %
 Finally, \CEU recognizes and reacts to the two instances of \code{E} 
 independently, which are handled in sequence.
+%
+Note that, by definition, each reaction corresponds to an event occurrence of 
+the same length.
 \end{itemize}
 
 We decided for the unique and queue-based semantics in \CEU for the reasons 
@@ -600,11 +603,11 @@ different behaviors for the same sequence of inputs.
 \item \textbf{Events are never absolutely simultaneous:}
 From a rigorous point of view, event occurrences are infinitesimal, having zero 
 probability of being simultaneous.
-This way, we believe that the notion of simultaneity should not be imposed by 
+This way, we consider that the notion of simultaneity should not be imposed by 
 the language, but defined explicitly for each use case.
 In the case of Esterel, simultaneity depends on the imprecise length of 
 discrete ticks.
-For instance, in Figure~\ref{fig.ticks} (\code{box-1} and \code{box-2}), 
+For instance, in \code{box-1} and \code{box-2} of Figure~\ref{fig.ticks}, 
 Esterel considers the events \code{B} and \code{C} to be simultaneous, even 
 though \code{A} and \code{B} ``physically'' happen much closer to one another.
 In Section~\ref{sec.ceu.timers}, after introducing internal events and 
@@ -613,7 +616,7 @@ first-class timers, we show an example to detect simultaneous button clicks in
 %
 \item \textbf{Unique input events imply mutual exclusion:}
 Reactions to multiple events in \CEU never overlap because they are atomic.
-Automated mutual exclusion simplifies the reasoning about concurrency and is a 
+Automatic mutual exclusion simplifies the reasoning about concurrency and is a 
 prerequisite for the temporal analysis to be discussed in 
 Section~\ref{sec.ceu.analysis}.
 \end{itemize}
@@ -628,20 +631,18 @@ the more inputs to handle, the longer the reaction takes, and the more inputs
 accumulates for subsequent ticks.
 %
 For the fixed-length-tick approach of Esterel, a breach in the synchronous 
-hypothesis causes timing violations, which can be avoided with \emph{worst case 
-reaction time} analysis to infer an appropriate value for the tick 
-length~\cite{esterel.fixed}.
+hypothesis causes timing violations, requiring \emph{worst case reaction time} 
+analysis to infer appropriate tick lengths~\cite{esterel.fixed}.
 % TODO-no: Such analsysis is orthogonal
 
-A limitation of event-triggered execution is that all program behavior must be 
+A limitation of event-triggered execution is that all program behavior is 
 purely reactive, given that no code can execute in the absence of inputs.
 %
 Tick-triggered execution allows for active behavior, since code can execute 
 regulary on every tick.
 %
-Although \CEU supports asynchronous active execution~\cite{ceu.tr}, we still 
-consider it as purely reactive since its synchronous core cannot express active 
-behavior.
+Although \CEU supports active \emph{asynchronous} execution~\cite{ceu.tr}, its 
+synchronous core is still purely reactive.
 
 \begin{comment}
 > Multiclock Esterel
@@ -696,7 +697,7 @@ delimiting instructions.
 \subsection{ Stack-Based Internal Events }
 \label{sec.ceu.ints}
 
-Esterel makes no semantic distinctions between internal and external signals.
+In Esterel, the behavior of internal and external signals is equivalent.
 %In particular, programs can emit external and internal signals simultaneously, 
 %with all coexisting during the entire reaction.
 %
@@ -717,11 +718,11 @@ languages.
 Figure~\ref{lst.prints} illustrates the use of internal signals (events) in 
 Esterel \ax and \CEU \bx.
 %
-In Esterel, when \code{A} occurs, \code{B} is emitted (ln. 4--5) and both 
-events become active, resulting in the invocation of \code{f()} and \code{g()} 
-in no particular order (ln. 6,9).
+In Esterel, when \code{A} occurs, the program emits \code{B} (ln.  4--5) and 
+both events become active, resulting in the invocation of \code{f()} and 
+\code{g()} in no particular order (ln. 6,9).
 %
-In \CEU, the occurrence of \code{A} makes the program behave as follows:
+In \CEU, when \code{A} occurs, the program behave as follows:
 %
 {\small
 \begin{enumerate}
@@ -775,25 +776,25 @@ different semantics.
 }
 \end{figure}
 
-Internal events provide a limited form of subroutines, as depicted in 
-Figure~\ref{lst.sub}.
-The subroutine \code{inc} is defined as a loop (ln. 3--6) that continuously 
+Internal events provide fine-grained execution control and can express a 
+limited form of subroutines, as depicted in Figure~\ref{lst.sub}.
+The ``subroutine'' \code{inc} is defined as a loop (ln. 3--6) that continuously 
 awaits its identifying event (ln. 4), incrementing the value passed as 
 reference (ln. 5).
-A trail in parallel (ln. 8--11) invokes the subroutine in reaction to event 
-\code{A} through an \code{emit} (ln. 10).
+A trail in parallel (ln. 8--11) invokes the subroutine through an \code{emit 
+inc} (ln. 10) in reaction to some code (ln. 9).
 Given the stacked execution for internal events, the calling trail pauses, the 
 subroutine awakes (ln. 4), runs its body (yielding \code{v=2}), loops, and 
 awaits the next ``call'' (ln. 4, again).
 Only after this sequence, the calling trail resumes and passes the assertion 
-test (ln. 11).
+test (ln. 10--11).
 
 \CEU also supports nested \code{emit} invocations for internal events.
-For instance, the code in Figure~\ref{lst.sub} that executes after the 
-\code{await inc} (ln.  4) could \code{emit} another event, creating a new level 
-in the stack.
-The runtime stack constitutes fine-grained micro reactions, one on top of the 
-other, all inside the same reaction to an external event.
+For instance, the body of the subroutine \code{inc} in Figure~\ref{lst.sub} 
+could \code{emit} another event after awaking (ln. 4), creating a new level in 
+the stack.
+The runtime stack constitutes fine-grained micro reactions, with one on top of 
+the other, all inside the same reaction to an external event.
 %Internal events provide a fine-grained intra-reaction control mechanism.
 
 \begin{figure}
@@ -806,7 +807,7 @@ par/or do
     end
 with
     var int v = 1;
-    await A;
+    <...>
     emit inc => &v; // call `inc'
     _assert(v==2);  // after return
 end
@@ -834,8 +835,8 @@ parallel compositions and the \code{await} statement.
 In particular, they await keeping context information such as locals and the 
 program counter, similarly to coroutines~\cite{lua.coroutines}.
 %
-In a previous work, we build on top of internal events other advanced control 
-mechanisms, such as resumable exceptions and reactive 
+In a previous work, we build other advanced control mechanisms on top of 
+internal events, such as resumable exceptions and reactive 
 variables~\cite{ceu.rem13}.
 %In Section~\ref{sec.adv.excpt} we show how to use them to implement 
 %exceptions.
@@ -873,10 +874,10 @@ end
 The example in Figure~\ref{lst.await} illustrates delayed awaits, which 
 prevents infinite execution by design.
 Both sides of the \code{par/or} have an \code{await} statement (ln. 4,7), which 
-makes the enclosing \code{loop} non instantaneous (ln 2--9).
-However, if the \code{emit} (ln. 6) could awake the \code{await} (ln. 4) in the 
-same reaction that reaches them, the \code{par/or} would terminate and restart 
-the \code{loop} instantaneously, resulting in infinite execution.
+characterizes the enclosing \code{loop} as non instantaneous (ln 2--9).
+However, if the \code{emit e} (ln. 6) could awake the \code{await e} 
+instantaneously (ln. 4), the \code{par/or} would terminate and restart the 
+\code{loop} instantaneously, resulting in infinite execution.
 %
 \begin{comment}
 \begin{figure}
@@ -929,7 +930,7 @@ the \code{await} inside the \code{loop}.
 \end{comment}
 %
 In atypical scenarios requiring immediate awake, delayed awaits can be 
-circumvented by manually copying or transforming the code to execute on awake.
+circumvented by placing the code to execute before the \code{await}.
 %
 \begin{comment}
 For instance, sometimes we need to execute a block of code immediately, and 
@@ -964,26 +965,29 @@ sequence of inputs always produces the same sequence of
 outputs''~\cite{esterel.primer}.
 %
 However, the execution order for operations within a reaction is 
-non-deterministic: ``if there is no control dependency, as in \code{<<call f1() 
-|| call f2()>>}, the order is unspecified and it would be an error to rely on 
+non-deterministic: ``if there is no control dependency, as in
+\code{(call~f1()~||~call~f2())},
+the order is unspecified and it would be an error to rely on 
 it''~\cite{esterel.primer}.
 %
-A number of Esterel-based synchronous languages have intra-reaction determinism 
-by enforcing an arbitrary execution order for statements in multiple lines of 
-execution (%
+A number of Esterel-inspired synchronous languages enforces an arbitrary 
+execution order for statements in multiple lines of execution to achieve 
+intra-reaction determinism
+(%
 \emph{Reactive C}~\cite{rp.rc},                 % 1991
 \emph{Protothreads}~\cite{wsn.protothreads},    % 2006
 \emph{SOL}~\cite{wsn.sol},                      % 2007
 \emph{SC}~\cite{rp.synchc},                     % 2009
 and
-\emph{PRET-C}~\cite{rp.pretc}).                 % 2010
+\emph{PRET-C}~\cite{rp.pretc}%                  % 2010
+).
 %, e.g., based on lexical order or manual priority assignment.
 %
 \CEU also takes the deterministic approach and, when multiple trails are active 
 during the same reaction, they are scheduled in lexical order, i.e., in the 
 order they appear in the program source code.
 
-\begin{figure}
+\begin{figure}[b]
 \begin{minipage}[t]{0.50\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3em]
 input void A, B;
@@ -1029,9 +1033,9 @@ For instance, consider the two examples in Figure~\ref{lst.shared}, both
 defining a shared variable (ln. 2), and assigning to it in parallel trails (ln.  
 5, 8).
 %
-In the example \ax, the two assignments to \code{x} execute in reactions to 
-different events \code{A} and \code{B} only, which by definition, cannot occur 
-simultaneously (Section~\ref{sec.ceu.exts}).
+In the example \ax, the two assignments to \code{x} can only execute in 
+reactions to different events \code{A} and \code{B}, which cannot occur 
+simultaneously by definition (Section~\ref{sec.ceu.exts}).
 Hence, for the sequence \code{A->B}, \code{x} becomes \code{4} 
 (\code{(1+1)*2}), while for \code{B->A}, \code{x} becomes \code{3} 
 (\code{(1*2)+1}).
@@ -1107,11 +1111,11 @@ In \CEU, it is possible to restrict the available \C symbols as a compile-time
 option.
 }
 
-\begin{figure}
+\begin{figure}[b]
 \begin{minipage}[t]{0.50\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em]
 native do
-    #define NUM 10
+    ##define NUM 10
     void f  (void)  { <...> }
     void g  (int v) { <...> }
     int  id (int v) { <...> }
@@ -1162,14 +1166,13 @@ the first trail calls symbol \code{\_f} (ln. 8),
 while the second calls \code{\_g} and \code{\_id}, and also reads \code{\_NUM} 
 (ln. 10).
 %
-Since \CEU does not inspect any code in \C, it opts to complain about 
-suspicious concurrent accesses between \code{\_f} and all symbols in the second 
-trail.
+Since \CEU does not inspect any code in \C, it complains about suspicious 
+concurrent accesses between \code{\_f} and all symbols in the second trail.
 
 \subsubsection{Annotations}
 
-The annotations in Figure~\ref{lst.c}.b provides hints to the compiler about 
-the semantics of the \C symbols in code \ax, which now compiles successfully:
+The annotations in Figure~\ref{lst.c}.b provide hints to the compiler about the 
+semantics of the \C symbols in program \ax, which now compiles successfully:
 %
 \begin{itemize}
 \item \code{\_NUM} is a constant symbol, meaning that it is safe to use it 
@@ -1189,14 +1192,14 @@ parallel) and for redrawing objects in the screen.
 Figure~\ref{lst.redraw}.a shows an abstract code to animate and redraw the 
 objects \code{background} and \code{foreground} in trails in parallel.
 In typical graphical APIs, consecutive calls to \code{\_redraw} overwrites 
-conflicting pixels, which makes them non commutative and prevent the code to 
-compile.
+conflicting pixels, which makes the calls non commutative and prevent the code 
+to compile.
 %
-However, we want to rely on lexical order to always redraw the 
+However, in this case we want to rely on lexical order to always redraw the 
 \code{background} object before the \code{foreground} object.
 %
 Therefore, in Figure~\ref{lst.redraw}.b, we redefine \code{\_redraw} to an 
-``intimidating'' name \code{\_redraw\_non\_commutative} (ln. 2, to be explicit 
+``intimidating name'' \code{\_redraw\_non\_commutative} (ln. 2, to be explicit 
 about its effect), and annotate it as safe (ln. 4--5) to make the code compile 
 successfully.
 
@@ -1250,8 +1253,9 @@ languages in comparison to asynchronous languages~\cite{esterel.preemption}.
 %In contrast, traditional (asynchronous) multi-threaded languages cannot 
 %express thread termination safely~\cite{sync_async.threadsstop}.
 %
-However, aborting lines of execution that deal with external resources is still 
-error prone because they may end up in an inconsistent state.
+However, aborting lines of execution that deal with external resources may lead 
+to inconsistencies.
+%is still error prone because they may end up in an inconsistent state.
 %
 For this reason, Esterel and \CEU provide a \code{finalize} construct to 
 unconditionally execute a series of statements even if the enclosing block is 
@@ -1276,8 +1280,8 @@ system calls that deal with pointers representing resources:
 \begin{itemize}
 \item If \CEU \textbf{passes} a pointer to a system call, the pointer 
 represents a \textbf{local} resource that requires finalization.
-\item If \CEU \textbf{receives} a pointer from a system call, the pointer 
-represents an \textbf{external} resource that requires finalization.
+\item If \CEU \textbf{receives} a pointer from a system call return, the 
+pointer represents an \textbf{external} resource that requires finalization.
 \end{itemize}
 %
 \CEU tracks the interaction of system calls with pointers and requires 
@@ -1356,7 +1360,7 @@ compiler will not enforce the use of finalization.
 %Note also that \CEU environments rely on \C libraries that only provide 
 %asynchronous I/O and non-blocking functions~\cite{ceu.sensys13}.
 
-\begin{figure}
+\begin{figure}[b]
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
 par/or do
@@ -1413,7 +1417,7 @@ hours, minutes, etc.
 appear in typical patterns of embedded development, such as timeout watchdogs 
 and sensor samplings.
 %
-However, the interaction between system clocks and programs is not 100\% 
+However, the interaction between system clocks and programs is not absolutely
 precise, a fact that is usually ignored in the development process.
 We define the difference between a requested timeout and the actual expiring 
 time as the \emph{residual delta time (delta)}.
@@ -1424,9 +1428,9 @@ lead to incorrect behavior in programs.
 The \code{await} statement of \CEU supports wall-clock time and handles deltas 
 automatically, resulting in more robust applications.
 In the example in Figure~\ref{lst.timers}.a, suppose that after the first 
-\code{await} request, the underlying system gets busy and takes 15ms to check 
-for expiring awaits.
-The \CEU scheduler will notice that the \code{await 10ms} (ln. 2) has not only 
+\code{await} request, the underlying system gets busy and takes 15ms to notify 
+\CEU.
+The scheduler will notice that the \code{await 10ms} (ln. 2) has not only 
 already expired, but is delayed with \code{delta=5ms}.
 Then, the awaiting trail awakes, sets \code{v=1} (ln. 3), and invokes 
 \code{await 1ms} (ln. 4).
@@ -1507,8 +1511,8 @@ In this specification, ``simultaneous'' means ``within 200 milliseconds'',
 which is a huge amount of time for a language-defined tick.
 %, and which would break the synchronous hypothesis.
 %
-Therefore, a similar implementation for Esterel would not rely on the tick 
-notion of simultaneity either.
+For instance, a similar implementation of this specification in Esterel would 
+not rely on the tick notion of simultaneity either.
 %
 %Conversely, an environment for \CEU could provide \code{TICK} input and 
 %broadcast it periodically to allow applications to recover the abstract notion 
@@ -1589,15 +1593,15 @@ analysis and debugging easier.
 %
 \item \emph{Static temporal analysis for concurrent statements.}
 Although execution is deterministic, the compiler of \CEU still advises about 
-suspicious statements that can react concurrently to the same event, 
-appropriate serialization.
+suspicious statements that can react concurrently to the same event. 
+%appropriate serialization.
 %
 \item \emph{Safe integration with \C.}
-\CEU enforces the programmer to deal with pointers representing resources 
-through finalization clauses.
-When dealing with concurrent system calls, programmers can provide the compiler 
-with annotations to remove false positives from the temporal analysis or to 
-allow non commutative concurrent behavior.
+When dealing with concurrent system calls, programmers can provide annotations 
+to improve the temporal analysis results, or to enforce non commutative 
+concurrent behavior.
+\CEU also requires finalization clauses to handle pointers representing 
+resources.
 %
 \item \emph{First-class timers with dedicated syntax and automatic 
 synchronization.}
@@ -1632,9 +1636,9 @@ The deterministic semantics of \CEU does not make implicit parallelization easy
 Nonetheless, we advocate for keeping a tractable synchronous reactive core with 
 support for shared memory concurrency and deterministic execution.
 %
-To deal with the limitations above (which is not in the scope of this paper), 
-we recommend for memory-isolated parallelizable asynchronous primitives as 
-separate extensions to the synchronous core~\cite{esterel.crp}.
+To deal with the limitations above, we recommend for memory-isolated 
+parallelizable asynchronous primitives as separate extensions to the 
+synchronous core~\cite{esterel.crp} (which are in the scope of this paper).
 
 \begin{comment}
 TODO-no: parallel
@@ -1681,7 +1685,7 @@ and access to real code bases in Esterel for a comprehensive comparison with
 %Still, considering \C as an ``absolute benchmark'', we consider the small 
 %overhead .  solid results
 
-\begin{figure*}[t]
+\begin{figure*}[b]
 \includegraphics[width=\textwidth,clip=true,trim=-80px 385px 300px 40px]{eval}
 \caption{ Resource usage for \CEU and \emph{nesC} in the domain of sensor 
 networks.
