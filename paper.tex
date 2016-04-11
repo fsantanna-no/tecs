@@ -326,9 +326,9 @@ In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context
 of wireless sensor networks, developing a number of applications, protocols, 
 and device drivers.
 %
-We evaluated the expressiveness of \CEU in comparison to hand-crafted 
-event-driven code in \C and attested a reduction in source code size (around 
-25\%) with a small increase in memory usage (around 5--10\% for \emph{text} and 
+We evaluated the expressiveness of \CEU in comparison to event-driven code in 
+\C and attested a reduction in source code size (around 25\%) with a small 
+increase in memory usage (around 5--10\% for \emph{text} and 
 \emph{data})~\cite{ceu.sensys13}.
 %
 For the \VM back end, applications have a bytecode footprint in the order of 
@@ -1666,7 +1666,7 @@ runtime of \CEU, compiling everything with \emph{gcc} to generate the final
 binary.
 
 In a previous work~\cite{ceu.sensys13}, we evaluate the implementation of \CEU
-in comparison to a hand-crafted event-driven code base%
+in comparison to a code base%
 \footnote{TinyOS repository: \url{http://github.com/tinyos/tinyos-release/}}
 in \emph{nesC} (a \C variant)~\cite{wsn.nesc}.
 %
@@ -1693,8 +1693,8 @@ networks.
 }
 \end{figure*}
 
-In the subsections that follow, we discuss \CEU-specific implementation 
-details:
+In the subsections that follow, we discuss implementation details specific to 
+\CEU:
 temporal analysis for determinism (Section~\ref{sec.impl.analysis}),
 static memory allocation for data and trails (Sections~\ref{sec.impl.data} 
 and~\ref{sec.impl.trails}),
@@ -1713,7 +1713,7 @@ such as accesses to shared variables, as discussed in
 Section~\ref{sec.ceu.analysis}.
 
 For each node representing a statement in the program AST, we keep the set of 
-input events $I$ (\emph{incoming}) that can lead to the execution of the node, 
+input events $I$ (\emph{incoming}) that can start the execution of the node, 
 and also the set of input events $O$ (\emph{outgoing}) that can terminate the 
 node.
 As an example, for the single-statement program \code{await~A}, we have 
@@ -1735,7 +1735,7 @@ simply reproduce $O=I$, as they do not await;
 also \code{loop} below);
 %
 \item A \emph{sequence node (;)} modifies each of its children to have 
-$I_n=O_{n-1}$, except for $n=1$ which inherits $I$ from the parent node.
+$I_n=O_{n-1}$, except for $n=1$ (which inherits $I$ from the parent node).
 The set $O$ for the whole node is copied from its last child, i.e., $O=O_n$.
 %
 \item A \code{loop} node includes the output of its body on its own $I$ ($I=I 
@@ -1744,7 +1744,7 @@ The union of all $O$ from nested \code{break} statements forms the set $O$ for
 a \code{loop}.
 %
 \item An \code{if} node has $O=O_{true} \cup O_{false}$, where \code{true} and 
-\code{false} are the two clauses of the \code{if}.
+\code{false} are the two \code{if} branches.
 %
 \item A parallel composition may terminate from any of its branches, hence $O = 
 O_1 \cup ... \cup O_n$.
@@ -1764,7 +1764,7 @@ suspicious.
 
 The code in Figure~\ref{lst.impl.ast}.a has its corresponding $AST$ and sets 
 $I$ and $O$ in Figure~\ref{lst.impl.ast}.b.
-The event $.$ (dot) represents the ``boot'' reaction.
+%The event $.$ (dot) represents the ``boot'' reaction.
 The assignments to \code{y} in parallel (ln. \ax:5,8) have an empty 
 intersection of $I$ (ln. \bx:6,9), hence, they do not conflict.
 Note that, although the accesses to \code{y} in sequence (ln. \ax:5,11)
@@ -1792,14 +1792,14 @@ y = 3;
 %
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=2.5em]
-Stmts I={.} O={A}
-    Dcl_y I={.} O={.}
-    ParOr I={.} O={A,B}
-        Stmts I={.} O={A}
-            Await_A I={.} O={A}
+Stmts I={boot} O={A}
+    Dcl_y I={boot} O={boot}
+    ParOr I={boot} O={A,B}
+        Stmts I={boot} O={A}
+            Await_A I={boot} O={A}
             Set_y I={A} O={A}
-        Stmts I={.} O={B}
-            Await_B I={.} O={B}
+        Stmts I={boot} O={B}
+            Await_B I={boot} O={B}
             Set_y I={B} O={B}
     Await_A I={A,B} O={A}
     Set_y I={A} O={A}
@@ -1864,9 +1864,9 @@ as for temporary values and runtime flags.
 Memory for trails in parallel must coexist, while statements in sequence can 
 reuse it.
 %
-Translating this idea to \C is straightforward~\cite{wsn.osm,wsn.ocram}: memory 
-for blocks in sequence are packed in a \code{union}, while blocks in parallel, 
-in a \code{struct}.
+Translating this idea to \C is straightforward~\cite{wsn.osm}: memory for 
+blocks in sequence are packed in a \code{union}, while blocks in parallel, in a 
+\code{struct}.
 %In the example, the code following the loop (identified as \code{...}) reuses 
 %all memory from the loop.
 %
@@ -1878,15 +1878,14 @@ runtime.
 As an example, Figure~\ref{lst.impl.mem} shows a program with its corresponding 
 memory layout.
 %
-Each variable is assigned a unique $id$ so that variables with the same name 
-can be distinguished (e.g., \code{a\_1} in \bx:2 corresponding to \code{a} in 
-\ax:3).
+%Each variable is assigned a unique $id$ so that variables with the same name 
+%can be distinguished (e.g., \code{a\_1} in \bx:2 corresponding to \code{a} in 
+%\ax:3).
 %
 The \code{do-end} blocks and \code{par/and} in sequence
 (ln. \ax:2--4,5--7,8--12) are packed in a \code{union} (ln. \bx:2,3,4--7), 
-given that their variables cannot be in scope at the same time, e.g., 
-\code{MEM.a\_1} and \code{MEM.b\_2} (ln.  \bx:2,3) can safely share the same 
-memory slot.
+given that their variables cannot be in scope at the same time, e.g., \code{a} 
+and \code{b} can safely share the same memory slot.
 %
 The example also illustrates the presence of runtime flags (ln. \bx:4--7) 
 related to the \code{par/and} termination (ln. \ax:8--12), which also reside in 
@@ -1914,11 +1913,11 @@ end
 \begin{minipage}[t]{0.48\linewidth}
 \begin{lstlisting}[numbers=left,xleftmargin=2.5em]
 union {             // sequence
-    int a_1;        //   do_1
-    int b_2;        //   do_2
+    int a;          //   do_1
+    int b;          //   do_2
     struct {        //   par/and
-        int _and_3: 1;
-        int _and_4: 1;
+        int _and_1: 1;
+        int _and_2: 1;
     };
 } MEM ;
 
@@ -1970,16 +1969,14 @@ All terminated or not-yet-started trails stay in the \code{INACTIVE} state and
 are ignored by the scheduler.
 %
 A \code{STACKED} trail holds an associated numeric stack level and can only 
-execute when scheduler runtime reaches that level.
+execute when scheduler runtime drops to that level.
 %
 A \code{FINALIZE} trail represents a hanged finalization block which is
 scheduled only  when its corresponding block goes out of scope.
 %
-A trail waiting for an event stays in the state of the corresponding event, 
-also holding the minimum sequence number (\emph{seqno}) in which it can awake 
-(for \emph{delayed awaits}).
-  
-to prevent from awaking in the same reaction it is reached.
+A trail waiting for an event stays in that event, also holding the minimum 
+sequence reaction number (\emph{seqno}) in which it can awake (to respect
+\emph{delayed awaits}).
 %
 In concrete terms, a trail is represented by the following \code{struct}:
 
@@ -2010,15 +2007,14 @@ segments and requires a unique entry point in the code for its continuation.
 Additionally, split \& join points for parallel compositions, \code{emit} 
 continuations, and finalization blocks also require labels.
 %
-Since the scheduler traverses all trails on every reaction, it adjusts all 
-\code{seqno} to avoid overflows (actually, 2 bits to hold the \code{seqno} is 
-already enough).
+The fields \code{seqno} requires only 2 bits because the scheduler adjusts them 
+while traversing all trails.
 %
 The size of \code{stack\_t} depends on the maximum depth of nested emissions 
 but is bounded to the maximum number of trails:
 in the worst case, a trail emits an event that awakes another trail, which 
 emits an event that awakes another trail, and so on;
-the last trail cannot awake any trail, because they are all hanged in the 
+the last trail cannot awake any other trail, because they are all hanged in the 
 \code{STACKED} state.
 
 In the context of embedded systems, the size of \code{trail\_t} is typically 
@@ -2026,8 +2022,8 @@ only 3 bytes (1 byte for each field), imposing a negligible memory overhead
 even for trails that only await a single event and terminate.
 %
 For instance, the \emph{CTP} collection protocol ported to \CEU reaches eight 
-simultaneous lines of execution with memory overhead of only 2\% in comparison 
-to the original single-threaded version in \C~\cite{ceu.sensys13}.
+simultaneous lines of execution but has a memory overhead of only 2\% in 
+comparison to the original single-threaded version in \C~\cite{ceu.sensys13}.
 
 \subsection{Static Scheduling and Trail Finalization}
 \label{sec.impl.scheduler}
@@ -2040,10 +2036,9 @@ For the program in \ax, the compiler extracts the entry points and associated
 trails, e.g., the label \code{Awake\_e} will execute on \code{TRAIL-0}
 (ln. \ax:7 and \bx:3).
 %
-For each statement that pauses (\code{emit} and \code{await}), resumes 
-(\code{par/and}, \code{par/or}, and \code{finalize}), or aborts (\code{par/or} 
-and \code{break}), the compiler splits the trail in two segments with 
-associated entry points.
+For each yielding statement (e.g., \code{emit}, \code{await}, \code{par/and}, 
+etc.), the compiler splits the trail in two segments with associated entry 
+points.
 %
 The entry points translate to an \code{enum} in the generated code (ln.  
 \bx:1--10).
@@ -2178,18 +2173,20 @@ stack level 0 (ln. \bx: 13).
 The code in \cx dispatches a trail segment according to the current label to 
 execute.
 %
-For the first reaction, it executes the \code{Main} label in \code{TRAIL-0}.
+For the first reaction, it executes the \code{Main} label in \code{TRAIL-0} 
+(ln.~3--14).
 %
-When the \code{Main} label reaches the \code{par/and} (ln. \ax:4), it stacks 
-\code{TRAIL-1} (ln. \cx:4--7) and proceeds to the code in \code{TRAIL-0} (ln.  
-\cx:9--14) to respect lexical execution order.
+When the \code{Main} label reaches the \code{par/and} (ln. \ax:4), it first 
+stacks \code{TRAIL-1} (ln. \cx:4--7) and then executes the \code{await~e} 
+(ln.~\ax:6) in \code{TRAIL-0} (ln.~\cx:9--14), respecting lexical execution 
+order.
 %
-The code sets the running \code{TRAIL-0} to await \code{EVT\_e} on label 
+The dispatcher sets the running \code{TRAIL-0} to await \code{EVT\_e} on label 
 \code{Awake\_e}, and then halts with a \code{break}.
 %
-Then, \code{dispatch} takes \code{TRAIL-1} and executes its registered label 
-\code{And\_sub\_2} (ln. 16--21), which sets \code{TRAIL-1} to await 
-\code{EVT\_A} and also halts.
+Then, it switches to \code{TRAIL-1} and executes label \code{And\_sub\_2} 
+(ln.~\cx:6,16--21), which sets \code{TRAIL-1} to await \code{EVT\_A} and also 
+halts.
 
 Regarding abortion and finalization, when a \code{par/or} terminates, the 
 scheduler makes a \emph{broadcast} pass for the \code{FINALIZE} event, but 
@@ -2211,13 +2208,13 @@ same abortion process.
 The implementation of \CEU dispatches active trails sequentially in a single 
 thread, taking no advantage of multi-core CPUs.
 %
-This decision comes not only from the fact that \CEU targets constrained 
-embedded systems with a single CPU, but also because \CEU imposes deterministic 
+This decision comes not only from the fact that \CEU targets constrained with 
+single-CPU embedded systems, but also because \CEU imposes deterministic 
 execution for intra-reaction statements.
 
 Note that, as discussed in Section~\ref{sec.ceu.analysis}, the temporal 
-analysis of \CEU infers precisely trails that are concurrent yet do not share 
-resources.
+analysis of \CEU infers precisely trails that are concurrent and yet do not 
+share resources.
 Hence, these non-conflicting trails could potentially execute with real 
 parallelism in multiple cores.
 %
@@ -2226,9 +2223,10 @@ single-core execution in the same system.
 Considering that we use \CEU primarily in control-dominated applications, this 
 result is not surprising and also appears in related 
 work~\cite{esterel.multicore.1,esterel.multicore.2}.
-One reason is due to continuous fork-and-rejoin overhead from small reactions.
-Another reason is due to excessive locality of data from stackless trails 
-sharing contiguous static memory.
+One reason is due to overhead from continuous fork-and-rejoin in small 
+reactions.
+Another reason is due to contention form excessive locality of data in 
+stackless trails sharing contiguous static memory.
 
 If we consider data-dominated applications, multi-core implementations can 
 offer considerable speed-up gains.
@@ -2264,8 +2262,8 @@ the occurrence of external input events.
 The binding for a specific platform (environment) calls hook functions in the 
 API of the \CEU runtime whenever an external event occurs.
 %
-However, to preserve the sequential/discrete semantics of time in \CEU, these 
-calls must never interleave or parallelize execution.
+These calls must never interleave or parallelize execution in order to preserve 
+the sequential/discrete notion of time in \CEU.
 
 Figure~\ref{lst.impl.tinyos} shows our binding for 
 \emph{TinyOS}~\cite{wsn.tos}, which maps system callbacks to input events in 
@@ -2368,7 +2366,7 @@ the expressiveness and safety guarantees of \CEU.
 
 The main difference between the standard \C back end and the Terra \VM is the 
 \emph{code generation phase}, which here outputs assembly instructions for the 
-\VM, instead of statements in \C.
+\VM (instead of statements in \C).
 %
 To reduce the memory footprint of applications, the \VM includes special 
 instructions for complex and recurrent operations from the runtime of \CEU, 
