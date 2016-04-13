@@ -406,9 +406,9 @@ translated almost identically in the two languages (ln. 5--10, in both
 implementations), as Esterel's `$\|$' and \CEU's \code{par/and} constructs are 
 equivalent.
 %
-For the second phrase, the reset behavior, the Esterel version uses a 
-\code{abort-when} (ln. 4--11) which, in this case, serves the same purpose of 
-\CEU's \code{par/or} (ln. 4--13):
+For the second phrase, the reset behavior, the Esterel version uses an 
+\code{abort-when} statement (ln. 4--11) which, in this case, serves the same 
+purpose of \CEU's \code{par/or} (ln. 4--13):
 the occurrence of event \code{R} aborts the awaiting statements in parallel and 
 restarts the enclosing \code{loop}.
 
@@ -511,7 +511,8 @@ follows~\cite{ceu.sensys13}:
       It then goes to step 2.
 \end{enumerate}
 %
-A program must react to an occurring event completely before handling the next.
+A program must react to an occurring event completely before handling the next 
+one.
 %
 Based on the synchronous hypothesis, a program takes a negligible time on step 
 2 and is always idle on step 3.
@@ -611,8 +612,8 @@ For instance, in \code{box-1} and \code{box-2} of Figure~\ref{fig.ticks},
 Esterel considers the events \code{B} and \code{C} to be simultaneous, even 
 though \code{A} and \code{B} ``physically'' happen much closer to one another.
 In Section~\ref{sec.ceu.timers}, after introducing internal events and 
-first-class timers, we show an example to detect simultaneous button clicks in 
-\CEU.
+first-class timers, we show an example to illustrate how to detect simultaneous 
+button clicks in \CEU.
 %
 \item \textbf{Unique input events imply mutual exclusion:}
 Reactions to multiple events in \CEU never overlap because they are atomic.
@@ -633,13 +634,13 @@ accumulates for subsequent ticks.
 For the fixed-length-tick approach of Esterel, a breach in the synchronous 
 hypothesis causes timing violations, requiring \emph{worst case reaction time} 
 analysis to infer appropriate tick lengths~\cite{esterel.fixed}.
-% TODO-no: Such analsysis is orthogonal
+% TODO-no: Such analysis is orthogonal
 
 A limitation of event-triggered execution is that all program behavior is 
 purely reactive, given that no code can execute in the absence of inputs.
 %
 Tick-triggered execution allows for active behavior, since code can execute 
-regulary on every tick.
+regularly on every tick.
 %
 Although \CEU supports active \emph{asynchronous} execution~\cite{ceu.tr}, its 
 synchronous core is still purely reactive.
@@ -835,9 +836,8 @@ parallel compositions and the \code{await} statement.
 In particular, they await keeping context information such as locals and the 
 program counter, similarly to coroutines~\cite{lua.coroutines}.
 %
-In a previous work, we build other advanced control mechanisms on top of 
-internal events, such as resumable exceptions and reactive 
-variables~\cite{ceu.rem13}.
+In previous work, we build other advanced control mechanisms on top of internal 
+events, such as resumable exceptions and reactive variables~\cite{ceu.rem13}.
 %In Section~\ref{sec.adv.excpt} we show how to use them to implement 
 %exceptions.
 
@@ -1089,7 +1089,7 @@ react to different input events.
 %
 Note also that the analysis is optional and does not affect the semantics of 
 the program.
-% TODO-no: static analsysis also simpler
+% TODO-no: static analysis also simpler
 % highlight that is not only important to have a comptutally-sound algorithm, 
 % but that something that programmers can understand
 
@@ -1421,9 +1421,9 @@ However, the interaction between system clocks and programs is not absolutely
 precise, a fact that is usually ignored in the development process.
 We define the difference between a requested timeout and the actual expiring 
 time as the \emph{residual delta time (delta)}.
-Without explicit manipulation, the recurrent use of timed activities in 
-sequence (or in a loop) may accumulate a considerable amount of deltas that can 
-lead to incorrect behavior in programs.
+Without explicit manipulation, the recurrent use of timed activities in a row 
+(or in a loop) may accumulate a considerable amount of deltas that can lead to 
+incorrect behavior in programs.
 
 The \code{await} statement of \CEU supports wall-clock time and handles deltas 
 automatically, resulting in more robust applications.
@@ -1498,7 +1498,7 @@ should not be imposed by the language.
 First-class timers simplify the implementation of application-defined 
 simultaneity.
 %
-Figure~\ref{lst.simultaneous} emulates a \code{milddle\_click} event (ln. 3) in 
+Figure~\ref{lst.simultaneous} emulates a \code{middle\_click} event (ln. 3) in 
 terms of ``simultaneous'' occurrences of \code{LEFT\_CLICK} and 
 \code{RIGHT\_CLICK} (ln. 1--2).
 If both events occur, we emit the internal event \code{middle\_click} (ln.  
@@ -1569,7 +1569,7 @@ simple expansions to a \code{par/and} and \code{par/or} for better readability.
 \CEU aims to offer a simpler semantics than Esterel with more determinism and 
 fine-grained control over program execution.
 %
-The list that follows summarizes the contributions of our design in this 
+The following list summarizes the contributions of our design in this 
 direction:
 %
 \begin{itemize}
@@ -1592,13 +1592,13 @@ Programmers can always figure out which statement executes next, making runtime
 analysis and debugging easier.
 %
 \item \emph{Static temporal analysis for concurrent statements.}
-Although execution is deterministic, the compiler of \CEU still advises about 
+Although execution is deterministic, the \CEU compiler still advises about 
 suspicious statements that can react concurrently to the same event. 
 %appropriate serialization.
 %
 \item \emph{Safe integration with \C.}
 When dealing with concurrent system calls, programmers can provide annotations 
-to improve the temporal analysis results, or to enforce non commutative 
+to improve the temporal analysis results, or to force non commutative 
 concurrent behavior.
 \CEU also requires finalization clauses to handle pointers representing 
 resources.
@@ -1633,12 +1633,12 @@ The deterministic semantics of \CEU does not make implicit parallelization easy
 (to be discussed in Section~\ref{sec.impl.single}).
 \end{itemize}
 %
-Nonetheless, we advocate for keeping a tractable synchronous reactive core with 
+Nonetheless, we advocate keeping a tractable synchronous reactive core with 
 support for shared memory concurrency and deterministic execution.
 %
-To deal with the limitations above, we recommend for memory-isolated 
-parallelizable asynchronous primitives as separate extensions to the 
-synchronous core~\cite{esterel.crp} (which are in the scope of this paper).
+To deal with the limitations above, we recommend memory-isolated parallelizable 
+asynchronous primitives as separate extensions to the synchronous 
+core~\cite{esterel.crp} (which are in the scope of this paper).
 
 \begin{comment}
 TODO-no: parallel
@@ -1665,7 +1665,7 @@ and packs it with platform-dependent functionality (e.g., system calls) and the
 runtime of \CEU, compiling everything with \emph{gcc} to generate the final 
 binary.
 
-In a previous work~\cite{ceu.sensys13}, we evaluate the implementation of \CEU
+In previous work~\cite{ceu.sensys13}, we evaluate the implementation of \CEU
 in comparison to a code base%
 \footnote{TinyOS repository: \url{http://github.com/tinyos/tinyos-release/}}
 in \emph{nesC} (a \C variant)~\cite{wsn.nesc}.
@@ -1852,7 +1852,7 @@ state.
 \subsection{Static Memory Layout}
 \label{sec.impl.data}
 
-\CEU favors a fine-grained use of trails, being common to use trails that await 
+\CEU favors a fine-grained use of trails: it is common to use trails that await 
 a single event and terminate.
 For this reason, \CEU does not allocate per-trail stacks; instead, all data 
 resides in fixed memory slots---this is true for the program variables as well 
@@ -2223,13 +2223,12 @@ single-core execution in the same system.
 Considering that we use \CEU primarily in control-dominated applications, this 
 result is not surprising and also appears in related 
 work~\cite{esterel.multicore.1,esterel.multicore.2}.
-One reason is due to overhead from continuous fork-and-rejoin in small 
-reactions.
-Another reason is due to contention form excessive locality of data in 
-stackless trails sharing contiguous static memory.
+One reason is the overhead from continuous fork-and-rejoin in small reactions.
+Another reason is contention from excessive locality of data in stackless 
+trails sharing contiguous static memory.
 
-If we consider data-dominated applications, multi-core implementations can 
-offer considerable speed-up gains.
+If we consider data-intensive applications, multi-core implementations can 
+offer considerable speedups.
 However, data-intensive computations do not typically require a disciplined 
 step-wise execution and can actually execute in isolated asynchronous calls.
 Esterel provides a \code{task} primitive for this 
@@ -2245,7 +2244,7 @@ Asynchronous execution is out of the scope of this paper.
 %times~\cite{esterel.wcrt,esterel.fixed}.
 
 Single-threaded dispatching may not be suitable for hard real-time activities.
-In a previous work~\cite{ceu.sensys13}, we measure how synchronous lengthy 
+In previous work~\cite{ceu.sensys13}, we measure how synchronous lengthy 
 computations in \C (e.g., hashing and compression) can block the scheduler and 
 affect higher-priority activities such as a radio driver.
 In such cases, the system requires careful testing to avoid undersized hardware 
@@ -2534,15 +2533,18 @@ Regarding resource management, Esterel supports a finalization mechanism to
 unconditionally execute a series of statements on abortion.
 %
 In addition, \CEU also tracks pointers representing resources that cross \C 
-boundaries and
-enforce the programmer to provide associated finalizers.
+boundaries and forces the programmer to provide associated finalizers.
 
-%\emph{URBI}~\cite{rp.urbi} is a dynamic reactive scripting language with a 
-%rich set of control constructs for time management, event-driven 
-%communication, and concurrency.
-%Concurrency is based on dynamically created stackful coroutines, diverging 
-%from our goals regarding resource efficiency and static bounds for memory and 
-%execution time.
+ReactiveML~\cite{rml} and \emph{URBI}~\cite{rp.urbi} extend the synchronous 
+model with dynamic lines of execution.
+%
+The implementations use coroutines or CPS transformations and rely on heap 
+allocation and/or garbage collection, diverging from our goals regarding 
+resource efficiency and static bounds for memory and execution time.
+%
+%These languages and may not be suitable for constrained embedded systems.
+%
+We discuss dynamic abstractions in \CEU in previous work~\cite{ceu.mod15}.
 
 %\subsection{Implementation}
 
@@ -2621,10 +2623,10 @@ libraries, lowering the entry barrier for adoption.
 \emph{Arduino}, and the \emph{SDL} graphical library.%
 \footnote{Website of \CEU: \url{http://www.ceu-lang.org/}}
 
-For the past three years, we have been teaching \CEU for undergraduate and 
-graduate students in research projects and two hands-on courses on 
-\emph{distributed systems} and \emph{reactive programming}.
-%, in which the studnets designing protocols, embedded systems, and graphical 
+For the past three years, we have been teaching \CEU to undergraduate and 
+graduate students in courses on \emph{distributed systems} and \emph{reactive 
+programming}.
+%, in which the students designing protocols, embedded systems, and graphical 
 %applications.
 %
 Our experience shows that students take advantage of the sequential-imperative 
