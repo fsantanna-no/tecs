@@ -148,12 +148,12 @@ Adriano Branco
 \CEU is a synchronous language inspired by Esterel with a simpler semantics and 
 more fine-grained control over program execution.
 %
-\CEU uses an event-triggered notion of time that enables compile-time temporal 
+\CEU uses an event-triggered notion of time that enables compile-time concurrency 
 analysis to detect conflicting statements, resulting in deterministic and 
 concurrency-safe programs.
 %
 Using Esterel as a base, we present the particularities of our design, such as 
-stack-based internal events, the temporal analysis, safe integration with \C, 
+stack-based internal events, the concurrency analysis, safe integration with \C, 
 and first-class timers.
 %
 We also present two implementation back ends:
@@ -283,7 +283,7 @@ synchronous and imperative mindset of Esterel but diverges in some fundamental
 semantic aspects.
 %
 \CEU has a simple semantics with fine-grained control for intra-reaction 
-execution, and is amenable to a temporal analysis that
+execution, and is amenable to a concurrency analysis that
 improves safety.
 %
 The list that follows summarizes the contributions behind the design of \CEU:
@@ -298,7 +298,7 @@ in \CEU.
 provides a limited form of coroutines.
 % (Section~\ref{sec.ceu.ints}).
 %
-\item Static temporal analysis to detect suspicious concurrent statements.
+\item Static concurrency analysis to detect suspicious concurrent statements.
 %(Section~\ref{sec.ceu.analysis}).
 %
 \item Safe integration with \C, which enforces finalization for external 
@@ -471,7 +471,7 @@ Unique and queue-based external events
     (\ref{sec.ceu.exts});
 Stack-based internal events
     (\ref{sec.ceu.ints});
-Static temporal analysis for concurrent statements
+Static concurrency analysis
     (\ref{sec.ceu.analysis});
 Safe integration with \C
     (\ref{sec.ceu.c});
@@ -618,7 +618,7 @@ button clicks in \CEU.
 \item \textbf{Unique input events imply mutual exclusion:}
 Reactions to multiple events in \CEU never overlap because they are atomic.
 Automatic mutual exclusion simplifies the reasoning about concurrency and is a 
-prerequisite for the temporal analysis to be discussed in 
+prerequisite for the concurrency analysis to be discussed in 
 Section~\ref{sec.ceu.analysis}.
 \end{itemize}
 
@@ -951,7 +951,7 @@ need for complex analysis to deal with schizophrenic statements.
 
 %\newpage %TTT
 
-\subsection{ Static Temporal Analysis for Concurrent Statements }
+\subsection{ Static Concurrency Analysis }
 \label{sec.ceu.analysis}
 
 Embedded applications make extensive use of global memory and shared resources, 
@@ -1048,7 +1048,7 @@ is still deterministic, and \code{y} always becomes \code{4} (\code{(1+1)*2}).
 However, an (apparently innocuous) change in the order of trails modifies the 
 semantics of the program, which we consider unsafe.
 
-To mitigate this threat, \CEU performs a temporal analysis at compile time to 
+To mitigate this threat, \CEU performs a concurrency analysis at compile time to 
 detect concurrent accesses to shared variables:
 if a variable is written in a trail segment, then a concurrent trail segment 
 cannot read or write to that variable, nor dereference a pointer of that 
@@ -1151,9 +1151,9 @@ native @safe  _f() with _g();
 }
 \end{figure}
 
-\subsubsection{Temporal Analysis}
+\subsubsection{Concurrency Analysis}
 
-As a safety measure, the temporal analysis of Section~\ref{sec.ceu.analysis} 
+As a safety measure, the concurrency analysis of Section~\ref{sec.ceu.analysis} 
 also considers concurrent calls and accesses to external symbols in \C.
 %
 As an example, the program in Figure~\ref{lst.c}.a defines four external 
@@ -1581,7 +1581,7 @@ development.
 We believe that programmers are more familiar with dealing with events in 
 isolation, which simplifies the reasoning about concurrency.
 In addition, the uniqueness of external events is a prerequisite for the 
-temporal analysis of \CEU.
+concurrency analysis of \CEU.
 %
 \item \emph{Deterministic intra-reaction execution and communication.}
 Determinism in \CEU is ``all-inclusive'' and does not depend on additional 
@@ -1591,14 +1591,14 @@ stack-based internal events.
 Programmers can always figure out which statement executes next, making runtime 
 analysis and debugging easier.
 %
-\item \emph{Static temporal analysis for concurrent statements.}
+\item \emph{Static concurrency analysis.}
 Although execution is deterministic, the \CEU compiler still advises about 
 suspicious statements that can react concurrently to the same event. 
 %appropriate serialization.
 %
 \item \emph{Safe integration with \C.}
 When dealing with concurrent system calls, programmers can provide annotations 
-to improve the temporal analysis results, or to force non commutative 
+to improve the static analysis results, or to force non commutative 
 concurrent behavior.
 \CEU also requires finalization clauses to handle pointers representing 
 resources.
@@ -1658,7 +1658,7 @@ parallelism.
 The compilation process of programs in \CEU is composed of three main phases:
 the \emph{parsing phase} converts the source code in \CEU to an abstract syntax 
 tree (\emph{AST});
-the \emph{temporal analysis phase} detects inconsistencies in programs, such as 
+the \emph{concurrency analysis phase} detects inconsistencies in programs, such as 
 unbounded loops and suspicious concurrent statements;
 the \emph{code generation phase} converts the \emph{AST} to standard \C code 
 and packs it with platform-dependent functionality (e.g., system calls) and the 
@@ -1695,7 +1695,7 @@ networks.
 
 In the subsections that follow, we discuss implementation details specific to 
 \CEU:
-temporal analysis for determinism (Section~\ref{sec.impl.analysis}),
+concurrency analysis for determinism (Section~\ref{sec.impl.analysis}),
 static memory allocation for data and trails (Sections~\ref{sec.impl.data} 
 and~\ref{sec.impl.trails}),
 static scheduling and trail finalization (Section~\ref{sec.impl.scheduler}),
@@ -1703,10 +1703,10 @@ single-threaded dispatching (Section~\ref{sec.impl.single}),
 interaction with the environment (Section~\ref{sec.impl.environment}),
 and the \VM back end (Section~\ref{sec.terra}),
 
-\subsection{Temporal Analysis for Concurrent Statements}
+\subsection{Concurrency Analysis}
 \label{sec.impl.analysis}
 
-The compile-time temporal analysis phase detects inconsistencies in \CEU 
+The compile-time concurrency analysis phase detects inconsistencies in \CEU 
 programs.
 Here, we focus on the algorithm that detects suspicious concurrent statements, 
 such as accesses to shared variables, as discussed in 
@@ -2212,7 +2212,7 @@ This decision comes not only from the fact that \CEU targets constrained with
 single-CPU embedded systems, but also because \CEU imposes deterministic 
 execution for intra-reaction statements.
 
-Note that, as discussed in Section~\ref{sec.ceu.analysis}, the temporal 
+Note that, as discussed in Section~\ref{sec.ceu.analysis}, the concurrency 
 analysis of \CEU infers precisely trails that are concurrent and yet do not 
 share resources.
 Hence, these non-conflicting trails could potentially execute with real 
@@ -2498,7 +2498,7 @@ We consider that this approach is more familiar to programmers and simplifies
 the reasoning about concurrency.
 %
 As far as we know, \CEU is the first to encrust this event-triggered notion of 
-time in the core of the language, which is a prerequisite for the temporal 
+time in the core of the language, which is a prerequisite for the concurrency 
 analysis that enables safe shared-memory concurrency.
 %
 Another unique aspect of \CEU is the distinction between external and internal 
@@ -2519,12 +2519,12 @@ and
 %threads, based on either explicit priorities, or source code lexical order 
 %(similar to \CEU).
 %
-\CEU goes one step further and performs a temporal analysis to detect trails 
+\CEU goes one step further and performs a concurrency analysis to detect trails 
 that, when reordered, change the observable behavior of the program, i.e., 
 trails that actually rely on deterministic scheduling.
 %
 %These languages have a tick-based notion of time similar to Esterel, which 
-%prevents the temporal analysis of \CEU.
+%prevents the concurrency analysis of \CEU.
 %
 \CEU also guarantees deterministic behavior for timer compositions by adjusting 
 inaccuracies in the system clock.
