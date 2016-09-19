@@ -32,39 +32,17 @@ No further comments.
 
 Referee: 3
 
-Comments to the Author
-This paper presents an overview of the Céu language which focuses on
-programming the control logic of single-processor, resource-constrained
-embedded systems. It includes an extended comparison with the Esterel
-language. According to the authors, Céu is characterized by five main design
-choices:
+The subsections on Single-Threaded Dispatching (§3.5) and
+the Terra Virtual Machine (§3.7) are uninformative.
 
-1. The queuing of external events and their treatment one after another.
-
-2. The stacking of generated internal events and their treatment one after
-another.
-
-3. A static analysis to warn when the meaning of a program may be
-sensitive to the lexical ordering of concurrent statements.
-
-4. The direct and "safe" integration of function calls from C.
-
-5. The admission of wall-clock timers into the language.
-
-The paper includes a rapid description of the implementation of the static
-analysis and code generation (memory layout and execution).
-
-The first part of the paper (§2, 11 pages) gives a readable overview of the
-design choices made for Céu and their motivations. The merit of these design
-choices and some of the claims made are disputable, but the point in the
-language design space represented by Céu is well motivated and not
-unreasonable. The second part of the paper (§3, 7.5 pages) gives a rough
-sketch of the implementation of Céu. The approach taken is straightforward
-and unsurprising. The subsections on Single-Threaded Dispatching (§3.5) and
-the Terra Virtual Machine (§3.7) are uninformative. On the whole, I would
+On the whole, I would
 have preferred a more neutral style (some parts of the paper read like a
-sales pitch), a fairer evaluation of Esterel (there are good reasons for its
-design choices), and a more formal description of the language and its
+sales pitch),
+
+a fairer evaluation of Esterel (there are good reasons for its
+design choices),
+
+and a more formal description of the language and its
 implementation (at the very least, a concise definition of the core abstract
 syntax -- I just noticed that the original submission included this
 definition in Figure 10; in my opinion, it was a mistake to remove it).
