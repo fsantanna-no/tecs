@@ -276,119 +276,26 @@ program to minimize the computation needed at each reaction?
 
 Minor details
 -------------
-* Suggest removing the gray backgrounds from the code examples. They reduce
-readability.
 
-§1
-- "Considering the control-based languages" -> "Of the control-based languages"
-- "analysis such as to detect" -> "analysis to detect"
-- "which, ultimately, has to" -> "who, ultimately, has to"
-- "prevents threads to interact" -> "prevents threads from interacting"
-- "Safe integration with C, which enforces"
--> "Safe integration with C that enforces"
-
-§2
-- "the same purpose of CÉU's par/or" -> "the same purpose as CÉU's par/or"
-- "the main differences from CÉU to Esterel"
--> "the main differences between CÉU and Esterel"
-- "in a separate work" -> "in a separate paper"
+% OK
+% lighter backgrounds, typos, text improvements, clarifications,
+% full names in references
 
 §2.1
-- "react to an occurring event" -> "react to an event"
-- "to occur in the next reaction" -> "to occur in a subsequent reaction"
-- "avoids the time violation" -> "avoids the timing violation"
-- "the first idle period in" -> "the first idle periods in"
 - "Note that, by definition, each reaction corresponds to an event
 occurrence of the same length." What does this mean?
-- "Automatic mutual exclusion simplifies the reasoning about concurrency"
--> "Automatic mutual exclusion simplifies reasoning about concurrency"
-- "the more inputs accumulates for subsequent"
--> "the more inputs accumulate for subsequent"
 
 §2.2
-- "the program behave as follows" -> "the program behaves as follows"
-- "passed as reference" -> "passed by reference"
-- "this form of subroutines can use" -> "this form of subroutine can use"
-- "similarly to coroutines [Moura and"
--> "similarly to coroutines [de Moura and" (?)
-- "due to mutual signal dependency" -> "due to mutual signal dependencies"
-- "CÉU has a different take" -> "CÉU takes a different approach"
-
-§2.3
-- "languages enforces an arbitrary" -> "languages enforce an arbitrary"
-
-§2.4
-- "is repassed as is" -> "is passed unchanged"
-- "and prevent the code to compile" -> "and prevents the code from compiling"
-- "the finalize clause [...] execute automatically"
--> "the finalize clause [...] executes automatically"
-- "one step further and actually enforces" -> "one step further and enforces"
+- "similarly to coroutines [Moura and" -> "similarly to coroutines [de Moura and" (?)
 
 §2.6
 - "Reactions must execute in bounded time due to the synchronous
 hypothesis."
+
 -> "The synchronous hypothesis requires that reactions execute in bounded
 time."
-- "(which are in the scope of this paper)": I found this parenthesis
-puzzling.
-
-§3
-- "and packs it with" -> "and augments it with"
-- "In a future work" -> "In future work"
-
-§3.2
-- "are packed in a union, while blocks in parallel, in a struct"
--> "are packed into a union, while blocks in parallel, are packed into a
-struct"
-
-§3.3
-- "represents a hanged finalization block": I do not think that "hanged" is
-the appropriate word here.
-- "number of events in the application"
--> "number of events in an application"
-- "splits the code in two segments" -> "splits the code into two segments"
-- "but is bounded to the maximum" -> "but is bounded by the maximum"
-- "because they are all hanged": blocked?
-
-§3.4
-- "splits the trail in two segments" -> "splits the trail in two segments"
-
-§3.5
-- "targets constrained with single-CPU" -> "targets constrained single-CPU"
-
-§3.6
-- "and always execute event" -> "and always executes event"
-
-§3.7
-- "Considering the domain of sensor networks"
--> "In the domain of sensor networks"
-
-§4
-- "by adjusting inaccuracies in the system clock"
--> "by adjusting for inaccuracies in the system clock"
-- "propose a Esterel-based VM" -> "propose an Esterel-based VM"
 
 References
 - Please display names in the references in the format "Lastname, Firstname"
 and sort them alphabetically by last name. Otherwise it is very tedious to
 look them up from references in the text.
-
-- It would be better to avoid writing "and others" and to instead include
-all the author names. The removal of duplications and unnecessary
-statements in the main text would free up more than enough space.
-
-- Aslam: "java" -> "Java"
-- Berry: "esterel" -> "Esterel"
-- Boussinot and de Simone 1991: The author's names should be written in full
-as per the other citations.
-- Closse: "esterel" -> "Esterel"
-- Yun": "esterel" -> "Esterel"
-
-Date Sent:
-	
-
-11-Aug-2016
- 
-
-© Thomson Reuters |  © ScholarOne, Inc., 2016. All Rights Reserved.
-
