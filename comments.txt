@@ -1,20 +1,34 @@
--- 
+-------------------------------------------------------------------------------
 
 Referee: 1
 
 Comments to the Author
-1. The name of "static temporal analysis" may get confused with the existing work on static timing analysis (e.g., WCET or WCRT) on synchronous language, e.g.,
-''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
+1. The name of "static temporal analysis" may get confused with the existing
+work on static timing analysis (e.g., WCET or WCRT) on synchronous language,
+e.g., ''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
 Maybe it can be renamed as "static concurrency analysis".
 
-2. Furthermore, lexical order is used to schedule the concurrent statements in this work. What happens if there are data dependencies in the concurrent statements? Please discuss the proposed scheduling with the existing sequentialization techniques for Esterel compilation (e.g., a CFG-based compilation).
+% Ok
 
-3. The authors mentioned that "Unfortunately, most real applications in Esterel seems to be closed source". However, the Estbench (available at http://www1.cs.columbia.edu/~sedwards/software.html) can be used to perform the comparison and evaluation.
+2. Furthermore, lexical order is used to schedule the concurrent statements in
+this work. What happens if there are data dependencies in the concurrent
+statements? Please discuss the proposed scheduling with the existing
+sequentialization techniques for Esterel compilation (e.g., a CFG-based
+compilation).
+
+3. The authors mentioned that "Unfortunately, most real applications in Esterel
+seems to be closed source". However, the Estbench (available at
+http://www1.cs.columbia.edu/~sedwards/software.html) can be used to perform the
+comparison and evaluation.
+
+-------------------------------------------------------------------------------
 
 Referee: 2
 
 Comments to the Author
 No further comments.
+
+-------------------------------------------------------------------------------
 
 Referee: 3
 
