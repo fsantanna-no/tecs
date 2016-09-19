@@ -1,0 +1,448 @@
+
+Transactions on Embedded Computing Systems
+
+
+
+
+	  	
+
+Decision Letter (TECS-2015-0165.R1)
+
+From:
+	
+
+sandeeps@cse.iitk.ac.in
+
+To:
+	
+
+fsantanna@inf.puc-rio.br
+
+CC:
+	
+
+Subject:
+	
+
+Transactions on Embedded Computing Systems - Decision TECS-2015-0165.R1
+
+Body:
+	
+
+Dear Sant'Anna,
+
+a decision of your paper TECS-2015-0165.R1 entitled The Design and Implementation of the Synchronous Language Céu has been made. Please
+
+*** prepare a minor revision and resubmit until 10-Sep-2016 ***
+
+I enclose the reviewers' comments below. Please submit your revision to https://mc.manuscriptcentral.com/tecs and put the Comments To Reviewers in the field "Author's Response".
+
+Thank you very much for your contribution to ACM Transactions on Embedded Computing Systems.
+
+Sincerely,
+sandeeps@cse.iitk.ac.in
+Editor-in-Chief
+ACM Transactions on Embedded Computing Systems
+
+-- 
+
+Referee: 1
+
+Comments to the Author
+1. The name of "static temporal analysis" may get confused with the existing work on static timing analysis (e.g., WCET or WCRT) on synchronous language, e.g.,
+''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
+Maybe it can be renamed as "static concurrency analysis".
+
+2. Furthermore, lexical order is used to schedule the concurrent statements in this work. What happens if there are data dependencies in the concurrent statements? Please discuss the proposed scheduling with the existing sequentialization techniques for Esterel compilation (e.g., a CFG-based compilation).
+
+3. The authors mentioned that "Unfortunately, most real applications in Esterel seems to be closed source". However, the Estbench (available at http://www1.cs.columbia.edu/~sedwards/software.html) can be used to perform the comparison and evaluation.
+
+Referee: 2
+
+Comments to the Author
+No further comments.
+
+Referee: 3
+
+Comments to the Author
+This paper presents an overview of the Céu language which focuses on
+programming the control logic of single-processor, resource-constrained
+embedded systems. It includes an extended comparison with the Esterel
+language. According to the authors, Céu is characterized by five main design
+choices:
+
+1. The queuing of external events and their treatment one after another.
+
+2. The stacking of generated internal events and their treatment one after
+another.
+
+3. A static analysis to warn when the meaning of a program may be
+sensitive to the lexical ordering of concurrent statements.
+
+4. The direct and "safe" integration of function calls from C.
+
+5. The admission of wall-clock timers into the language.
+
+The paper includes a rapid description of the implementation of the static
+analysis and code generation (memory layout and execution).
+
+The first part of the paper (§2, 11 pages) gives a readable overview of the
+design choices made for Céu and their motivations. The merit of these design
+choices and some of the claims made are disputable, but the point in the
+language design space represented by Céu is well motivated and not
+unreasonable. The second part of the paper (§3, 7.5 pages) gives a rough
+sketch of the implementation of Céu. The approach taken is straightforward
+and unsurprising. The subsections on Single-Threaded Dispatching (§3.5) and
+the Terra Virtual Machine (§3.7) are uninformative. On the whole, I would
+have preferred a more neutral style (some parts of the paper read like a
+sales pitch), a fairer evaluation of Esterel (there are good reasons for its
+design choices), and a more formal description of the language and its
+implementation (at the very least, a concise definition of the core abstract
+syntax -- I just noticed that the original submission included this
+definition in Figure 10; in my opinion, it was a mistake to remove it).
+
+Ignoring superficial details (why must every language propose a new
+syntax?), two interesting scientific questions underlie the work on Céu:
+
+1. How to order side-effects within a synchronous reaction when interfacing
+with realistic embedded systems?
+
+2. How to program with real-time in certain embedded applications?
+
+The problem is not simply to provide these as features but to do so without
+losing the defining characteristics and advantages of synchronous languages.
+Namely, an underlying mathematical model that is amenable to formal
+manipulations and verification, and isolated 'enough' from low-level
+implementation details while still permitting practical programming and
+efficient implementations. These requirements are obviously difficult to
+enunciate and subject to taste. The solutions embodied in Céu are well
+motivated but involve trade-offs that could be more thoroughly discussed in
+the paper. In particular,
+
+* The queueing of external events and the stacking of internal ones
+simplifies compilation and static analysis but complicates the formal
+model and reasoning, which must account for a list of pending events, and
+the relationship between reactions and real-time, as more complicated
+assumptions are required on event inter-arrival times and the iterations
+required to calculate a reaction. These assumptions are not clearly stated
+in the paper, nor fairly compared with the standard hypothesis that the
+"reaction time is always shorter than the minimum delay separating two
+successive external events" (Rocheteau and Halbwachs, 1991). Calculating
+an adequate Worst Case Reaction Time for a Céu program is surely more
+subtle than for an Esterel or Lustre program with simultaneous external
+events.
+
+* The ordering of side-effects amounts to respecting the lexical ordering in
+the program and possibly warning if program behavior may depend on this
+ordering. This choice is not unreasonable and has, as the authors note,
+been used in several other languages, but it limits the semantic
+equivalences possible for subprograms and complicates manipulation and
+optimization by compilers. I did not really understand how the analysis of
+dangling pointers and memory leaks (§2.4) is supposed to work. Giving
+function calls "intimidating names" is not a thorough solution: surely it
+is possible to do better than that!
+
+More sophisticated treatments of these ideas are attempted in the
+"sequential constructiveness" of von Hanxleden et al in PDLI'14, and in
+the "scheduling policies" of Caspi et al in LCTES'09.
+
+* The treatment of first-class timers is unconvincing. It is trivial to let
+users write "await 10ms" in the text of a program, but how should such
+commands be implemented faithfully? What does "faithfully" even mean,
+exactly? The idea of resolving conflicts based on comparing parallel
+delays (as in the example of §2.5) seems superficial and strange to me.
+
+Such timer statements must inevitably be connected to implementation
+details (interrupts, execution periods, jitter, WCET, etc.), but how can
+this be done without losing the ideal of a mathematical and platform
+independent formal model? Bourke and Sowmya comment on some of these
+issues in SYNCHRON'09.
+
+I hope that the authors will pursue these fundamental issues with a more
+critical approach in their future work.
+
+Other comments
+--------------
+§1
+- "Esterel has an overly complex semantics"
+
+This is a subjective judgment. Esterel has a complex semantics compared
+with Lustre, for instance, but it is not more complex than necessary to
+treat its ambition of being a concurrent programming language with a basis
+in physics (casual circuits). How could the semantics be simplified
+without losing this intimate connection to an important class of digital
+circuits?
+
+- "The complex semantics not only challenges the analysis and compilation of
+programs, but also results in incompatible and non-compliant
+implementations."
+
+Where is the evidence for this assertion? If there is none, please remove it.
+
+§2.1
+- Esterel defines the behavior of a synchronous kernel, but it does not
+mandate how this kernel should be interfaced to the rest of the world. It
+would be possible, for instance, to implement an external queue and to
+feed events to an Esterel program one by one. These events would be
+declared exclusive, e.g, relation UL # UR # LL # LR, Esterel Primer 5.91,
+§4.4.4. The discussion in §2.1 should thus compare implementation schemes
+rather than languages.
+
+- What you term "fixed-length ticks" is normally called "sample-driven
+execution" (see, e.g., Benveniste et al, Proc IEEE, fig. 1).
+
+- "A "tick" is too abstract and imprecise. Outside the domain of hardware
+specification, a tick has no natural counterpart in the real world."
+
+Neither of these statements is true. Sample-driven execution is the
+simplest and most precise way of aligning program behavior to real time.
+Besides the (large and important) domain of hardware specification,
+sample-driven controllers are ubiquitous in control systems and embedded
+software. What could be more concrete and precise than regularly executing
+code on a microcontroller? There is a sort of non-determinism in whether
+an event will be sampled in tick i or in tick i+1, which can lead to
+problems detecting temporal orderings among events (see, e.g., Kopetz
+1997, Chapter 3), but I do not see how this intrinsic problem is solved by
+the proposed execution scheme.
+
+The choice made for CÉU seems reasonable. As for any other choice it comes
+with its own advantages and disadvantages. Why not just argue that this
+choice is suitable for the applications of interest? There is no need for
+a sort of pseudo-philosophical discussion, nor to argue that the choices
+made in the design of Esterel are bad.
+
+- "the two approaches for Esterel [...] lead to different behaviors for the
+same sequence of inputs".
+
+The reality is a bit more subtle. Esterel programs are deterministic: they
+always give the same sequence of outputs for the same sequence of inputs.
+If the interface environment generates a different sequence of inputs,
+then it is reasonable for a program to generate a different sequence of
+outputs. There is, however, a real question about the observed ordering
+and time of events. But this is not properly formalized or resolved in
+your paper.
+
+- "The synchronous hypothesis for CÉU holds if the reactions run faster than
+the rate of incoming input events."
+
+Right, but it is not enough to consider the minimum arrival time between
+any two occurrences of the same event, but rather the average number of
+all events that can occur per unit of time. Furthermore, it is not enough
+to compare this value to the worst-case time to execute a single reaction,
+there is a more complicated interaction between the arrival of events and
+the time taken to process each of them.
+
+"This is also the case for the variable-length-tick approach of Esterel,
+since the more inputs to handle, the longer the reaction takes, and the
+more inputs accumulates for subsequent ticks."
+
+It would be nice to see precise formulas for all three schemes
+(sample-driven, queue-driven, variable-length ticks). Little is learned
+from the informal discussion in the paper. The problem must be posed
+precisely before it can be analyzed.
+
+Similar comments apply to the later statement (§2.6): "As a synchronous
+language, CÉU requires CPU times for reactions to be negligible in
+comparison to the rate of incoming events."
+
+§2.2
+- A comparison can be made between the model of "Stack-Based Internal
+Events" and the ones of StateCharts (e.g., Harel and Naamad, 1996) and the
+MathWorks Stateflow tool. These models also try to treat events one by
+one, but not in exactly the same way.
+
+- "same-cycle bi-directional communication" is also called an "instantaneous
+dialogue" (Halbwachs Book, 1993, §2.4.3).
+
+§2.3
+- It is worth noting that Esterel does impose restrictions on variable reads
+and writes in parallel components. Berry, v5.92 Primer, §3.5: "The rule is
+simple and classical: a variable is local to a thread in case the thread
+writes it. If the thread forks on a '||' parallel statement, then only two
+cases are legal: - The variable is accessed in read-only mode in each
+subthread, - If the variable is written by some thread, then it can
+neither be read nor be written by concurrent threads".
+
+- I did not understand why this simple static check is called a "temporal
+analysis".
+
+§2.4
+- How does the compiler know that an "fopen" requires a later "fclose"?
+Where is this expressed in the program or interface files?
+
+-Why present the example in Figure 9 if it does not work properly? Is there
+not a way to make this example work properly in CÉU?
+
+-I was lost in this section. The informal descriptions and examples are
+insufficient to understand how the scheme is supposed to work in general.
+
+§2.5
+- Is the description of the example correct? I would have expected the
+program to terminate with v = 2.
+
+- "which is a huge amount of time for a language-defined tick": this
+statement is subjective and lacks precision. 200 milliseconds may not be
+much time at all for some applications.
+
+§2.6
+- "Programmers can always figure out which statement executes next, making
+runtime analysis and debugging easier." This claim is unsupported.
+Programmers may have to reason over long chains of event sequences to
+figure out what a given program does. It can be harder to state and reason
+using invariants in such circumstances.
+
+§3
+- "Unfortunately, most real applications in Esterel seem to be closed
+source."
+
+Nevertheless, several examples are available:
+- The Digital Watch, Berry 1991 and 2000 (source in appendix).
+- Edward's estbench suite:
+http://www1.cs.columbia.edu/~sedwards/software/estbench-1.0.tar.gz
+- The test files of the CEC compiler:
+https://github.com/LudvikGalois/cec-esterel/tree/master/tests
+- The HDLC protocol, Berry & Gonthier 1989 (source in appendix).
+- The examples that come with the KIELER tool:
+http://git.rtsys.informatik.uni-kiel.de/projects/KIELER/repos/models/browse/esterel
+(including a solution to the "Backhoe" programming exercise:
+http://www.tbrk.org/esterel/backhoe.html)
+
+§3.1
+- I would have preferred a formal presentation of the static analysis of
+concurrent statements, i.e., deduction rules following the abstract syntax
+of the language.
+
+The rule for sequence nodes is unclear: isn't it possible to put awaits in
+sequence, e.g., await A; await B; await C? How can I_n = O_n-1 in this
+case?
+
+I could not tell whether your pairing algorithm took advantage of the
+hierarchical structure of nested parallel statements.
+
+Could this algorithm be made modular? Or is it necessarily a "whole
+program" analysis? I wonder how it would scale to large programs.
+
+§3.3
+- Do you "flatten" the hierarchical structure of a program to identify all
+trails?
+Or are you able to take advantage of the hierarchical structure of a
+program to minimize the computation needed at each reaction?
+
+Minor details
+-------------
+* Suggest removing the gray backgrounds from the code examples. They reduce
+readability.
+
+§1
+- "Considering the control-based languages" -> "Of the control-based languages"
+- "analysis such as to detect" -> "analysis to detect"
+- "which, ultimately, has to" -> "who, ultimately, has to"
+- "prevents threads to interact" -> "prevents threads from interacting"
+- "Safe integration with C, which enforces"
+-> "Safe integration with C that enforces"
+
+§2
+- "the same purpose of CÉU's par/or" -> "the same purpose as CÉU's par/or"
+- "the main differences from CÉU to Esterel"
+-> "the main differences between CÉU and Esterel"
+- "in a separate work" -> "in a separate paper"
+
+§2.1
+- "react to an occurring event" -> "react to an event"
+- "to occur in the next reaction" -> "to occur in a subsequent reaction"
+- "avoids the time violation" -> "avoids the timing violation"
+- "the first idle period in" -> "the first idle periods in"
+- "Note that, by definition, each reaction corresponds to an event
+occurrence of the same length." What does this mean?
+- "Automatic mutual exclusion simplifies the reasoning about concurrency"
+-> "Automatic mutual exclusion simplifies reasoning about concurrency"
+- "the more inputs accumulates for subsequent"
+-> "the more inputs accumulate for subsequent"
+
+§2.2
+- "the program behave as follows" -> "the program behaves as follows"
+- "passed as reference" -> "passed by reference"
+- "this form of subroutines can use" -> "this form of subroutine can use"
+- "similarly to coroutines [Moura and"
+-> "similarly to coroutines [de Moura and" (?)
+- "due to mutual signal dependency" -> "due to mutual signal dependencies"
+- "CÉU has a different take" -> "CÉU takes a different approach"
+
+§2.3
+- "languages enforces an arbitrary" -> "languages enforce an arbitrary"
+
+§2.4
+- "is repassed as is" -> "is passed unchanged"
+- "and prevent the code to compile" -> "and prevents the code from compiling"
+- "the finalize clause [...] execute automatically"
+-> "the finalize clause [...] executes automatically"
+- "one step further and actually enforces" -> "one step further and enforces"
+
+§2.6
+- "Reactions must execute in bounded time due to the synchronous
+hypothesis."
+-> "The synchronous hypothesis requires that reactions execute in bounded
+time."
+- "(which are in the scope of this paper)": I found this parenthesis
+puzzling.
+
+§3
+- "and packs it with" -> "and augments it with"
+- "In a future work" -> "In future work"
+
+§3.2
+- "are packed in a union, while blocks in parallel, in a struct"
+-> "are packed into a union, while blocks in parallel, are packed into a
+struct"
+
+§3.3
+- "represents a hanged finalization block": I do not think that "hanged" is
+the appropriate word here.
+- "number of events in the application"
+-> "number of events in an application"
+- "splits the code in two segments" -> "splits the code into two segments"
+- "but is bounded to the maximum" -> "but is bounded by the maximum"
+- "because they are all hanged": blocked?
+
+§3.4
+- "splits the trail in two segments" -> "splits the trail in two segments"
+
+§3.5
+- "targets constrained with single-CPU" -> "targets constrained single-CPU"
+
+§3.6
+- "and always execute event" -> "and always executes event"
+
+§3.7
+- "Considering the domain of sensor networks"
+-> "In the domain of sensor networks"
+
+§4
+- "by adjusting inaccuracies in the system clock"
+-> "by adjusting for inaccuracies in the system clock"
+- "propose a Esterel-based VM" -> "propose an Esterel-based VM"
+
+References
+- Please display names in the references in the format "Lastname, Firstname"
+and sort them alphabetically by last name. Otherwise it is very tedious to
+look them up from references in the text.
+
+- It would be better to avoid writing "and others" and to instead include
+all the author names. The removal of duplications and unnecessary
+statements in the main text would free up more than enough space.
+
+- Aslam: "java" -> "Java"
+- Berry: "esterel" -> "Esterel"
+- Boussinot and de Simone 1991: The author's names should be written in full
+as per the other citations.
+- Closse: "esterel" -> "Esterel"
+- Yun": "esterel" -> "Esterel"
+
+Date Sent:
+	
+
+11-Aug-2016
+ 
+
+© Thomson Reuters |  © ScholarOne, Inc., 2016. All Rights Reserved.
+
