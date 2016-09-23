@@ -6,6 +6,7 @@ Comments to the Author
 1. The name of "static temporal analysis" may get confused with the existing
 work on static timing analysis (e.g., WCET or WCRT) on synchronous language,
 e.g., ''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
+[OK]
 Maybe it can be renamed as "static concurrency analysis".
 
 % Ok
@@ -14,12 +15,12 @@ Maybe it can be renamed as "static concurrency analysis".
 this work. What happens if there are data dependencies in the concurrent
 statements? Please discuss the proposed scheduling with the existing
 sequentialization techniques for Esterel compilation (e.g., a CFG-based
-compilation).
+compilation) [OK?].
 
 3. The authors mentioned that "Unfortunately, most real applications in Esterel
 seems to be closed source". However, the Estbench (available at
-http://www1.cs.columbia.edu/~sedwards/software.html) can be used to perform the
-comparison and evaluation.
+http://www1.cs.columbia.edu/~sedwards/software.html) [OK] can be used to
+perform the comparison and evaluation.
 
 -------------------------------------------------------------------------------
 
@@ -73,7 +74,7 @@ assumptions are required on event inter-arrival times and the iterations
 required to calculate a reaction. These assumptions are not clearly stated
 in the paper, nor fairly compared with the standard hypothesis that the
 "reaction time is always shorter than the minimum delay separating two
-successive external events" (Rocheteau and Halbwachs, 1991). Calculating
+successive external events" (Rocheteau and Halbwachs, 1991) [OK?]. Calculating
 an adequate Worst Case Reaction Time for a Céu program is surely more
 subtle than for an Esterel or Lustre program with simultaneous external
 events.
@@ -89,8 +90,8 @@ function calls "intimidating names" is not a thorough solution: surely it
 is possible to do better than that!
 
 More sophisticated treatments of these ideas are attempted in the
-"sequential constructiveness" of von Hanxleden et al in PDLI'14, and in
-the "scheduling policies" of Caspi et al in LCTES'09.
+"sequential constructiveness" of von Hanxleden et al in PDLI'14 [OK], and in
+the "scheduling policies" of Caspi et al in LCTES'09 [OK].
 
 * The treatment of first-class timers is unconvincing. It is trivial to let
 users write "await 10ms" in the text of a program, but how should such
@@ -102,7 +103,7 @@ Such timer statements must inevitably be connected to implementation
 details (interrupts, execution periods, jitter, WCET, etc.), but how can
 this be done without losing the ideal of a mathematical and platform
 independent formal model? Bourke and Sowmya comment on some of these
-issues in SYNCHRON'09.
+issues in SYNCHRON'09 [OK].
 
 I hope that the authors will pursue these fundamental issues with a more
 critical approach in their future work.
@@ -135,7 +136,7 @@ declared exclusive, e.g, relation UL # UR # LL # LR, Esterel Primer 5.91,
 rather than languages.
 
 - What you term "fixed-length ticks" is normally called "sample-driven
-execution" (see, e.g., Benveniste et al, Proc IEEE, fig. 1).
+execution" (see, e.g., Benveniste et al, Proc IEEE, fig. 1) [OK].
 
 - "A "tick" is too abstract and imprecise. Outside the domain of hardware
 specification, a tick has no natural counterpart in the real world."
@@ -148,7 +149,7 @@ software. What could be more concrete and precise than regularly executing
 code on a microcontroller? There is a sort of non-determinism in whether
 an event will be sampled in tick i or in tick i+1, which can lead to
 problems detecting temporal orderings among events (see, e.g., Kopetz
-1997, Chapter 3), but I do not see how this intrinsic problem is solved by
+1997, Chapter 3) [OK], but I do not see how this intrinsic problem is solved by
 the proposed execution scheme.
 
 The choice made for CÉU seems reasonable. As for any other choice it comes
@@ -193,12 +194,12 @@ comparison to the rate of incoming events."
 
 §2.2
 - A comparison can be made between the model of "Stack-Based Internal
-Events" and the ones of StateCharts (e.g., Harel and Naamad, 1996) and the
-MathWorks Stateflow tool. These models also try to treat events one by
+Events" and the ones of StateCharts (e.g., Harel and Naamad, 1996) [OK] and the
+MathWorks Stateflow tool [OK]. These models also try to treat events one by
 one, but not in exactly the same way.
 
 - "same-cycle bi-directional communication" is also called an "instantaneous
-dialogue" (Halbwachs Book, 1993, §2.4.3).
+dialogue" (Halbwachs Book, 1993, §2.4.3) [OK].
 
 §2.3
 - It is worth noting that Esterel does impose restrictions on variable reads
@@ -286,7 +287,8 @@ Minor details
 occurrence of the same length." What does this mean?
 
 §2.2
-- "similarly to coroutines [Moura and" -> "similarly to coroutines [de Moura and" (?)
+- "similarly to coroutines [Moura and" -> "similarly to coroutines
+  [de Moura and" (?)
 
 §2.6
 - "Reactions must execute in bounded time due to the synchronous
