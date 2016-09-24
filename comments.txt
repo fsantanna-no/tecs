@@ -11,7 +11,7 @@ Maybe it can be renamed as "static concurrency analysis".
 
 %%%
 To also address the comments of Referee 3, we renamed as "concurrency checks".
-Please see below for additional comments.
+Please, see below for additional comments.
 %%%
 
 2. Furthermore, lexical order is used to schedule the concurrent statements in
@@ -44,12 +44,30 @@ seems to be closed source". However, the Estbench (available at
 http://www1.cs.columbia.edu/~sedwards/software.html) [OK] can be used to
 perform the comparison and evaluation.
 
--------------------------------------------------------------------------------
+%%%
+Maybe "widely-used applications" would be a more accurate term to use.
+The TinyOS drivers and protocols (which we ported to Céu) are industrial-level
+applications and serve as basis for a considerable amount of work in the
+Wireless Sensor Network academic community (e.g., ACM SenSys, ACM IPSN,
+IEEE DCOSS, and EWSN).
+Although we avoid any quantitative comparisons with Esterel, the cited work is
+mostly about a comprehensive evaluation in a constrained and distributed
+setting showing a small overhead in resource usage in comparison to C.
+We recognize that a quantitative analsysis with Esterel is relevant, but C is
+a standard benchmark for evaluating embbeded systems (i.e., languages can be
+indirectly compared using C as a proxy).
+We have a student working on Esterel's "wristwatch" example [2] and plan to
+extend our evaluation with industrial-quality applications in the future.
+We rewrote the 2nd paragraph of Section 3 with the justification above.
 
-Referee: 2
+[1] Francisco Sant’Anna, Noemi Rodriguez, Roberto Ierusalimschy, Olaf
+    Landsiedel, and Philippas Tsigas. 2013. Safe System-level Concurrency on
+    Resource-Constrained Nodes. In Proceedings of SenSys’13. ACM.
 
-Comments to the Author
-No further comments.
+TODO: mexer no artigo
+TODO: encontrar referências que comparem Esterel e C QUANTITATIVAMENTE
+      trabalhos RECENTES
+%%%
 
 -------------------------------------------------------------------------------
 
@@ -286,6 +304,10 @@ https://github.com/LudvikGalois/cec-esterel/tree/master/tests
 http://git.rtsys.informatik.uni-kiel.de/projects/KIELER/repos/models/browse/esterel
 (including a solution to the "Backhoe" programming exercise:
 http://www.tbrk.org/esterel/backhoe.html)
+
+%%%
+Please, refer to the comments to Referee 1 above.
+%%%
 
 §3.1
 - I would have preferred a formal presentation of the static analysis of
