@@ -1,24 +1,23 @@
 -------------------------------------------------------------------------------
 
-Referee: 1
+> Referee: 1
 
-Comments to the Author
-1. The name of "static temporal analysis" may get confused with the existing
-work on static timing analysis (e.g., WCET or WCRT) on synchronous language,
-e.g., ''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
-[OK]
-Maybe it can be renamed as "static concurrency analysis".
+> 1. The name of "static temporal analysis" may get confused with the existing
+> work on static timing analysis (e.g., WCET or WCRT) on synchronous language,
+> e.g., ''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
+> [OK]
+> Maybe it can be renamed as "static concurrency analysis".
 
 %%%
 To also address the comments of Referee 3, we renamed as "concurrency checks".
 Please, see below for additional comments.
 %%%
 
-2. Furthermore, lexical order is used to schedule the concurrent statements in
-this work. What happens if there are data dependencies in the concurrent
-statements? Please discuss the proposed scheduling with the existing
-sequentialization techniques for Esterel compilation (e.g., a CFG-based
-compilation) [OK?].
+> 2. Furthermore, lexical order is used to schedule the concurrent statements in
+> this work. What happens if there are data dependencies in the concurrent
+> statements? Please discuss the proposed scheduling with the existing
+> sequentialization techniques for Esterel compilation (e.g., a CFG-based
+> compilation) [OK?].
 
 %%%
 The idea of data dependency is inherent to Esterel since it supports emitting
@@ -39,10 +38,10 @@ In this revision, we extended Sections 2.2 and 4 (related work) to clarify
 this discussion.
 %%%
 
-3. The authors mentioned that "Unfortunately, most real applications in Esterel
-seems to be closed source". However, the Estbench (available at
-http://www1.cs.columbia.edu/~sedwards/software.html) [OK] can be used to
-perform the comparison and evaluation.
+> 3. The authors mentioned that "Unfortunately, most real applications in Esterel
+> seems to be closed source". However, the Estbench (available at
+> http://www1.cs.columbia.edu/~sedwards/software.html) [OK] can be used to
+> perform the comparison and evaluation.
 
 %%%
 Maybe "widely-used applications" would be a more accurate term to use.
@@ -71,40 +70,24 @@ TODO: encontrar referências que comparem Esterel e C QUANTITATIVAMENTE
 
 -------------------------------------------------------------------------------
 
-Referee: 3
+> Referee: 3
 
-The subsections on Single-Threaded Dispatching (§3.5) and
-the Terra Virtual Machine (§3.7) are uninformative.
+> The subsections on Single-Threaded Dispatching (§3.5) and
+> the Terra Virtual Machine (§3.7) are uninformative.
 
-On the whole, I would
-have preferred a more neutral style (some parts of the paper read like a
-sales pitch),
+> On the whole, I would have preferred a more neutral style (some parts of the
+> paper read like a sales pitch)...
 
-a fairer evaluation of Esterel (there are good reasons for its
-design choices),
+> ... a fairer evaluation of Esterel (there are good reasons for its design
+> choices), ...
 
-and a more formal description of the language and its
-implementation (at the very least, a concise definition of the core abstract
-syntax -- I just noticed that the original submission included this
-definition in Figure 10; in my opinion, it was a mistake to remove it).
+> and a more formal description of the language and its
+> implementation (at the very least, a concise definition of the core abstract
+> syntax -- I just noticed that the original submission included this
+> definition in Figure 10; in my opinion, it was a mistake to remove it).
 
-Ignoring superficial details (why must every language propose a new
-syntax?), two interesting scientific questions underlie the work on Céu:
-
-1. How to order side-effects within a synchronous reaction when interfacing
-with realistic embedded systems?
-
-2. How to program with real-time in certain embedded applications?
-
-The problem is not simply to provide these as features but to do so without
-losing the defining characteristics and advantages of synchronous languages.
-Namely, an underlying mathematical model that is amenable to formal
-manipulations and verification, and isolated 'enough' from low-level
-implementation details while still permitting practical programming and
-efficient implementations. These requirements are obviously difficult to
-enunciate and subject to taste. The solutions embodied in Céu are well
-motivated but involve trade-offs that could be more thoroughly discussed in
-the paper. In particular,
+> ... The solutions embodied in Céu are well motivated but involve trade-offs
+> that could be more thoroughly discussed in the paper. In particular,
 
 * The queueing of external events and the stacking of internal ones
 simplifies compilation and static analysis but complicates the formal
