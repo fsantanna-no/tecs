@@ -845,13 +845,16 @@ Esterel supports same-cycle bi-directional
 communication~\cite{esterel.compiling}, i.e., two threads can react to one 
 another during the same cycle due to mutual signal dependencies.
 %
-\CEU takes a different approach, posing a tradeoff that an \code{await} is only valid 
-for the next reaction, i.e., if an \code{await} and \code{emit} occur 
+\CEU takes a different approach, posing a tradeoff that an \code{await} is only
+valid for the next reaction, i.e., if an \code{await} and \code{emit} occur 
 simultaneously in parallel trails, the \code{await} does not awake.
 %
 These \emph{delayed awaits} avoid corner cases of instantaneous termination and 
 re-execution of statements in the same reaction (known as \emph{schizophrenic 
 statements}~\cite{esterel.constructive}).
+
+TODO: mesmo sem mutual dependency, falar de semantica construtiva e lei da
+coerencia
 
 \begin{figure}
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
@@ -2556,6 +2559,8 @@ points'') and rearranges them into a directed acyclic graph respecting the
 constructive semantics of Esterel.
 Then, it flattens the graph into sequential code in \C suitable for static 
 scheduling.
+
+TODO: compilação mais sofisticada, tem que lidar com data dependency
 
 %\subsection{VM}
 

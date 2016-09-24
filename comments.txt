@@ -20,6 +20,25 @@ statements? Please discuss the proposed scheduling with the existing
 sequentialization techniques for Esterel compilation (e.g., a CFG-based
 compilation) [OK?].
 
+%%%
+The idea of data dependency is inherent to Esterel since it supports emitting
+and testing the presence of a signal in the same cycle.
+Due to the "coherence law", Esterel also requires that an <<emit>> must precede
+a <<present>> test.
+Therefore, CFG-based compilers create an acyclic graph respecting topological
+order to satisfy these constraints.
+
+Section 2.2 discusses internal events and describes that if an <<await>> and
+<<emit>> occur simultaneously in parallel trails, the <<await>> does not awake.
+Delayed awaits eliminate the idea of data dependency in Céu but are less
+expressive. We discuss the tradeoffs in the paper.
+In Section 3.3, we mention a field in the trail structure to deal with delayed
+awaits in the implementation.
+
+In this revision, we extended Sections 2.2 and 4 (related work) to clarify
+this discussion.
+%%%
+
 3. The authors mentioned that "Unfortunately, most real applications in Esterel
 seems to be closed source". However, the Estbench (available at
 http://www1.cs.columbia.edu/~sedwards/software.html) [OK] can be used to
@@ -288,6 +307,16 @@ program" analysis? I wonder how it would scale to large programs.
 trails?
 Or are you able to take advantage of the hierarchical structure of a
 program to minimize the computation needed at each reaction?
+
+yes!
+o programa eh representado de maneira flat
+    - so faz diferenca no CLEAR, mas ele carrega o range no codigo
+      tb de maneira "flat"
+- nao eh percorrido hierarquicamente
+    - a trail can only be awaiting in one point
+    - a gente sabe o num max do par
+- desvantagem: pedacos inativos sao percorridos do mesmo jeito
+    - regularity, WCET
 
 Minor details
 -------------
