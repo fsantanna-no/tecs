@@ -256,20 +256,20 @@ as \emph{Reactive-C}~\cite{rp.rc}, \emph{OSM}~\cite{wsn.osm},
 
 % TODO-no: SCCharts?, SynchCharts?
 
-Despite its success and influence, Esterel has an overly complex semantics that 
+Despite its success and influence, Esterel has a complex semantics that
 requires careful static analysis to detect and refuse programs with 
 \emph{causality} and \emph{schizophrenia} problems%
 %These problems have an extensive coverage in the literature 
 ~\cite{esterel.constructive,esterel.d7,esterel.d6,esterel.d3,esterel.d5,esterel.d8,esterel.d1,esterel.schizo2}.
 %
-The complex semantics not only challenges the analysis and compilation of 
+A complex semantics not only challenges the analysis and compilation of 
 programs, but also results in incompatible and non-compliant implementations.
 %
 Above all, it also affects the programmer's understanding about the code, 
 who, ultimately, has to solve the errors when facing corner cases.
 %
-Another drawback of the Esterel semantics consists of loose and 
-non-deterministic execution for intra-reaction statements.
+Another drawback of the Esterel semantics consists of non-deterministic
+execution for intra-reaction statements.
 Non determinism prevents threads from interacting with stateful system calls safely 
 and makes shared-memory concurrency not as straightforward as reading and 
 writing to shared variables.
@@ -282,7 +282,7 @@ In this work, we present \CEU, a new programming language that inherits the
 synchronous and imperative mindset of Esterel but diverges in some fundamental 
 semantic aspects.
 %
-\CEU has a simple semantics with fine-grained control for intra-reaction 
+\CEU proposes a semantics with fine-grained control for intra-reaction
 execution, and is amenable to concurrency checks that improve safety.
 %
 The list that follows summarizes the contributions behind the design of \CEU:
@@ -318,7 +318,7 @@ and \emph{MICAz} sensor nodes based on 8-bit microcontrollers%
 \footnote{
 Both \emph{Arduino} and \emph{MICAz} use the 8-bit \emph{ATmega328} 
 microcontroller with 32K of FLASH and 2K of SRAM.
-}, showing a practical aspect of our simple semantics.
+}, showing a practical aspect of the proposed semantics.
 %:\url{http://www.atmel.com/devices/atmega328.aspx}}
 
 In previous work~\cite{ceu.sensys13,ceu.terra}, we employed \CEU in the context 
@@ -1083,13 +1083,12 @@ Then, it checks all accesses in parallel trails to see if they share an awaking
 event.
 If it is the case, the compiler warns about the suspicious accesses.
 
-Note that such analysis is only possible due to the uniqueness of input events 
-within reactions.
-Otherwise, any two trail segments in parallel could be concurrent, even if they 
+The uniqueness of input events within reactions makes this analysis possible,
+otherwise, any two trail segments in parallel could be concurrent, even if they 
 react to different input events.
 %
-Note also that the static checks are optional and do not affect the semantics
-of the program.
+Note that the static checks are optional and do not affect the semantics of the
+program.
 % TODO-no: static analysis also simpler
 % highlight that is not only important to have a comptutally-sound algorithm, 
 % but that something that programmers can understand
@@ -1099,7 +1098,7 @@ of the program.
 
 In \CEU, any identifier prefixed with an underscore is passed unchanged to 
 the \C compiler that generates the final binary.
-Therefore, access to \C is seamless and, more importantly, easily trackable.
+Therefore, access to \C is straightforward and syntactically trackable.
 %
 Similarly to Esterel with the \code{call} primitive, external calls are assumed 
 to be instantaneous~\cite{esterel.primer}.
@@ -1275,8 +1274,8 @@ In Esterel and \CEU, the finalize clause (ln. \ax:10 and \bx:5) executes
 automatically if the enclosing block (ln. \ax:3--1 and \bx:3--10) is
 externally aborted (ln. \ax:12 and \bx:12).
 
-\CEU goes one step further and enforces the use of \code{finalize} for 
-system calls that deal with pointers representing resources:
+\CEU also enforces the use of \code{finalize} for system calls that deal with
+pointers representing resources:
 %
 \begin{itemize}
 \item If \CEU \textbf{passes} a pointer to a system call, the pointer 
@@ -1853,8 +1852,8 @@ state.
 \subsection{Static Memory Layout}
 \label{sec.impl.data}
 
-\CEU favors a fine-grained use of trails: it is common to use trails that await 
-a single event and terminate.
+\CEU promotes a fine-grained use of trails: it is common to use trails that
+await a single event and terminate.
 For this reason, \CEU does not allocate per-trail stacks; instead, all data 
 resides in fixed memory slots---this is true for the program variables as well 
 as for temporary values and runtime flags.
@@ -2502,8 +2501,7 @@ As far as we know, \CEU is the first to encrust this event-triggered notion of
 time in the core of the language, which is a prerequisite for the concurrency 
 checks that enable safe shared-memory concurrency.
 %
-Another unique aspect of \CEU is the distinction between external and internal 
-events.
+\CEU also the distinguishes external events from internal events.
 Internal events support stack-based micro reactions within external reactions, 
 providing more fine-grained control for intra-reaction execution.
 
@@ -2520,9 +2518,9 @@ and
 %threads, based on either explicit priorities, or source code lexical order 
 %(similar to \CEU).
 %
-\CEU goes one step further and performs concurrency checks to detect trails 
-that, when reordered, change the observable behavior of the program, i.e., 
-trails that actually rely on deterministic scheduling.
+\CEU also performs concurrency checks to detect trails that, when reordered,
+change the observable behavior of the program, i.e., trails that actually rely
+on deterministic scheduling.
 %
 %These languages have a tick-based notion of time similar to Esterel, which 
 %prevents the concurrency checks of \CEU.

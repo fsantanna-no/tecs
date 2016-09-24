@@ -78,6 +78,16 @@ TODO: encontrar referências que comparem Esterel e C QUANTITATIVAMENTE
 > On the whole, I would have preferred a more neutral style (some parts of the
 > paper read like a sales pitch)...
 
+%%%
+TODO: summary
+
+We also proof-read the paper and removed/renamed many non-neutral terms:
+"overly complex semantics", "loose execution", "has a simple semantics",
+"only possible", "seamless", "easily trackable", "goes one step further",
+"unique"
+%%%
+
+
 > ... a fairer evaluation of Esterel (there are good reasons for its design
 > choices), ...
 
