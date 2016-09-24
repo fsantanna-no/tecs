@@ -148,12 +148,12 @@ Adriano Branco
 \CEU is a synchronous language inspired by Esterel with a simpler semantics and 
 more fine-grained control over program execution.
 %
-\CEU uses an event-triggered notion of time that enables compile-time concurrency 
-analysis to detect conflicting statements, resulting in deterministic and 
+\CEU uses an event-triggered notion of time that enables compile-time checks to 
+detect conflicting concurrent statements, resulting in deterministic and 
 concurrency-safe programs.
 %
 Using Esterel as a base, we present the particularities of our design, such as 
-stack-based internal events, the concurrency analysis, safe integration with \C, 
+stack-based internal events, concurrency detection, safe integration with \C, 
 and first-class timers.
 %
 We also present two implementation back ends:
@@ -283,8 +283,7 @@ synchronous and imperative mindset of Esterel but diverges in some fundamental
 semantic aspects.
 %
 \CEU has a simple semantics with fine-grained control for intra-reaction 
-execution, and is amenable to a concurrency analysis that
-improves safety.
+execution, and is amenable to concurrency checks that improve safety.
 %
 The list that follows summarizes the contributions behind the design of \CEU:
 %
@@ -298,8 +297,8 @@ in \CEU.
 provides a limited form of coroutines.
 % (Section~\ref{sec.ceu.ints}).
 %
-\item Static concurrency analysis to detect suspicious concurrent statements.
-%(Section~\ref{sec.ceu.analysis}).
+\item Static concurrency checks to detect suspicious concurrent statements.
+%(Section~\ref{sec.ceu.checks}).
 %
 \item Safe integration with \C that enforces finalization for external 
 resources.
@@ -471,8 +470,8 @@ Unique and queue-based external events
     (\ref{sec.ceu.exts});
 Stack-based internal events
     (\ref{sec.ceu.ints});
-Static concurrency analysis
-    (\ref{sec.ceu.analysis});
+Static concurrency checks
+    (\ref{sec.ceu.checks});
 Safe integration with \C
     (\ref{sec.ceu.c});
 and
@@ -618,8 +617,8 @@ button clicks in \CEU.
 \item \textbf{Unique input events imply mutual exclusion:}
 Reactions to multiple events in \CEU never overlap because they are atomic.
 Automatic mutual exclusion simplifies reasoning about concurrency and is a 
-prerequisite for the concurrency analysis to be discussed in 
-Section~\ref{sec.ceu.analysis}.
+prerequisite for the concurrency checks to be discussed in 
+Section~\ref{sec.ceu.checks}.
 \end{itemize}
 
 The synchronous hypothesis for \CEU holds if the reactions run faster than the 
@@ -951,8 +950,8 @@ need for complex analysis to deal with schizophrenic statements.
 
 %\newpage %TTT
 
-\subsection{ Static Concurrency Analysis }
-\label{sec.ceu.analysis}
+\subsection{ Static Concurrency Checks }
+\label{sec.ceu.checks}
 
 Embedded applications make extensive use of global memory and shared resources, 
 such as through memory-mapped registers and system calls to device drivers.
@@ -1048,8 +1047,8 @@ is still deterministic, and \code{y} always becomes \code{4} (\code{(1+1)*2}).
 However, an (apparently innocuous) change in the order of trails modifies the 
 semantics of the program, which we consider unsafe.
 
-To mitigate this threat, \CEU performs a concurrency analysis at compile time to 
-detect concurrent accesses to shared variables:
+To mitigate this threat, \CEU performs concurrency checks at compile time to 
+detect conflicting accesses to shared variables:
 if a variable is written in a trail segment, then a concurrent trail segment 
 cannot read or write to that variable, nor dereference a pointer of that 
 variable type.
@@ -1074,10 +1073,9 @@ Considering the examples in Figure~\ref{lst.shared}:
       \textbf{can} execute during the same reaction.
 \end{itemize}
 %
-The algorithm for the analysis, which is depicted in 
-Section~\ref{sec.impl.analysis}, inspects all possible \code{await} statements 
-that precede a variable access and keep a list with all corresponding awaking 
-events.
+The detection algorithm, which is depicted in Section~\ref{sec.impl.checks},
+inspects all possible \code{await} statements that precede a variable access
+and keeps a list with all corresponding awaking events.
 Then, it checks all accesses in parallel trails to see if they share an awaking 
 event.
 If it is the case, the compiler warns about the suspicious accesses.
@@ -1087,8 +1085,8 @@ within reactions.
 Otherwise, any two trail segments in parallel could be concurrent, even if they 
 react to different input events.
 %
-Note also that the analysis is optional and does not affect the semantics of 
-the program.
+Note also that the static checks are optional and do not affect the semantics
+of the program.
 % TODO-no: static analysis also simpler
 % highlight that is not only important to have a comptutally-sound algorithm, 
 % but that something that programmers can understand
@@ -1151,10 +1149,10 @@ native @safe  _f() with _g();
 }
 \end{figure}
 
-\subsubsection{Concurrency Analysis}
+\subsubsection{Concurrency Checks}
 
-As a safety measure, the concurrency analysis of Section~\ref{sec.ceu.analysis} 
-also considers concurrent calls and accesses to external symbols in \C.
+As a safety measure, the concurrency checks of Section~\ref{sec.ceu.checks} 
+also consider concurrent calls and accesses to external symbols in \C.
 %
 As an example, the program in Figure~\ref{lst.c}.a defines four external 
 symbols inside a \code{native} block with standard declarations in \C (ln.  
@@ -1581,7 +1579,7 @@ development.
 We believe that programmers are more familiar with dealing with events in 
 isolation, which simplifies the reasoning about concurrency.
 In addition, the uniqueness of external events is a prerequisite for the 
-concurrency analysis of \CEU.
+concurrency checks of \CEU.
 %
 \item \emph{Deterministic intra-reaction execution and communication.}
 Determinism in \CEU is ``all-inclusive'' and does not depend on additional 
@@ -1591,14 +1589,14 @@ stack-based internal events.
 Programmers can always figure out which statement executes next, making runtime 
 analysis and debugging easier.
 %
-\item \emph{Static concurrency analysis.}
+\item \emph{Static concurrency checks.}
 Although execution is deterministic, the \CEU compiler still advises about 
 suspicious statements that can react concurrently to the same event. 
 %appropriate serialization.
 %
 \item \emph{Safe integration with \C.}
 When dealing with concurrent system calls, programmers can provide annotations 
-to improve the static analysis results, or to force non commutative 
+to reduce false positives in the static checks, or to force non commutative 
 concurrent behavior.
 \CEU also requires finalization clauses to handle pointers representing 
 resources.
@@ -1658,7 +1656,7 @@ parallelism.
 The compilation process of programs in \CEU is composed of three main phases:
 the \emph{parsing phase} converts the source code in \CEU to an abstract syntax 
 tree (\emph{AST});
-the \emph{concurrency analysis phase} detects inconsistencies in programs, such as 
+the \emph{concurrency checks phase} detects inconsistencies in programs, such as 
 unbounded loops and suspicious concurrent statements;
 the \emph{code generation phase} converts the \emph{AST} to standard \C code 
 and augments it with platform-dependent functionality (e.g., system calls) and the 
@@ -1686,7 +1684,7 @@ and access to real code bases in Esterel for a comprehensive comparison with
 %overhead .  solid results
 
 \begin{figure*}[b]
-\includegraphics[width=\textwidth,clip=true,trim=-80px 385px 300px 40px]{eval}
+%\includegraphics[width=\textwidth,clip=true,trim=-80px 385px 300px 40px]{eval}
 \caption{ Resource usage for \CEU and \emph{nesC} in the domain of sensor 
 networks.
 \label{fig.eval}
@@ -1695,7 +1693,7 @@ networks.
 
 In the subsections that follow, we discuss implementation details specific to 
 \CEU:
-concurrency analysis for determinism (Section~\ref{sec.impl.analysis}),
+concurrency checks for determinism (Section~\ref{sec.impl.checks}),
 static memory allocation for data and trails (Sections~\ref{sec.impl.data} 
 and~\ref{sec.impl.trails}),
 static scheduling and trail finalization (Section~\ref{sec.impl.scheduler}),
@@ -1703,14 +1701,14 @@ single-threaded dispatching (Section~\ref{sec.impl.single}),
 interaction with the environment (Section~\ref{sec.impl.environment}),
 and the \VM back end (Section~\ref{sec.terra}),
 
-\subsection{Concurrency Analysis}
-\label{sec.impl.analysis}
+\subsection{Concurrency Checks}
+\label{sec.impl.checks}
 
-The compile-time concurrency analysis phase detects inconsistencies in \CEU 
+The compile-time concurrency checks phase detects inconsistencies in \CEU 
 programs.
 Here, we focus on the algorithm that detects suspicious concurrent statements, 
 such as accesses to shared variables, as discussed in 
-Section~\ref{sec.ceu.analysis}.
+Section~\ref{sec.ceu.checks}.
 
 For each node representing a statement in the program AST, we keep the set of 
 input events $I$ (\emph{incoming}) that can start the execution of the node, 
@@ -2212,8 +2210,8 @@ This decision comes not only from the fact that \CEU targets constrained
 single-CPU embedded systems, but also because \CEU imposes deterministic 
 execution for intra-reaction statements.
 
-Note that, as discussed in Section~\ref{sec.ceu.analysis}, the concurrency 
-analysis of \CEU infers precisely trails that are concurrent and yet do not 
+Note that, as discussed in Section~\ref{sec.ceu.checks}, the concurrency 
+checks of \CEU infer precisely trails that are concurrent and yet do not 
 share resources.
 Hence, these non-conflicting trails could potentially execute with real 
 parallelism in multiple cores.
@@ -2358,7 +2356,7 @@ the expressiveness and safety guarantees of \CEU.
 
 \begin{figure}[!htb]
  \centering
- \includegraphics[width=0.5\columnwidth]{terra}
+ %\includegraphics[width=0.5\columnwidth]{terra}
 \caption{Terra programming system basic elements.}
  \label{fig.terra}
 \end{figure}
@@ -2499,7 +2497,7 @@ the reasoning about concurrency.
 %
 As far as we know, \CEU is the first to encrust this event-triggered notion of 
 time in the core of the language, which is a prerequisite for the concurrency 
-analysis that enables safe shared-memory concurrency.
+checks that enable safe shared-memory concurrency.
 %
 Another unique aspect of \CEU is the distinction between external and internal 
 events.
@@ -2519,12 +2517,12 @@ and
 %threads, based on either explicit priorities, or source code lexical order 
 %(similar to \CEU).
 %
-\CEU goes one step further and performs a concurrency analysis to detect trails 
+\CEU goes one step further and performs concurrency checks to detect trails 
 that, when reordered, change the observable behavior of the program, i.e., 
 trails that actually rely on deterministic scheduling.
 %
 %These languages have a tick-based notion of time similar to Esterel, which 
-%prevents the concurrency analysis of \CEU.
+%prevents the concurrency checks of \CEU.
 %
 \CEU also guarantees deterministic behavior for timer compositions by adjusting 
 for inaccuracies in the system clock.
@@ -2591,7 +2589,7 @@ We present the design and implementation of \CEU, a synchronous reactive
 language inspired by Esterel with simpler semantics and more fine-grained 
 control for intra-reaction execution.
 
-\CEU is a concurrency-safe language, employing static analysis to ensure that 
+\CEU is a concurrency-safe language, employing static checks to ensure that 
 the high degree of concurrency in embedded systems does not pose safety threats 
 to applications.
 %

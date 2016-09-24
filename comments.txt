@@ -9,7 +9,10 @@ e.g., ''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
 [OK]
 Maybe it can be renamed as "static concurrency analysis".
 
-% Ok
+%%%
+To also address the comments of Referee 3, we renamed as "concurrency checks".
+Please see below for additional comments.
+%%%
 
 2. Furthermore, lexical order is used to schedule the concurrent statements in
 this work. What happens if there are data dependencies in the concurrent
@@ -212,6 +215,17 @@ neither be read nor be written by concurrent threads".
 
 - I did not understand why this simple static check is called a "temporal
 analysis".
+
+%%%
+We acknowledge that the term possibly raises a different expectation to the
+reader, so we now use "concurrency checks" instead of "temporal analysis".
+As a justification for the term "analysis", the checks evolved from a
+compile-time simulation for more precise results and detection of
+non-terminating statements, conflicting termination of "par/or", and some other
+checks (unrelated to the paper).
+However, from our experience, the simple checks are efficient and good enough
+in practice.
+%%%
 
 §2.4
 - How does the compiler know that an "fopen" requires a later "fclose"?
