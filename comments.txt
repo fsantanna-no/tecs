@@ -126,20 +126,55 @@ More sophisticated treatments of these ideas are attempted in the
 "sequential constructiveness" of von Hanxleden et al in PDLI'14 [OK], and in
 the "scheduling policies" of Caspi et al in LCTES'09 [OK].
 
-* The treatment of first-class timers is unconvincing. It is trivial to let
-users write "await 10ms" in the text of a program, but how should such
-commands be implemented faithfully? What does "faithfully" even mean,
-exactly? The idea of resolving conflicts based on comparing parallel
-delays (as in the example of §2.5) seems superficial and strange to me.
+> The treatment of first-class timers is unconvincing. It is trivial to let
+> users write "await 10ms" in the text of a program, but how should such
+> commands be implemented faithfully? What does "faithfully" even mean,
+> exactly? The idea of resolving conflicts based on comparing parallel
+> delays (as in the example of §2.5) seems superficial and strange to me.
+>
+> Such timer statements must inevitably be connected to implementation
+> details (interrupts, execution periods, jitter, WCET, etc.), but how can
+> this be done without losing the ideal of a mathematical and platform
+> independent formal model? Bourke and Sowmya comment on some of these
+> issues in SYNCHRON'09 [OK].
 
-Such timer statements must inevitably be connected to implementation
-details (interrupts, execution periods, jitter, WCET, etc.), but how can
-this be done without losing the ideal of a mathematical and platform
-independent formal model? Bourke and Sowmya comment on some of these
-issues in SYNCHRON'09 [OK].
+We included this reference in the paper and acknowledge their contributions.
+In fact, our proposal is very close to theirs:
+    - "program in terms of physical time"
+    - "delay expressions should not unduly bias the mechanisms with which they
+       are eventually realised"
+    - "possible to program initially in ideal terms"
 
-I hope that the authors will pursue these fundamental issues with a more
-critical approach in their future work.
+Their proposal transforms a <<delay time>> statement into appropriate Esterel
+statements based on a hardware description given as a program declaration.
+Our proposal makes physical time a special input event that feeds the runtime
+with an associated time to count. Both proposals encompass sample and
+interrupt-based timers.
+We extend the related work (S.4) with this discussion.
+
+About "faithful" fist-class timers, the scheduler of Céu runs reactions to
+completion and possibly on top of some operating system.
+For this reason, <<await time>> means awaiting *at least* <<time>>.
+In the paper, we mention that the "interaction between system clocks and
+programs is not absolutely precise".
+We make this assumption more explicit in the paper.
+That said, the runtime of Céu does not accumulate errors and is accurate about
+timers in parallel:
+
+    par/and do
+        await 1us; await 1us; await 1us;
+    with
+        await 3us;
+    end
+
+The two trails always terminate together regardless of imprecise measurements
+passed to the Céu runtime.
+These conflicts are not resolved "based on comparing parallel delays", but as
+consequence of "delta" compensation.
+The example with timers in parallel illustrates that the abstract reasoning for
+"1+1+1 == 3" always work in practice.
+We rewrote the phrase that suggests that comparing parallel delays is a special
+case.
 
 Other comments
 --------------

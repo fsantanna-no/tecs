@@ -1414,8 +1414,8 @@ Activities that involve reactions to \emph{wall-clock time}%
 By wall-clock time we mean the passage of time from the real world, measured in 
 hours, minutes, etc.
 }
-appear in typical patterns of embedded development, such as timeout watchdogs 
-and sensor samplings.
+appear in typical patterns of embedded development~\cite{esterel.delays}, such
+as timeout watchdogs and sensor samplings.
 %
 However, the interaction between system clocks and programs is not absolutely
 precise, a fact that is usually ignored in the development process.
@@ -1427,6 +1427,8 @@ incorrect behavior in programs.
 
 The \code{await} statement of \CEU supports wall-clock time and handles deltas 
 automatically, resulting in more robust applications.
+Due to platform overheads and occasional slow reactions, an \code{await 10ms}
+suspends a line of execution for \emph{at least} 10 milliseconds.
 In the example in Figure~\ref{lst.timers}.a, suppose that after the first 
 \code{await} request, the underlying system gets busy and takes 15ms to notify 
 \CEU.
@@ -1473,16 +1475,17 @@ end
 }
 \end{figure}
 
-\CEU also considers that time is a physical quantity that can be added and 
-compared.
+Delta compensation also implies that timers can be added and compared when
+reasoning about time as a physical quantity.
 For instance, in the example in Figure~\ref{lst.timers}.b, although the 
 scheduler cannot guarantee that the first trail terminates exactly in 11ms (ln.  
 2,4), it can at least ensure that the program always terminates with 
 \code{v=1}.
 %
 Given that any non-awaiting sequence is considered to take no time in the 
-synchronous model, the first trail (ln. 2--5) is guaranteed to terminate before 
-the second trail (ln. 7--8), because $10+1 < 12$.
+synchronous model, the first trail (ln. 2--5) is guaranteed to awake first and
+terminate the \code{par/or} before the second trail executes (ln. 7--8),
+because $10+1 < 12$.
 %
 A similar program in a language without first-class support for timers would 
 depend on the execution timings for the code marked as \code{<...>}, making the 
@@ -2524,9 +2527,20 @@ on deterministic scheduling.
 %
 %These languages have a tick-based notion of time similar to Esterel, which 
 %prevents the concurrency checks of \CEU.
+
+\emph{Esterel+Delay}~\cite{esterel.delays} is a non-intrusive extension to
+Esterel to program in terms of physical time with \code{delay} statements.
+The global transformation relies on a \emph{platform statement} the specifies
+the available timers in the system (e.g., sample-driven or interrupt-driven).
+It then expands \code{delay} statements into existing Esterel statements in a
+way that the desired semantics can be realised in the platform.
 %
-\CEU also guarantees deterministic behavior for timer compositions by adjusting 
-for inaccuracies in the system clock.
+\CEU makes physical time a special input event that feeds the runtime with an
+associated time to elapse which is decremented from all awaiting trails.
+The compensation scheme of \CEU guarantees that trails awake in the correct
+order and that errors are not propagated on subsequent awaits.
+Interrupt-driven timers are also supported with a hook callback that the
+runtime calls whenever the program awaits an earlier timer.
 
 Regarding resource management, Esterel supports a finalization mechanism to 
 unconditionally execute a series of statements on abortion.
