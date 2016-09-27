@@ -628,7 +628,7 @@ Section~\ref{sec.ceu.checks}.
 
 Note that Esterel supports declarations for mutually exclusive inputs which
 cannot be simultaneous in the same reaction
-(e.g., \code{relation A\#B\#C\#D\#E;})~\cite{esterel.primer}.
+(e.g., ``\code{relation A\#B\#C\#D\#E;}'')~\cite{esterel.primer}.
 Making all inputs mutually exclusive and adopting the variable-length-tick
 approach is equivalent to \CEU's notion of time, which can be seen as an
 imposed restriction on the semantics of Esterel.
@@ -636,7 +636,8 @@ imposed restriction on the semantics of Esterel.
 The synchronous hypothesis for \CEU holds if the reactions run faster than the 
 rate of incoming input events.
 Otherwise, the application continuously accumulates delays between the real 
-occurrence and actual reaction of a given event.
+occurrence and actual reaction of a given event (we discuss implementation
+considerations in Sections~\ref{sec.impl.single}~and~\ref{sec.impl.environment}).
 %
 This is also the case for the variable-length-tick approach of Esterel, since 
 the more inputs to handle, the longer the reaction takes, and the more inputs 

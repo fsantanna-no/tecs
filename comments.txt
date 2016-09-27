@@ -49,8 +49,8 @@ The TinyOS drivers and protocols (which we ported to Céu) are industrial-level
 applications and serve as basis for a considerable amount of work in the
 Wireless Sensor Network academic community (e.g., ACM SenSys, ACM IPSN,
 IEEE DCOSS, and EWSN).
-Although we avoid any quantitative comparisons with Esterel, the cited work is
-mostly about a comprehensive evaluation in a constrained and distributed
+Although we avoid any quantitative comparisons with Esterel, the cited work [1]
+is mostly about a comprehensive evaluation in a constrained and distributed
 setting showing a small overhead in resource usage in comparison to C.
 We recognize that a quantitative analsysis with Esterel is relevant, but C is
 a standard benchmark for evaluating embbeded systems (i.e., languages can be
@@ -58,11 +58,6 @@ indirectly compared using C as a proxy).
 We have a student working on Esterel's "wristwatch" example [2] and plan to
 extend our evaluation with industrial-quality applications in the future.
 We rewrote the 2nd paragraph of Section 3 with the justification above.
-
-[1] Francisco Sant’Anna, Noemi Rodriguez, Roberto Ierusalimschy, Olaf
-    Landsiedel, and Philippas Tsigas. 2013. Safe System-level Concurrency on
-    Resource-Constrained Nodes. In Proceedings of SenSys’13. ACM.
-[2] https://github.com/HandelSM/Ceu-arduino
 
 TODO: mexer no artigo
 TODO: encontrar referências que comparem Esterel e C QUANTITATIVAMENTE
@@ -263,39 +258,57 @@ tick-based reactions are simpler and map directly to hardware implementations
 We now consider the soft real time application domain of Céu.
 We also reduced the conceptual discussion.
 
-- "the two approaches for Esterel [...] lead to different behaviors for the
-same sequence of inputs".
+> - "the two approaches for Esterel [...] lead to different behaviors for the
+> same sequence of inputs".
+> 
+> The reality is a bit more subtle. Esterel programs are deterministic: they
+> always give the same sequence of outputs for the same sequence of inputs.
+> If the interface environment generates a different sequence of inputs,
+> then it is reasonable for a program to generate a different sequence of
+> outputs. There is, however, a real question about the observed ordering
+> and time of events. But this is not properly formalized or resolved in
+> your paper.
 
-The reality is a bit more subtle. Esterel programs are deterministic: they
-always give the same sequence of outputs for the same sequence of inputs.
-If the interface environment generates a different sequence of inputs,
-then it is reasonable for a program to generate a different sequence of
-outputs. There is, however, a real question about the observed ordering
-and time of events. But this is not properly formalized or resolved in
-your paper.
+As commented above, the paper discusses an absolute timeline with events and
+timestamps.
+In this case, different tick lengths generate different sets of inputs.
 
-- "The synchronous hypothesis for CÉU holds if the reactions run faster than
-the rate of incoming input events."
+> - "The synchronous hypothesis for CÉU holds if the reactions run faster than
+> the rate of incoming input events."
+> 
+> Right, but it is not enough to consider the minimum arrival time between
+> any two occurrences of the same event, but rather the average number of
+> all events that can occur per unit of time. Furthermore, it is not enough
+> to compare this value to the worst-case time to execute a single reaction,
+> there is a more complicated interaction between the arrival of events and
+> the time taken to process each of them.
+>
+> "This is also the case for the variable-length-tick approach of Esterel,
+> since the more inputs to handle, the longer the reaction takes, and the
+> more inputs accumulates for subsequent ticks."
+> 
+> It would be nice to see precise formulas for all three schemes
+> (sample-driven, queue-driven, variable-length ticks). Little is learned
+> from the informal discussion in the paper. The problem must be posed
+> precisely before it can be analyzed.
+> 
+> Similar comments apply to the later statement (§2.6): "As a synchronous
+> language, CÉU requires CPU times for reactions to be negligible in
+> comparison to the rate of incoming events."
 
-Right, but it is not enough to consider the minimum arrival time between
-any two occurrences of the same event, but rather the average number of
-all events that can occur per unit of time. Furthermore, it is not enough
-to compare this value to the worst-case time to execute a single reaction,
-there is a more complicated interaction between the arrival of events and
-the time taken to process each of them.
+We haven't formalized the interaction of the language with the environment yet.
+The formal semantics of Céu specifies a reaction to a single event [3] (i.e.,
+the queue is external to the formal language, as illustrated in S.3.6).
+In S.3.5, we mention previous work with the implementation of a radio driver
+running in parallel with time-consuming tasks (e.g. computing hashes) [1].
+We argue that "(hard real-time systems) requires careful testing to avoid
+undersized hardware deployment without proper formalization".
+As commented above, we repositioned the paper as targeting soft real-time
+systems.
+In S.2.6, we referenced S.3.5 and S.3.6 for the comments above.
 
-"This is also the case for the variable-length-tick approach of Esterel,
-since the more inputs to handle, the longer the reaction takes, and the
-more inputs accumulates for subsequent ticks."
-
-It would be nice to see precise formulas for all three schemes
-(sample-driven, queue-driven, variable-length ticks). Little is learned
-from the informal discussion in the paper. The problem must be posed
-precisely before it can be analyzed.
-
-Similar comments apply to the later statement (§2.6): "As a synchronous
-language, CÉU requires CPU times for reactions to be negligible in
-comparison to the rate of incoming events."
+TODO: extend 3.5?
+TODO: merged 3.5/3.6?
 
 §2.2
 - A comparison can be made between the model of "Stack-Based Internal
@@ -433,3 +446,12 @@ References
 - Please display names in the references in the format "Lastname, Firstname"
 and sort them alphabetically by last name. Otherwise it is very tedious to
 look them up from references in the text.
+
+
+[1] Francisco Sant’Anna, Noemi Rodriguez, Roberto Ierusalimschy, Olaf
+    Landsiedel, and Philippas Tsigas. 2013. Safe System-level Concurrency on
+    Resource-Constrained Nodes. In Proceedings of SenSys’13. ACM.
+[2] https://github.com/HandelSM/Ceu-arduino
+[3] Francisco Sant’Anna. 2013. Safe System-level Concurrency on
+    Resource-Constrained Nodes with Céu. Ph.D. Dissertation. PUC–Rio.
+
