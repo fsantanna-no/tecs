@@ -528,13 +528,18 @@ running, it is enqueued to occur in a subsequent reaction.
 
 Figure~\ref{fig.ticks} compares the discrete notions of time in two variations 
 of Esterel and in \CEU.
-The box \code{Real World} shows event occurrences over a continuous timeline.
+The box \code{Real World} assumes an external observer with an absolute
+reference clock that timestamps event occurrences over a
+continuous timeline~\cite[Chapter~3]{es.time} (e.g., event \code{C} occurs at
+$17ms521us$).
 The other boxes show how the same occurring events fit differently in each 
 logical notion of time.
 %
 \begin{itemize}
 \item \code{[Box-1]}:
 \emph{Esterel with fixed-length ticks}~\cite{esterel.fixed}.
+%
+Usually referred as \emph{sample-driven execution}~\cite{rp.twelve}.
 %
 We assume a reaction \code{R(boot)} at \code{tick-0} which happens before any 
 input.
@@ -582,44 +587,51 @@ We assume the CPU times for \code{R(B+C)} in Esterel and \code{R(B)+R(C)} in
 \CEU to be roughly the same.
 This way, the first idle periods in \code{Box-2} and \code{Box-3} coincide.
 %
-Finally, \CEU recognizes and reacts to the two instances of \code{E} 
-independently, which are handled in sequence.
+Finally, \CEU reacts to the two instances of \code{E} independently, which are
+handled in sequence.
 %
-Note that, by definition, each reaction corresponds to an event occurrence of 
-the same length.
+%Note that, by definition, each reaction corresponds to an event occurrence of 
+%the same length.
 \end{itemize}
 
-We decided for the unique and queue-based semantics in \CEU for the reasons 
+Sample-driven execution maps directly to hardware implementations and
+involve no runtime queues.
+%
+However, considering the soft real-time application domain of \CEU, we
+decided for the unique and queue-based semantics in \CEU for the reasons
 that follow:
 %
 \begin{itemize}
-\item \textbf{A ``tick'' is too abstract and imprecise:}
-Outside the domain of hardware specification, a tick has no natural counterpart 
-in the real world.
-Also, since ticks require no time regularity~\cite{esterel.multiclock}, the two 
-approaches for Esterel in Figure~\ref{fig.ticks} are legitimate, but lead to 
-different behaviors for the same sequence of inputs.
+\item \textbf{A ``tick'' is implementation dependent:}
+Tick lengths are not part of the program specification.
+For instance, if we log the \code{Real World} box timeline and reproduce it in
+implementations with different tick lengths, the behaviors might diverge.
 %
 \item \textbf{Events are never absolutely simultaneous:}
-From a rigorous point of view, event occurrences are infinitesimal, having zero 
-probability of being simultaneous.
-This way, we consider that the notion of simultaneity should not be imposed by 
-the language, but defined explicitly for each use case.
-In the case of Esterel, simultaneity depends on the imprecise length of 
-discrete ticks.
+We consider that the notion of simultaneity should not be imposed by the
+language, but defined explicitly for each use case (to be discussed in
+Section~\ref{sec.ceu.timers}).
+%In Section~\ref{sec.ceu.timers}, after introducing internal events and 
+%first-class timers, we show an example to illustrate how to detect simultaneous 
+%button clicks in \CEU.
+In tick-based approaches, simultaneity depends on the length of discrete ticks.
 For instance, in \code{box-1} and \code{box-2} of Figure~\ref{fig.ticks}, 
-Esterel considers the events \code{B} and \code{C} to be simultaneous, even 
-though \code{A} and \code{B} ``physically'' happen much closer to one another.
-In Section~\ref{sec.ceu.timers}, after introducing internal events and 
-first-class timers, we show an example to illustrate how to detect simultaneous 
-button clicks in \CEU.
+events \code{B} and \code{C} are simultaneous, even though \code{A} and
+\code{B} ``physically'' happen much closer to one another.
 %
 \item \textbf{Unique input events imply mutual exclusion:}
-Reactions to multiple events in \CEU never overlap because they are atomic.
+Reactions to exclusive events are atomic and never overlap.
 Automatic mutual exclusion simplifies reasoning about concurrency and is a 
 prerequisite for the concurrency checks to be discussed in 
 Section~\ref{sec.ceu.checks}.
 \end{itemize}
+
+Note that Esterel supports declarations for mutually exclusive inputs which
+cannot be simultaneous in the same reaction
+(e.g., \code{relation A\#B\#C\#D\#E;})~\cite{esterel.primer}.
+Making all inputs mutually exclusive and adopting the variable-length-tick
+approach is equivalent to \CEU's notion of time, which can be seen as an
+imposed restriction on the semantics of Esterel.
 
 The synchronous hypothesis for \CEU holds if the reactions run faster than the 
 rate of incoming input events.
