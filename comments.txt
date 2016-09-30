@@ -326,11 +326,19 @@ In S.2.6, we referenced S.3.5 and S.3.6 for the comments above.
 TODO: extend 3.5?
 TODO: merged 3.5/3.6?
 
-§2.2
-- A comparison can be made between the model of "Stack-Based Internal
-Events" and the ones of StateCharts (e.g., Harel and Naamad, 1996) [OK] and the
-MathWorks Stateflow tool [OK]. These models also try to treat events one by
-one, but not in exactly the same way.
+> §2.2
+> - A comparison can be made between the model of "Stack-Based Internal
+> Events" and the ones of StateCharts (e.g., Harel and Naamad, 1996) [OK] and the
+> MathWorks Stateflow tool [OK]. These models also try to treat events one by
+> one, but not in exactly the same way.
+
+$$$
+In Statemate, "reactions to external and internal events (...) can be sensed only
+after completion of the step", implying queue-based execution.
+In Stateflow, "the receiving state (of the event) acts here as a function",
+which is similar to Céu's stack-based execution.
+These references are relevant and we included a comparison in S.4 (Related Work).
+$$$
 
 - "same-cycle bi-directional communication" is also called an "instantaneous
 dialogue" (Halbwachs Book, 1993, §2.4.3) [OK].

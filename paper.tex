@@ -2529,10 +2529,22 @@ the reasoning about concurrency.
 As far as we know, \CEU is the first to encrust this event-triggered notion of 
 time in the core of the language, which is a prerequisite for the concurrency 
 checks that enable safe shared-memory concurrency.
+
+In \CEU internal events support stack-based micro reactions within external
+reactions, providing more fine-grained control for intra-reaction execution.
 %
-\CEU also the distinguishes external events from internal events.
-Internal events support stack-based micro reactions within external reactions, 
-providing more fine-grained control for intra-reaction execution.
+Some variants of Statecharts~\cite{statecharts} also distinguish internal from
+external events~\cite{statecharts.variants}.
+%Some variants of Statecharts support local events which imply handling intra
+%reactions like Céu.
+In Statemate, ``reactions to external and internal events (...) can be sensed only
+after completion of the step''~\cite{statecharts.statemate}, implying queue-based
+execution.
+In Stateflow, ``the receiving state (of the event) acts here as a
+function''~\cite{statecharts.stateflow}, which is similar to Céu's stack-based
+execution.
+To avoid recursion, Céu adopts delayed awaits, while in Statemate, ``loops in
+the broadcasting of events (between states) are forbidden''.
 
 Like \CEU, many synchronous languages rely on deterministic scheduling to 
 preserve intra-reaction determinism (%
