@@ -173,23 +173,38 @@ The example with timers in parallel illustrates that the abstract reasoning for
 We rewrote the phrase that suggests that comparing parallel delays is a special
 case.
 
-Other comments
---------------
-§1
-- "Esterel has an overly complex semantics"
+> Other comments
+> --------------
 
-This is a subjective judgment. Esterel has a complex semantics compared
-with Lustre, for instance, but it is not more complex than necessary to
-treat its ambition of being a concurrent programming language with a basis
-in physics (casual circuits). How could the semantics be simplified
-without losing this intimate connection to an important class of digital
-circuits?
+> §1
+> - "Esterel has an overly complex semantics"
+> 
+> This is a subjective judgment. Esterel has a complex semantics compared
+> with Lustre, for instance, but it is not more complex than necessary to
+> treat its ambition of being a concurrent programming language with a basis
+> in physics (casual circuits). How could the semantics be simplified
+> without losing this intimate connection to an important class of digital
+> circuits?
 
-- "The complex semantics not only challenges the analysis and compilation of
-programs, but also results in incompatible and non-compliant
-implementations."
+We removed "overly".
+Although we maintain that Esterel is more complex than Céu, we agree that it
+applies to other domains.
+As commented above, we repositioned the paper as targeting soft real-time
+systems.
 
-Where is the evidence for this assertion? If there is none, please remove it.
+> - "The complex semantics not only challenges the analysis and compilation of
+> programs, but also results in incompatible and non-compliant
+> implementations."
+> 
+> Where is the evidence for this assertion? If there is none, please remove it.
+
+The cited references in the same paragraph discuss many approaches to deal with
+the semantics of Esterel, but they do not necessarily generate "incompatible
+and non-compliant implementations".
+We rewrote this sentence as "A complex semantics not only challenges the
+analysis and compilation of programs, but also affects the programmer's
+understanding about the code, who, ultimately, has to solve the errors when
+facing corner cases."
 
 > §2.1
 
