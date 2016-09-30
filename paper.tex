@@ -1681,34 +1681,6 @@ and augments it with platform-dependent functionality (e.g., system calls) and t
 runtime of \CEU, compiling everything with \emph{gcc} to generate the final 
 binary.
 
-In previous work~\cite{ceu.sensys13}, we evaluate the implementation of \CEU
-in comparison to a code base%
-\footnote{TinyOS repository: \url{http://github.com/tinyos/tinyos-release/}}
-in \emph{nesC} (a \C variant)~\cite{wsn.nesc}.
-%
-Figure~\ref{fig.eval} compares source size (\emph{number of tokens}), binary 
-size (\emph{ROM}), and memory usage (\emph{RAM}) for a number of standardized 
-network protocols and a radio driver.
-The small overhead in resource usage shows that the gains in productivity and 
-safety with \CEU make it a viable alternative to \C in the context of 
-constrained embedded systems.
-%
-Unfortunately, most real applications in Esterel seem to be closed source.
-In future work, we plan to cooperate with groups that have more experience 
-and access to real code bases in Esterel for a comprehensive comparison with 
-\CEU.
-% TODO-no:
-%Still, considering \C as an ``absolute benchmark'', we consider the small 
-%overhead .  solid results
-
-\begin{figure*}[b]
-%\includegraphics[width=\textwidth,clip=true,trim=-80px 385px 300px 40px]{eval}
-\caption{ Resource usage for \CEU and \emph{nesC} in the domain of sensor 
-networks.
-\label{fig.eval}
-}
-\end{figure*}
-
 In the subsections that follow, we discuss implementation details specific to 
 \CEU:
 concurrency checks for determinism (Section~\ref{sec.impl.checks}),
@@ -2259,14 +2231,57 @@ Asynchronous execution is out of the scope of this paper.
 %extra analysis such as for worst-case reaction 
 %times~\cite{esterel.wcrt,esterel.fixed}.
 
+In previous work~\cite{ceu.sensys13}, we evaluate our implementation by
+rewriting some components of the \emph{TinyOS} code base%
+\footnote{TinyOS repository: \url{http://github.com/tinyos/tinyos-release/}}
+from \emph{nesC} (a \C variant)~\cite{wsn.tos,wsn.nesc} to \CEU.
+%
+TinyOS provides open-source industrial-level applications and serve as basis
+for a considerable amount of research in the Wireless Sensor Network academic
+community.
+%
+The generated code has been tested in real hardware and also in congested
+networks simulated in sofware~\cite{ceu.sensys13}.
+%
+Figure~\ref{fig.eval} compares source size (\emph{number of tokens}), binary 
+size (\emph{ROM}), and memory usage (\emph{RAM}) for a number of standardized 
+network protocols and a radio driver.
+The small overhead in resource usage shows that the gains in productivity and 
+safety with \CEU make it a viable alternative to \C in the context of 
+constrained embedded systems.
+%
 Single-threaded dispatching may not be suitable for hard real-time activities.
-In previous work~\cite{ceu.sensys13}, we measure how synchronous lengthy 
+We also measure how synchronous lengthy 
 computations in \C (e.g., hashing and compression) can block the scheduler and 
 affect higher-priority activities such as a radio driver.
 In such cases, the system requires careful testing to avoid undersized hardware 
 deployment.
 For instance, we currently do not perform any worst-case reaction times 
 analysis~\cite{esterel.wcrt,esterel.fixed}.
+
+In future work, we plan to perform an equivalent throughout analysis in
+comparison to industrial-quality code bases in Esterel.
+%
+An Esterel implementation that compiles to sequential C code with similar
+techniques also generates ``code less than $10\%$ larger the original
+manually-sequenced code'' for an industrial-size
+application~\cite{esterel.efficient}.
+%
+%Unfortunately, most real applications in Esterel seem to be closed source.
+%In future work, we plan to cooperate with groups that have more experience 
+%and access to real code bases in Esterel for a comprehensive comparison with 
+%\CEU.
+% TODO-no:
+%Still, considering \C as an ``absolute benchmark'', we consider the small 
+%overhead .  solid results
+
+\begin{figure*}[b]
+\includegraphics[width=\textwidth,clip=true,trim=-80px 385px 300px 40px]{eval}
+\caption{ Resource usage for \CEU and \emph{nesC} in the domain of sensor 
+networks.
+\label{fig.eval}
+}
+\end{figure*}
 
 \subsection{Interaction with the Environment}
 \label{sec.impl.environment}
@@ -2576,9 +2591,9 @@ We discuss dynamic abstractions in \CEU in previous work~\cite{ceu.mod15}.
 
 Esterel has different compilation back ends that synthesizes to software and 
 also to hardware circuits~\cite{esterel.emperor,esterel.tutorial}.
-Among the software-based approaches, \emph{SAXO--RT}~\cite{esterel.saxort} is 
-the closest to our implementation with respect to trail allocation and 
-scheduling:
+Among the software-based approaches,
+\emph{SAXO--RT}~\cite{esterel.saxort,esterel.efficient} is the closest to our
+implementation with respect to trail allocation and scheduling:
 the compiler slices programs into ``control points'' (analogous to our ``entry 
 points'') and rearranges them into a directed acyclic graph respecting the 
 constructive semantics of Esterel.

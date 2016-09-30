@@ -50,18 +50,19 @@ applications and serve as basis for a considerable amount of work in the
 Wireless Sensor Network academic community (e.g., ACM SenSys, ACM IPSN,
 IEEE DCOSS, and EWSN).
 Although we avoid any quantitative comparisons with Esterel, the cited work [1]
-is mostly about a comprehensive evaluation in a constrained and distributed
-setting showing a small overhead in resource usage in comparison to C.
-We recognize that a quantitative analsysis with Esterel is relevant, but C is
-a standard benchmark for evaluating embbeded systems (i.e., languages can be
-indirectly compared using C as a proxy).
+is about a comprehensive evaluation in a constrained and distributed setting
+showing a small overhead in resource usage in comparison to C.
+We recognize that a quantitative analysis with Esterel is relevant, but C is
+a standard benchmark language for evaluating embedded systems.
+An Esterel implementation that compiles to sequential C code with similar
+techniques "generates code less than 10% larger the original manually-sequenced
+code" [4].
 We have a student working on Esterel's "wristwatch" example [2] and plan to
 extend our evaluation with industrial-quality applications in the future.
-We rewrote the 2nd paragraph of Section 3 with the justification above.
 
-TODO: mexer no artigo
-TODO: encontrar referências que comparem Esterel e C QUANTITATIVAMENTE
-      trabalhos RECENTES
+We rewrote the 2nd paragraph of Section 3 with the justification above and
+moved this discussion to S.3.5 (Single-Threaded Dispatching)
+TODO: see reviewer.3
 %%%
 
 -------------------------------------------------------------------------------
@@ -454,4 +455,6 @@ look them up from references in the text.
 [2] https://github.com/HandelSM/Ceu-arduino
 [3] Francisco Sant’Anna. 2013. Safe System-level Concurrency on
     Resource-Constrained Nodes with Céu. Ph.D. Dissertation. PUC–Rio.
-
+[4] Weil, Daniel, et al. "Efficient compilation of Esterel for real-time
+    embedded systems." Proceedings of the 2000 international conference on
+    Compilers, architecture, and synthesis for embedded systems. ACM, 2000.
