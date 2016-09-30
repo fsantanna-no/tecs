@@ -135,6 +135,7 @@ the "scheduling policies" of Caspi et al in LCTES'09 [OK].
 > independent formal model? Bourke and Sowmya comment on some of these
 > issues in SYNCHRON'09 [OK].
 
+%%%
 We included this reference in the paper and acknowledge their contributions.
 In fact, our proposal is very close to theirs:
     - "program in terms of physical time"
@@ -172,6 +173,7 @@ The example with timers in parallel illustrates that the abstract reasoning for
 "1+1+1 == 3" always work in practice.
 We rewrote the phrase that suggests that comparing parallel delays is a special
 case.
+%%%
 
 > Other comments
 > --------------
@@ -186,11 +188,13 @@ case.
 > without losing this intimate connection to an important class of digital
 > circuits?
 
+%%%
 We removed "overly".
 Although we maintain that Esterel is more complex than Céu, we agree that it
 applies to other domains.
 As commented above, we repositioned the paper as targeting soft real-time
 systems.
+%%%
 
 > - "The complex semantics not only challenges the analysis and compilation of
 > programs, but also results in incompatible and non-compliant
@@ -198,6 +202,7 @@ systems.
 > 
 > Where is the evidence for this assertion? If there is none, please remove it.
 
+%%%
 The cited references in the same paragraph discuss many approaches to deal with
 the semantics of Esterel, but they do not necessarily generate "incompatible
 and non-compliant implementations".
@@ -205,6 +210,7 @@ We rewrote this sentence as "A complex semantics not only challenges the
 analysis and compilation of programs, but also affects the programmer's
 understanding about the code, who, ultimately, has to solve the errors when
 facing corner cases."
+%%%
 
 > §2.1
 
@@ -216,18 +222,22 @@ facing corner cases."
 > §4.4.4. The discussion in §2.1 should thus compare implementation schemes
 > rather than languages.
 
+%%%
 We now discuss Esterel's input relations and comment that making all inputs
 exclusive and adopting the "variable-length ticks" is equivalent to Céu's
 "unique input" notion of time (i.e., Céu imposes a restriction on the semantics
 of Esterel).
+%%%
 
 > - What you term "fixed-length ticks" is normally called "sample-driven
 > execution" (see, e.g., Benveniste et al, Proc IEEE, fig. 1) [OK].
 
+%%%
 We now make this remark in the text.
 We avoided the term because we have seen "adaptive/variable sample frequency/rate"
 in other software contexts (e.g., games).
 The term is also symmetric with "variable-length ticks" in our comparison.
+%%%
 
 > - "A "tick" is too abstract and imprecise. Outside the domain of hardware
 > specification, a tick has no natural counterpart in the real world."
@@ -243,6 +253,7 @@ The term is also symmetric with "variable-length ticks" in our comparison.
 > 1997, Chapter 3) [OK], but I do not see how this intrinsic problem is solved by
 > the proposed execution scheme.
 
+%%%
 The suggested reference describes the concept of an "omniscient external
 observer with an absolute reference clock that can generate precise timestamps
 for all relevant events".
@@ -261,6 +272,7 @@ can be simulated at any speed in Céu with the same behavior
 
 We included this discussion in the paper and change the term "abstract" for
 Esterel ticks (in favor of "implementation dependent").
+%%%
 
 > The choice made for CÉU seems reasonable. As for any other choice it comes
 > with its own advantages and disadvantages. Why not just argue that this
@@ -268,11 +280,13 @@ Esterel ticks (in favor of "implementation dependent").
 > a sort of pseudo-philosophical discussion, nor to argue that the choices
 > made in the design of Esterel are bad.
 
+%%%
 Before justifying the choice for queue-based semantics, we counterpoint that
 tick-based reactions are simpler and map directly to hardware implementations
 (e.g., no runtime queues).
 We now consider the soft real time application domain of Céu.
 We also reduced the conceptual discussion.
+%%%
 
 > - "the two approaches for Esterel [...] lead to different behaviors for the
 > same sequence of inputs".
@@ -285,9 +299,11 @@ We also reduced the conceptual discussion.
 > and time of events. But this is not properly formalized or resolved in
 > your paper.
 
+%%%
 As commented above, the paper discusses an absolute timeline with events and
 timestamps.
 In this case, different tick lengths generate different sets of inputs.
+%%%
 
 > - "The synchronous hypothesis for CÉU holds if the reactions run faster than
 > the rate of incoming input events."
@@ -312,6 +328,7 @@ In this case, different tick lengths generate different sets of inputs.
 > language, CÉU requires CPU times for reactions to be negligible in
 > comparison to the rate of incoming events."
 
+%%%
 We haven't formalized the interaction of the language with the environment yet.
 The formal semantics of Céu specifies a reaction to a single event [3] (i.e.,
 the queue is external to the formal language, as illustrated in S.3.6).
@@ -325,6 +342,7 @@ In S.2.6, we referenced S.3.5 and S.3.6 for the comments above.
 
 TODO: extend 3.5?
 TODO: merged 3.5/3.6?
+%%%
 
 > §2.2
 > - A comparison can be made between the model of "Stack-Based Internal
@@ -332,20 +350,20 @@ TODO: merged 3.5/3.6?
 > MathWorks Stateflow tool [OK]. These models also try to treat events one by
 > one, but not in exactly the same way.
 
-$$$
+%%%
 In Statemate, "reactions to external and internal events (...) can be sensed only
 after completion of the step", implying queue-based execution.
 In Stateflow, "the receiving state (of the event) acts here as a function",
 which is similar to Céu's stack-based execution.
 These references are relevant and we included a comparison in S.4 (Related Work).
-$$$
+%%%
 
 > - "same-cycle bi-directional communication" is also called an "instantaneous
 > dialogue" (Halbwachs Book, 1993, §2.4.3) [OK].
 
-$$$
+%%%
 We included this remark in the text and cited the reference.
-$$$
+%%%
 
 > §2.3
 > - It is worth noting that Esterel does impose restrictions on variable reads
@@ -356,21 +374,21 @@ $$$
 > subthread, - If the variable is written by some thread, then it can
 > neither be read nor be written by concurrent threads".
 
-$$$
+%%%
 We now include this sentence in this paper (we used this very same sentence in
 previous work).
-$$$
+%%%
 
 - I did not understand why this simple static check is called a "temporal
 analysis".
 
 %%%
-We acknowledge that the term possibly raises a different expectation to the
-reader, so we now use "concurrency checks" instead of "temporal analysis".
+The term probably raises a different expectation to the reader, so we now use
+"concurrency checks" instead of "temporal analysis".
 As a justification for the term "analysis", the checks evolved from a
-compile-time simulation for more precise results and detection of
+compile-time simulation with more precise results and also detection of
 non-terminating statements, conflicting termination of "par/or", and some other
-checks (unrelated to the paper).
+checks.
 However, from our experience, the simple checks are efficient and good enough
 in practice.
 %%%
