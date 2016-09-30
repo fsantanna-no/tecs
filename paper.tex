@@ -854,7 +854,8 @@ events, such as resumable exceptions and reactive variables~\cite{ceu.rem13}.
 Another distinction regarding event handling in comparison to \CEU is that 
 Esterel supports same-cycle bi-directional 
 communication~\cite{esterel.compiling}, i.e., two threads can react to one 
-another during the same cycle due to mutual signal dependencies.
+another during the same cycle due to mutual signal dependencies
+(a.k.a. \emph{instantaneous dialogue}~\cite{rp.book}).
 %
 \CEU takes a different approach, posing a tradeoff that an \code{await} is only
 valid for the next reaction, i.e., if an \code{await} and \code{emit} occur 
@@ -982,6 +983,10 @@ non-deterministic: ``if there is no control dependency, as in
 \code{(call~f1()~||~call~f2())},
 the order is unspecified and it would be an error to rely on 
 it''~\cite{esterel.primer}.
+%
+For this reason, Esterel, does not support shared-memory concurrency:
+\emph{``if a variable is written by some thread, then it can neither be read
+nor be written by concurrent threads''}~\cite{esterel.primer}.
 %
 A number of Esterel-inspired synchronous languages enforce an arbitrary 
 execution order for statements in multiple lines of execution to achieve 

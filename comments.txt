@@ -340,17 +340,26 @@ which is similar to Céu's stack-based execution.
 These references are relevant and we included a comparison in S.4 (Related Work).
 $$$
 
-- "same-cycle bi-directional communication" is also called an "instantaneous
-dialogue" (Halbwachs Book, 1993, §2.4.3) [OK].
+> - "same-cycle bi-directional communication" is also called an "instantaneous
+> dialogue" (Halbwachs Book, 1993, §2.4.3) [OK].
 
-§2.3
-- It is worth noting that Esterel does impose restrictions on variable reads
-and writes in parallel components. Berry, v5.92 Primer, §3.5: "The rule is
-simple and classical: a variable is local to a thread in case the thread
-writes it. If the thread forks on a '||' parallel statement, then only two
-cases are legal: - The variable is accessed in read-only mode in each
-subthread, - If the variable is written by some thread, then it can
-neither be read nor be written by concurrent threads".
+$$$
+We included this remark in the text and cited the reference.
+$$$
+
+> §2.3
+> - It is worth noting that Esterel does impose restrictions on variable reads
+> and writes in parallel components. Berry, v5.92 Primer, §3.5: "The rule is
+> simple and classical: a variable is local to a thread in case the thread
+> writes it. If the thread forks on a '||' parallel statement, then only two
+> cases are legal: - The variable is accessed in read-only mode in each
+> subthread, - If the variable is written by some thread, then it can
+> neither be read nor be written by concurrent threads".
+
+$$$
+We now include this sentence in this paper (we used this very same sentence in
+previous work).
+$$$
 
 - I did not understand why this simple static check is called a "temporal
 analysis".
