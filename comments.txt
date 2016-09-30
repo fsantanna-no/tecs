@@ -379,8 +379,8 @@ We now include this sentence in this paper (we used this very same sentence in
 previous work).
 %%%
 
-- I did not understand why this simple static check is called a "temporal
-analysis".
+> - I did not understand why this simple static check is called a "temporal
+> analysis".
 
 %%%
 The term probably raises a different expectation to the reader, so we now use
@@ -403,9 +403,16 @@ not a way to make this example work properly in CÉU?
 -I was lost in this section. The informal descriptions and examples are
 insufficient to understand how the scheme is supposed to work in general.
 
-§2.5
-- Is the description of the example correct? I would have expected the
-program to terminate with v = 2.
+> §2.5
+> - Is the description of the example correct? I would have expected the
+> program to terminate with v = 2.
+
+%%%
+Yes, the description is correct:
+  - The first trail awakes first (10+1 > 12) and terminates the <<par/or>>.
+  - The second trail is aborted and never awakes.
+We extended the text with this explanation.
+%%%
 
 - "which is a huge amount of time for a language-defined tick": this
 statement is subjective and lacks precision. 200 milliseconds may not be
