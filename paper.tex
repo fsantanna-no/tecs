@@ -1669,8 +1669,8 @@ concurrency checks of \CEU.
 Determinism in \CEU does not depend on additional levels of static analysis.
 It encompasses the whole language, including memory accesses, system calls, and 
 stack-based internal events.
-Programmers can always figure out which statement executes next, making runtime 
-analysis and debugging easier.
+Programmers can figure out which statement executes next, helping runtime 
+analysis and debugging.
 %
 \item \emph{Static concurrency checks.}
 Although execution is deterministic, the \CEU compiler still advises about 
@@ -2214,6 +2214,13 @@ current event to the state \code{STACKED} in the current numeric stack level;
 in the \emph{dispatch} pass, it executes each trail that is \code{STACKED} to 
 run in the current level, setting it immediately to \code{INACTIVE}.
 %(the trail segment may reset it in sequence if it doesn't terminate).
+%
+Since the trail space is flat and carries no information about the program
+hierarchy (ln. \bx:12--15), all trails (active or inactive) are traversed in
+all passes.
+We believe that this makes reaction times more predictable and improves
+worst-case reaction times (e.g., with all trails active).
+However, we did not investigate these assumptions.
 
 During the dispatch pass, if a trail executes and emits an internal event, the 
 scheduler increments the stack level and re-executes the two passes.

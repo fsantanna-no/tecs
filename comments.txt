@@ -505,56 +505,70 @@ programmers. We rewrote as "Programmers can figure out which statement executes
 next, helping runtime analysis and debugging".
 %%%
 
-§3
-- "Unfortunately, most real applications in Esterel seem to be closed
-source."
-
-Nevertheless, several examples are available:
-- The Digital Watch, Berry 1991 and 2000 (source in appendix).
-- Edward's estbench suite:
-http://www1.cs.columbia.edu/~sedwards/software/estbench-1.0.tar.gz
-- The test files of the CEC compiler:
-https://github.com/LudvikGalois/cec-esterel/tree/master/tests
-- The HDLC protocol, Berry & Gonthier 1989 (source in appendix).
-- The examples that come with the KIELER tool:
-http://git.rtsys.informatik.uni-kiel.de/projects/KIELER/repos/models/browse/esterel
-(including a solution to the "Backhoe" programming exercise:
-http://www.tbrk.org/esterel/backhoe.html)
+> §3
+> - "Unfortunately, most real applications in Esterel seem to be closed
+> source."
+>
+> Nevertheless, several examples are available:
+> - The Digital Watch, Berry 1991 and 2000 (source in appendix).
+> - Edward's estbench suite:
+> ...
 
 %%%
-Please, refer to the comments to Referee 1 above.
+Please, refer to the comments for "Referee 1" at the top of the file.
 %%%
 
-§3.1
-- I would have preferred a formal presentation of the static analysis of
-concurrent statements, i.e., deduction rules following the abstract syntax
-of the language.
+> §3.1
+> - I would have preferred a formal presentation of the static analysis of
+> concurrent statements, i.e., deduction rules following the abstract syntax
+> of the language.
 
-The rule for sequence nodes is unclear: isn't it possible to put awaits in
-sequence, e.g., await A; await B; await C? How can I_n = O_n-1 in this
-case?
+%%%
+We removed the formal runtime semantics after the first review.
+We plan to describe it in future work and extend with the static semantics as
+well.
+%%%
 
-I could not tell whether your pairing algorithm took advantage of the
-hierarchical structure of nested parallel statements.
+> The rule for sequence nodes is unclear: isn't it possible to put awaits in
+> sequence, e.g., await A; await B; await C? How can I_n = O_n-1 in this
+> case?
 
-Could this algorithm be made modular? Or is it necessarily a "whole
-program" analysis? I wonder how it would scale to large programs.
+In this case, the sequence node has three children:
+    1: <<await A>> has I={boot}
+                       O={A}
+    2: <<await B>> has I={A} (O of the preceding node 1)
+                       O={B}
+    3: <<await C>> has I={B} (O of the preceding node 2)
+                       O={C}
 
-§3.3
-- Do you "flatten" the hierarchical structure of a program to identify all
-trails?
-Or are you able to take advantage of the hierarchical structure of a
-program to minimize the computation needed at each reaction?
+> I could not tell whether your pairing algorithm took advantage of the
+> hierarchical structure of nested parallel statements.
+>
+> Could this algorithm be made modular? Or is it necessarily a "whole
+> program" analysis? I wonder how it would scale to large programs.
 
-yes!
-o programa eh representado de maneira flat
-    - so faz diferenca no CLEAR, mas ele carrega o range no codigo
-      tb de maneira "flat"
-- nao eh percorrido hierarquicamente
-    - a trail can only be awaiting in one point
-    - a gente sabe o num max do par
-- desvantagem: pedacos inativos sao percorridos do mesmo jeito
-    - regularity, WCET
+%%%
+Once we compare nested parallel statements, we can reduce them to the union
+of all side-effect nodes (i.e., the symbol, operation, and reaching inputs).
+Removing the hierarchy saves space but preserves the quadratic behavior.
+We did not evaluate the performance of the concurrency checks though.
+%%%
+
+> §3.3
+> - Do you "flatten" the hierarchical structure of a program to identify all
+> trails?
+> Or are you able to take advantage of the hierarchical structure of a
+> program to minimize the computation needed at each reaction?
+
+%%%
+Yes, the language runtime is flat and has no hierarchy information.
+All trails, active or inactive, are traversed in all reactions.
+We believe that this makes worst-case reaction times lower (i.e., if all trails
+are active, traversing a hierarchy would make a reaction even slower).
+It also makes all reaction times to be more predictable.
+However, we did not investigate these assumptions.
+We included this analysis in the paper.
+%%%
 
 Minor details
 -------------
