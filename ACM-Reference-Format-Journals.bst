@@ -1112,8 +1112,10 @@ FUNCTION { format.names }
     { nameptr #1 =
         %NO: BAD ORDER: {"{" s nameptr "{ff~}{ll}{, jj}{, vv}" format.name$ * "}" * 't := }
         %NO: BAD ORDER: {"{" s nameptr "{ff~}{ll}{, jj}{, vv}" format.name$ * "}" * 't := }
-        {"{" s nameptr "{ff }{vv }{ll}{, jj}" format.name$ * "}" * 't := }
-        {"{" s nameptr "{ff }{vv }{ll}{, jj}" format.name$ * "}" * 't := }
+        %{"{" s nameptr "{ff }{vv }{ll}{, jj}" format.name$ * "}" * 't := }
+        %{"{" s nameptr "{ff }{vv }{ll}{, jj}" format.name$ * "}" * 't := }
+        {"{" s nameptr "{vv~}{ll}{, f.}{, jj}" format.name$ * "}" * 't := }
+        {"{" s nameptr "{vv~}{ll}{, f.}{, jj}" format.name$ * "}" * 't := }
       if$
       nameptr #1 >
         {

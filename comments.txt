@@ -570,34 +570,17 @@ However, we did not investigate these assumptions.
 We included this analysis in the paper.
 %%%
 
-Minor details
--------------
+> Minor details
+> -------------
+> ...
 
-% OK
-% lighter backgrounds, typos, text improvements, clarifications,
-% full names in references
+As suggested, we made the listing background lighter, corrected many typos,
+removed some sentences, and made text improvements and clarifications.
 
-> §2.1
-> - "Note that, by definition, each reaction corresponds to an event
-> occurrence of the same length." What does this mean?
-
-We removed this sentence.
-
-§2.2
-- "similarly to coroutines [Moura and" -> "similarly to coroutines
-  [de Moura and" (?)
-
-§2.6
-- "Reactions must execute in bounded time due to the synchronous
-hypothesis."
-
--> "The synchronous hypothesis requires that reactions execute in bounded
-time."
-
-References
-- Please display names in the references in the format "Lastname, Firstname"
-and sort them alphabetically by last name. Otherwise it is very tedious to
-look them up from references in the text.
+> References
+> - Please display names in the references in the format "Lastname, Firstname"
+> and sort them alphabetically by last name. Otherwise it is very tedious to
+> look them up from references in the text.
 
 
 [1] Francisco Sant’Anna, Noemi Rodriguez, Roberto Ierusalimschy, Olaf
