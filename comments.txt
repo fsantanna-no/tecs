@@ -72,18 +72,13 @@ TODO: see reviewer.3
 > The subsections on Single-Threaded Dispatching (§3.5) and
 > the Terra Virtual Machine (§3.7) are uninformative.
 
+%%%
+TODO
+%%%
+
 > On the whole, I would have preferred a more neutral style (some parts of the
 > paper read like a sales pitch)...
-
-%%%
-TODO: summary
-
-We also proof-read the paper and removed/renamed many non-neutral terms:
-"overly complex semantics", "drawback", "loose execution",
-"has a simple semantics", "only possible", "seamless", "easily trackable",
-"goes one step further", "unique"
-%%%
-
+>
 > ... a fairer evaluation of Esterel (there are good reasons for its design
 > choices), ...
 > ... The solutions embodied in Céu are well motivated but involve trade-offs
@@ -117,6 +112,11 @@ application domain.
 On the other hand, this level of abstraction does not suit systems with
 hard-real time requirements, in which interacting directly with a concrete
 notion of tick is more robust."
+
+We also proof-read the paper and removed/renamed many non-neutral terms:
+"overly complex semantics", "drawback", "loose execution",
+"has a simple semantics", "only possible", "seamless", "easily trackable",
+"goes one step further", "unique"
 %%%
 
 > ... a more formal description of the language and its
