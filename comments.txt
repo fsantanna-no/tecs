@@ -5,7 +5,6 @@
 > 1. The name of "static temporal analysis" may get confused with the existing
 > work on static timing analysis (e.g., WCET or WCRT) on synchronous language,
 > e.g., ''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
-> [OK]
 > Maybe it can be renamed as "static concurrency analysis".
 
 %%%
@@ -17,7 +16,7 @@ Please, see below for additional comments.
 > this work. What happens if there are data dependencies in the concurrent
 > statements? Please discuss the proposed scheduling with the existing
 > sequentialization techniques for Esterel compilation (e.g., a CFG-based
-> compilation) [OK?].
+> compilation).
 
 %%%
 The idea of data dependency is inherent to Esterel since it supports emitting
@@ -40,7 +39,7 @@ this discussion.
 
 > 3. The authors mentioned that "Unfortunately, most real applications in Esterel
 > seems to be closed source". However, the Estbench (available at
-> http://www1.cs.columbia.edu/~sedwards/software.html) [OK] can be used to
+> http://www1.cs.columbia.edu/~sedwards/software.html) can be used to
 > perform the comparison and evaluation.
 
 %%%
@@ -124,23 +123,30 @@ We also proof-read the paper and removed/renamed many non-neutral terms:
 > syntax -- I just noticed that the original submission included this
 > definition in Figure 10; ...).
 
+%%%
 In S.2 (Figure 2), we present the subset of the concrete syntax of Céu used in
 the paper as a quick reference.
-We also mention about "the formal specification of the semantics of Céu with a
+We also reference "the formal specification of the semantics of Céu with a
 simplified abstract syntax in a separate paper [ref]".
+%%%
 
-* The queueing of external events and the stacking of internal ones
-simplifies compilation and static analysis but complicates the formal
-model and reasoning, which must account for a list of pending events, and
-the relationship between reactions and real-time, as more complicated
-assumptions are required on event inter-arrival times and the iterations
-required to calculate a reaction. These assumptions are not clearly stated
-in the paper, nor fairly compared with the standard hypothesis that the
-"reaction time is always shorter than the minimum delay separating two
-successive external events" (Rocheteau and Halbwachs, 1991) [OK?]. Calculating
-an adequate Worst Case Reaction Time for a Céu program is surely more
-subtle than for an Esterel or Lustre program with simultaneous external
-events.
+> * The queueing of external events and the stacking of internal ones
+> simplifies compilation and static analysis but complicates the formal
+> model and reasoning, ... These assumptions are not clearly stated
+> in the paper, nor fairly compared with the standard hypothesis that the
+> "reaction time is always shorter than the minimum delay separating two
+> successive external events" (Rocheteau and Halbwachs, 1991). Calculating
+> an adequate Worst Case Reaction Time for a Céu program is surely more
+> subtle than for an Esterel or Lustre program with simultaneous external
+> events.
+
+%%%
+In S.2.1, we state that when the synchronous hypothesis does not hold in Céu,
+"the application continuously accumulates delays between the real occurrence
+and actual reaction of a given event".
+We now reposition Céu as soft real time and acknowledge that determining
+worst-case reaction times is non trivial with our semantics.
+%%%
 
 * The ordering of side-effects amounts to respecting the lexical ordering in
 the program and possibly warning if program behavior may depend on this
@@ -166,7 +172,7 @@ the "scheduling policies" of Caspi et al in LCTES'09 [OK].
 > details (interrupts, execution periods, jitter, WCET, etc.), but how can
 > this be done without losing the ideal of a mathematical and platform
 > independent formal model? Bourke and Sowmya comment on some of these
-> issues in SYNCHRON'09 [OK].
+> issues in SYNCHRON'09.
 
 %%%
 We included this reference in the paper and acknowledge their contributions.
@@ -263,7 +269,7 @@ of Esterel).
 %%%
 
 > - What you term "fixed-length ticks" is normally called "sample-driven
-> execution" (see, e.g., Benveniste et al, Proc IEEE, fig. 1) [OK].
+> execution" (see, e.g., Benveniste et al, Proc IEEE, fig. 1).
 
 %%%
 We now make this remark in the text.
@@ -283,7 +289,7 @@ The term is also symmetric with "variable-length ticks" in our comparison.
 > code on a microcontroller? There is a sort of non-determinism in whether
 > an event will be sampled in tick i or in tick i+1, which can lead to
 > problems detecting temporal orderings among events (see, e.g., Kopetz
-> 1997, Chapter 3) [OK], but I do not see how this intrinsic problem is solved by
+> 1997, Chapter 3), but I do not see how this intrinsic problem is solved by
 > the proposed execution scheme.
 
 %%%
@@ -379,8 +385,8 @@ TODO: merged 3.5/3.6?
 
 > §2.2
 > - A comparison can be made between the model of "Stack-Based Internal
-> Events" and the ones of StateCharts (e.g., Harel and Naamad, 1996) [OK] and the
-> MathWorks Stateflow tool [OK]. These models also try to treat events one by
+> Events" and the ones of StateCharts (e.g., Harel and Naamad, 1996) and the
+> MathWorks Stateflow tool. These models also try to treat events one by
 > one, but not in exactly the same way.
 
 %%%
@@ -392,7 +398,7 @@ These references are relevant and we included a comparison in S.4 (Related Work)
 %%%
 
 > - "same-cycle bi-directional communication" is also called an "instantaneous
-> dialogue" (Halbwachs Book, 1993, §2.4.3) [OK].
+> dialogue" (Halbwachs Book, 1993, §2.4.3).
 
 %%%
 We included this remark in the text and cited the reference.
