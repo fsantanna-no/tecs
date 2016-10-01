@@ -113,7 +113,7 @@ hard-real time requirements, in which interacting directly with a concrete
 notion of tick is more robust."
 
 We also proof-read the paper and removed/renamed many non-neutral terms:
-"overly complex semantics", "drawback", "loose execution",
+"overly complex semantics", "drawback", "loose execution", "all-inclusive"
 "has a simple semantics", "only possible", "seamless", "easily trackable",
 "goes one step further", "unique"
 %%%
@@ -492,12 +492,18 @@ Ok, but many applications require much smaller sampling ticks.
 We rewrote the sentence.
 %%%
 
-§2.6
-- "Programmers can always figure out which statement executes next, making
-runtime analysis and debugging easier." This claim is unsupported.
-Programmers may have to reason over long chains of event sequences to
-figure out what a given program does. It can be harder to state and reason
-using invariants in such circumstances.
+> §2.6
+> - "Programmers can always figure out which statement executes next, making
+> runtime analysis and debugging easier." This claim is unsupported.
+> Programmers may have to reason over long chains of event sequences to
+> figure out what a given program does. It can be harder to state and reason
+> using invariants in such circumstances.
+
+%%%
+Stack execution and lexical order are deterministic and familiar to
+programmers. We rewrote as "Programmers can figure out which statement executes
+next, helping runtime analysis and debugging".
+%%%
 
 §3
 - "Unfortunately, most real applications in Esterel seem to be closed
