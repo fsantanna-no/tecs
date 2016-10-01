@@ -477,16 +477,20 @@ TODO: more precisely
 > program to terminate with v = 2.
 
 %%%
-TODO
 Yes, the description is correct:
   - The first trail awakes first (10+1 > 12) and terminates the <<par/or>>.
   - The second trail is aborted and never awakes.
 We extended the text with this explanation.
 %%%
 
-- "which is a huge amount of time for a language-defined tick": this
-statement is subjective and lacks precision. 200 milliseconds may not be
-much time at all for some applications.
+> - "which is a huge amount of time for a language-defined tick": this
+> statement is subjective and lacks precision. 200 milliseconds may not be
+> much time at all for some applications.
+
+%%%
+Ok, but many applications require much smaller sampling ticks.
+We rewrote the sentence.
+%%%
 
 §2.6
 - "Programmers can always figure out which statement executes next, making

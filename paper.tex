@@ -1590,11 +1590,11 @@ we abort the whole behavior with the \code{par/or} (ln. 5) and try again with
 the enclosing \code{loop} (ln. 4).
 %
 In this specification, ``simultaneous'' means ``within 200 milliseconds'', 
-which is a huge amount of time for a language-defined tick.
+which might be a huge amount of time for a language-defined tick.
 %, and which would break the synchronous hypothesis.
 %
-For instance, a similar implementation of this specification in Esterel would 
-not rely on the tick notion of simultaneity either.
+For instance, an implementation of this specification in Esterel would be
+similar, since it would not rely on the tick notion of simultaneity either.
 %
 %Conversely, an environment for \CEU could provide \code{TICK} input and 
 %broadcast it periodically to allow applications to recover the abstract notion 
