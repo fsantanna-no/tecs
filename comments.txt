@@ -79,22 +79,50 @@ TODO: see reviewer.3
 TODO: summary
 
 We also proof-read the paper and removed/renamed many non-neutral terms:
-"overly complex semantics", "loose execution", "has a simple semantics",
-"only possible", "seamless", "easily trackable", "goes one step further",
-"unique"
+"overly complex semantics", "drawback", "loose execution",
+"has a simple semantics", "only possible", "seamless", "easily trackable",
+"goes one step further", "unique"
 %%%
-
 
 > ... a fairer evaluation of Esterel (there are good reasons for its design
 > choices), ...
+> ... The solutions embodied in Céu are well motivated but involve trade-offs
+> that could be more thoroughly discussed in the paper.
 
-> and a more formal description of the language and its
+%%%
+We re-positioned Céu as targeting soft real-time systems only.
+This changes the tone of the paper as less ambitious in comparison to Esterel
+for a fairer evaluation.
+We rewrote parts of the Abstract, S.1 (Introduction), S.3.5 (Single-Threaded
+Dispatching), and S.5 (Conclusion), e.g.:
+
+"The semantics of Céu implies an implementation with a runtime stack and a
+sequential scheduler.
+In contrast with Esterel's semantics, this prevents programs to be compiled
+directly and efficiently to hardware [ref].
+It also makes difficult to statically determine worst-case reaction times
+for hard real-time systems [ref]."
+
+"For soft real-time systems, accumulating delays and occasionally postponing
+reactions might be enough.
+However, hard real-time systems require a more robust approach such as
+determining fixed-length ticks that can be statically verified."
+
+"We present the design and implementation of Céu, a synchronous reactive 
+language inspired by Esterel with event-driven semantics and more fine-grained 
+control for intra-reaction execution.
+On the one hand, this approach is familiar to programmers in general,
+abstracting tick sampling with reactions to unique events from their
+application domain.
+On the other hand, this level of abstraction does not suit systems with
+hard-real time requirements, in which interacting directly with a concrete
+notion of tick is more robust."
+%%%
+
+> ... a more formal description of the language and its
 > implementation (at the very least, a concise definition of the core abstract
 > syntax -- I just noticed that the original submission included this
-> definition in Figure 10; in my opinion, it was a mistake to remove it).
-
-> ... The solutions embodied in Céu are well motivated but involve trade-offs
-> that could be more thoroughly discussed in the paper. In particular,
+> definition in Figure 10; ...).
 
 * The queueing of external events and the stacking of internal ones
 simplifies compilation and static analysis but complicates the formal
@@ -515,3 +543,8 @@ look them up from references in the text.
 [4] Weil, Daniel, et al. "Efficient compilation of Esterel for real-time
     embedded systems." Proceedings of the 2000 international conference on
     Compilers, architecture, and synthesis for embedded systems. ACM, 2000.
+
+--------------------------------------------------------------------------------
+
+TODO: regarding
+TODO: simplifies

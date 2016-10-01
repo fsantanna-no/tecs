@@ -146,7 +146,8 @@ Adriano Branco
 
 \begin{abstract}
 \CEU is a synchronous language inspired by Esterel with a simpler semantics and 
-more fine-grained control over program execution.
+more fine-grained control over program execution targeting soft real-time
+systems.
 %
 \CEU uses an event-triggered notion of time that enables compile-time checks to 
 detect conflicting concurrent statements, resulting in deterministic and 
@@ -266,11 +267,10 @@ A complex semantics not only challenges the analysis and compilation of
 programs, but also affects the programmer's understanding about the code, who,
 ultimately, has to solve the errors when facing corner cases.
 %
-Another drawback of the Esterel semantics consists of non-deterministic
-execution for intra-reaction statements.
-Non determinism prevents threads from interacting with stateful system calls safely 
-and makes shared-memory concurrency not as straightforward as reading and 
-writing to shared variables.
+Furthermore, Esterel's semantics is non-deterministic for intra-reaction
+statements, which prevents threads from interacting with stateful system calls
+safely and makes shared-memory concurrency not as straightforward as reading
+and writing to shared variables.
 %
 %For instance, although Esterel supports orthogonal abortion of 
 %threads~\cite{esterel.preemption}, it doesn't offer an effective mechanism to 
@@ -280,8 +280,9 @@ In this work, we present \CEU, a new programming language that inherits the
 synchronous and imperative mindset of Esterel but diverges in some fundamental 
 semantic aspects.
 %
-\CEU proposes a semantics with fine-grained control for intra-reaction
-execution, and is amenable to concurrency checks that improve safety.
+\CEU proposes a semantics for soft real-time systems with fine-grained control
+for intra-reaction execution, which is amenable to concurrency checks that
+improve safety.
 %
 The list that follows summarizes the contributions behind the design of \CEU:
 %
@@ -331,6 +332,13 @@ increase in memory usage (around 5--10\% for \emph{text} and
 For the \VM back end, applications have a bytecode footprint in the order of 
 hundreds of bytes and can be transmitted over the air in a few 
 packets~\cite{ceu.terra}.
+
+The semantics of \CEU implies an implementation with a runtime stack and a
+sequential scheduler.
+In contrast with Esterel's semantics, this prevents programs to be compiled
+directly and efficiently to hardware~\cite{esterel.constructive}.
+It also makes difficult to statically determine worst-case reaction times
+for hard real-time systems~\cite{esterel.fixed}.
 
 The rest of the paper is organized as follows:
 Section~\ref{sec.ceu} discusses the design of \CEU, focusing on the fundamental 
@@ -645,6 +653,11 @@ For the fixed-length-tick approach of Esterel, a breach in the synchronous
 hypothesis causes timing violations, requiring \emph{worst case reaction time} 
 analysis to infer appropriate tick lengths~\cite{esterel.fixed}.
 % TODO-no: Such analysis is orthogonal
+%
+For soft real-time systems, accumulating delays and occasionally postponing
+reactions might be enough.
+However, hard real-time systems require a more robust approach such as
+determining fixed-length ticks that can be statically verified.
 
 A limitation of event-triggered execution is that all program behavior is 
 purely reactive, given that no code can execute in the absence of inputs.
@@ -2528,14 +2541,11 @@ and popular in many software communities, such as web frameworks (e.g.,
 (e.g., \emph{Tcl/Tk}~\cite{tcl.tk} and \emph{Java Swing}~\cite{java.swing}), 
 and Games~\cite{gamepatterns}.
 %
-We consider that this approach is more familiar to programmers and simplifies 
-the reasoning about concurrency.
-%
 As far as we know, \CEU is the first to encrust this event-triggered notion of 
 time in the core of the language, which is a prerequisite for the concurrency 
 checks that enable safe shared-memory concurrency.
 
-In \CEU internal events support stack-based micro reactions within external
+In \CEU, internal events support stack-based micro reactions within external
 reactions, providing more fine-grained control for intra-reaction execution.
 %
 Some variants of Statecharts~\cite{statecharts} also distinguish internal from
@@ -2646,8 +2656,15 @@ arithmetic operations, external system calls, or remote reprogramming.
 \label{sec.conclusion}
 
 We present the design and implementation of \CEU, a synchronous reactive 
-language inspired by Esterel with simpler semantics and more fine-grained 
+language inspired by Esterel with event-driven semantics and more fine-grained 
 control for intra-reaction execution.
+%
+On the one hand, this approach is familiar to programmers in general,
+abstracting tick sampling with reactions to unique events from their
+application domain.
+On the other hand, this level of abstraction does not suit systems with
+hard-real time requirements in which interacting directly with a concrete
+notion of tick is more robust.
 
 \CEU is a concurrency-safe language, employing static checks to ensure that 
 the high degree of concurrency in embedded systems does not pose safety threats 
