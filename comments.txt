@@ -124,6 +124,11 @@ We also proof-read the paper and removed/renamed many non-neutral terms:
 > syntax -- I just noticed that the original submission included this
 > definition in Figure 10; ...).
 
+In S.2 (Figure 2), we present the subset of the concrete syntax of Céu used in
+the paper as a quick reference.
+We also mention about "the formal specification of the semantics of Céu with a
+simplified abstract syntax in a separate paper [ref]".
+
 * The queueing of external events and the stacking of internal ones
 simplifies compilation and static analysis but complicates the formal
 model and reasoning, which must account for a list of pending events, and

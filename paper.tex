@@ -469,6 +469,50 @@ other.
 
 % TODO-no: par/or vs abort, strong/weak abortion
 
+Figure~\ref{lst.syn} presents the subset of the concrete syntax of \CEU used in
+the paper as a quick reference.
+
+\begin{figure}
+\begin{lstlisting}
+// DECLARATIONS
+
+input  <type> <ids>;                        // external input  events
+output <type> <ids>;                        // external output events
+event  <type> <ids>;                        // internal events
+var    <type> <id> = <exp>;                 // a variable with initial value
+
+// EVENT HANDLING
+
+<id> = await <id>;                          // await an event and assign received value
+<id> = await <time>;                        // await time and assign delayed delta
+emit <id> => <exp>;                         // emit an event passing a value
+
+// CONTROL FLOW
+
+<stmt> ; <stmt>                             // sequence
+if <exp> then <stmts> else <stmts> end      // conditional
+loop do <stmts> end                         // repetition
+do <stmts> end                              // lexical block
+
+par/or  do <stmts> with <stmts> end         // aborts when one side terminates
+par/and do <stmts> with <stmts> end         // terminates when both sides terminate
+par     do <stmts> with <stmts> end         // never terminates
+
+finalize <stmts> with <stmts> end           // block finalization
+
+// INTEGRATION WITH C
+
+<_id>(<exps>)                               // C call (identifier starts with `_')
+native do <stmts> end                       // declarations in C
+native @const <_ids>                        // annotations: constant symbols
+native @pure  <_ids>                        //              pure functions
+native @safe  <_ids> with <_ids>            //              non-conflicting symbols
+\end{lstlisting}
+\caption{ Subset of the concrete syntax of \CEU used in the paper.
+\label{lst.syn}
+}
+\end{figure}
+
 In the subsections that follow, we discuss the main differences between \CEU and
 Esterel:
 %
@@ -486,9 +530,8 @@ First-class synchronized timers
 We finish the section with a summary of our design
     (\ref{sec.ceu.summary}).
 %
-We present the formal specification of the semantics of \CEU in a separate 
-paper~\cite{ceu.phd}.
-
+We present the formal specification of the semantics of \CEU with a simplified
+abstract syntax in a separate paper~\cite{ceu.phd}.
 
 \subsection{ Unique and Queue-Based External Events }
 \label{sec.ceu.exts}
@@ -2551,14 +2594,14 @@ reactions, providing more fine-grained control for intra-reaction execution.
 Some variants of Statecharts~\cite{statecharts} also distinguish internal from
 external events~\cite{statecharts.variants}.
 %Some variants of Statecharts support local events which imply handling intra
-%reactions like Céu.
+%reactions like \CEU.
 In Statemate, ``reactions to external and internal events (...) can be sensed only
 after completion of the step''~\cite{statecharts.statemate}, implying queue-based
 execution.
 In Stateflow, ``the receiving state (of the event) acts here as a
-function''~\cite{statecharts.stateflow}, which is similar to Céu's stack-based
+function''~\cite{statecharts.stateflow}, which is similar to \CEU's stack-based
 execution.
-To avoid recursion, Céu adopts delayed awaits, while in Statemate, ``loops in
+To avoid recursion, \CEU adopts delayed awaits, while in Statemate, ``loops in
 the broadcasting of events (between states) are forbidden''.
 
 Like \CEU, many synchronous languages rely on deterministic scheduling to 
