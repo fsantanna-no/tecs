@@ -1270,10 +1270,10 @@ to compile.
 However, in this case we want to rely on lexical order to always redraw the 
 \code{background} object before the \code{foreground} object.
 %
-Therefore, in Figure~\ref{lst.redraw}.b, we redefine \code{\_redraw} to an 
-``intimidating name'' \code{\_redraw\_non\_commutative} (ln. 2, to be explicit 
-about its effect), and annotate it as safe (ln. 4--5) to make the code compile 
-successfully.
+Therefore, in Figure~\ref{lst.redraw}.b, we redefine \code{\_redraw} as
+\code{\_redraw\_non\_commutative} (ln. 2) and annotate it as safe (ln. 4--5) to
+make the code compile successfully.
+The new function name is explicit about its effect, improving code readability.
 
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
@@ -1299,8 +1299,8 @@ end
 native do
     #define redraw_non_commutative redraw
 end
-@safe _redraw_non_commutative with
-      _redraw_non_commutative;
+native @safe _redraw_non_commutative with
+             _redraw_non_commutative;
 par do
     <...> // animate and redraw "background"
         _redraw_non_commutative(background);
@@ -1333,27 +1333,17 @@ For this reason, Esterel and \CEU provide a \code{finalize} construct to
 unconditionally execute a series of statements even if the enclosing block is 
 aborted and does not terminate normally.
 
-In the example in Figure~\ref{lst.fin} in Esterel \ax and \CEU \bx, the calls 
-to \code{lock} and \code{unlock} represent accesses to an external resource.
-After we \code{lock} the resource (ln. \ax:4 and \bx:3), we perform some 
-operations in subsequent reactions to input \code{A} (ln.  \ax:5--8 and 
-\bx:7--10), and then we \code{unlock} the resource (ln.  \ax:10 and \bx:5).
-Note that if the aborting input \code{B} (ln. \ax:12 and \bx:12) occurs after 
-the \code{lock} but before the reactions to \code{A}, we still want to call 
-\code{unlock} to safely release the resource.
-%
-In Esterel and \CEU, the finalize clause (ln. \ax:10 and \bx:5) executes
-automatically if the enclosing block (ln. \ax:3--1 and \bx:3--10) is
-externally aborted (ln. \ax:12 and \bx:12).
-
 \CEU also enforces the use of \code{finalize} for system calls that deal with
-pointers representing resources:
+pointers representing resources, as illustrated in the two examples of
+Figure~\ref{lst.fin.ceu}:
 %
 \begin{itemize}
-\item If \CEU \textbf{passes} a pointer to a system call, the pointer 
-represents a \textbf{local} resource that requires finalization.
-\item If \CEU \textbf{receives} a pointer from a system call return, the 
-pointer represents an \textbf{external} resource that requires finalization.
+\item If \CEU \textbf{passes} a pointer to a system call (ln. \ax:5), the
+pointer represents a \textbf{local} resource (ln. \ax:2) that requires finalization
+(ln. \ax:7).
+\item If \CEU \textbf{receives} a pointer from a system call return (ln. \bx:4),
+the pointer represents an \textbf{external} resource (ln. \bx:2) that requires
+finalization (ln. \bx:6).
 \end{itemize}
 %
 \CEU tracks the interaction of system calls with pointers and requires 
@@ -1375,6 +1365,67 @@ remains open as a \emph{memory leak}.
 The finalization ensures that the file closes properly (ln. 6).
 %
 In both cases, the code does not compile without the \code{finalize} construct.
+
+\begin{figure}
+\begin{minipage}[t]{0.48\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
+par/or do
+   var _buffer_t msg;
+   <...> // prepare msg
+   finalize
+      _send_request(&msg);
+   with
+      _send_cancel(&msg);
+   end
+   await SEND_ACK;
+with
+   <...>
+end
+.
+\end{lstlisting}
+\centering\small{\ax Local resource finalization}
+\end{minipage}
+%
+\begin{minipage}[t]{0.48\linewidth}
+\begin{lstlisting}[numbers=left,xleftmargin=3.5em]
+par/or do
+   var _FILE* f;
+   finalize
+      f = _fopen(...);
+   with
+      _fclose(f);
+   end
+   _fwrite(..., f);
+   await A;
+   _fwrite(..., f);
+with
+   <...>
+end
+\end{lstlisting}
+\centering\small{\bx External resource finalization}
+\end{minipage}
+%\rule{8.4cm}{0.37pt}
+\caption{
+\CEU enforces the use of finalization to prevent \emph{dangling pointers} for 
+local resources and \emph{memory leaks} for external resources.
+\label{lst.fin.ceu}
+}
+\end{figure}
+
+\begin{comment}
+
+In the example in Figure~\ref{lst.fin} in Esterel \ax and \CEU \bx, the calls 
+to \code{lock} and \code{unlock} represent accesses to an external resource.
+After we \code{lock} the resource (ln. \ax:4 and \bx:3), we perform some 
+operations in subsequent reactions to input \code{A} (ln.  \ax:5--8 and 
+\bx:7--10), and then we \code{unlock} the resource (ln.  \ax:10 and \bx:5).
+Note that if the aborting input \code{B} (ln. \ax:12 and \bx:12) occurs after 
+the \code{lock} but before the reactions to \code{A}, we still want to call 
+\code{unlock} to safely release the resource.
+%
+In Esterel and \CEU, the finalize clause (ln. \ax:10 and \bx:5) executes
+automatically if the enclosing block (ln. \ax:3--1 and \bx:3--10) is
+externally aborted (ln. \ax:12 and \bx:12).
 
 \begin{figure}
 \begin{minipage}[t]{0.48\linewidth}
@@ -1432,51 +1483,7 @@ compiler will not enforce the use of finalization.
 %Note also that \CEU environments rely on \C libraries that only provide 
 %asynchronous I/O and non-blocking functions~\cite{ceu.sensys13}.
 
-\begin{figure}[b]
-\begin{minipage}[t]{0.48\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3.5em,mathescape=true]
-par/or do
-   var _buffer_t msg;
-   <...> // prepare msg
-   finalize
-      _send_request(&msg);
-   with
-      _send_cancel(&msg);
-   end
-   await SEND_ACK;
-with
-   <...>
-end
-.
-\end{lstlisting}
-\centering\small{\ax Local resource finalization}
-\end{minipage}
-%
-\begin{minipage}[t]{0.48\linewidth}
-\begin{lstlisting}[numbers=left,xleftmargin=3.5em]
-par/or do
-   var _FILE* f;
-   finalize
-      f = _fopen(...);
-   with
-      _fclose(f);
-   end
-   _fwrite(..., f);
-   await A;
-   _fwrite(..., f);
-with
-   <...>
-end
-\end{lstlisting}
-\centering\small{\bx External resource finalization}
-\end{minipage}
-%\rule{8.4cm}{0.37pt}
-\caption{
-\CEU enforces the use of finalization to prevent \emph{dangling pointers} for 
-local resources and \emph{memory leaks} for external resources.
-\label{lst.fin.ceu}
-}
-\end{figure}
+\end{comment}
 
 \subsection{ First-Class Timers }
 \label{sec.ceu.timers}

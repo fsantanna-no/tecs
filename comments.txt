@@ -56,7 +56,7 @@ a standard benchmark language for evaluating embedded systems.
 An Esterel implementation that compiles to sequential C code with similar
 techniques "generates code less than 10% larger the original manually-sequenced
 code" [4].
-We have a student working on Esterel's "wristwatch" example [2] and plan to
+We have a student working on Esterel's "wristwatch" example [5] and plan to
 extend our evaluation with industrial-quality applications in the future.
 
 We rewrote the 2nd paragraph of Section 3 with the justification above and
@@ -148,19 +148,36 @@ We now reposition Céu as soft real time and acknowledge that determining
 worst-case reaction times is non trivial with our semantics.
 %%%
 
-* The ordering of side-effects amounts to respecting the lexical ordering in
-the program and possibly warning if program behavior may depend on this
-ordering. This choice is not unreasonable and has, as the authors note,
-been used in several other languages, but it limits the semantic
-equivalences possible for subprograms and complicates manipulation and
-optimization by compilers. I did not really understand how the analysis of
-dangling pointers and memory leaks (§2.4) is supposed to work. Giving
-function calls "intimidating names" is not a thorough solution: surely it
-is possible to do better than that!
+> * The ordering of side-effects amounts to respecting the lexical ordering in
+> the program and possibly warning if program behavior may depend on this
+> ordering. This choice is not unreasonable and has, as the authors note,
+> been used in several other languages, but it limits the semantic
+> equivalences possible for subprograms and complicates manipulation and
+> optimization by compilers.
+> ...
+> More sophisticated treatments of these ideas are attempted in the
+> "sequential constructiveness" of von Hanxleden et al in PDLI'14 [OK], and in
+> the "scheduling policies" of Caspi et al in LCTES'09 [OK].
 
-More sophisticated treatments of these ideas are attempted in the
-"sequential constructiveness" of von Hanxleden et al in PDLI'14 [OK], and in
-the "scheduling policies" of Caspi et al in LCTES'09 [OK].
+%%%
+TODO
+%%%
+
+> I did not really understand how the analysis of dangling pointers and memory
+> leaks (§2.4) is supposed to work. Giving function calls "intimidating names"
+> is not a thorough solution: surely it is possible to do better than that!
+
+%%%
+The discussion about dangling pointers and memory leaks (S.2.4.3) is not
+related to the <<@safe>> annotation (S.2.4.3).
+The proposed solution is to require the programmer to annotate the function as
+<<@safe>>. The annotation tells the compiler to allow this function to be
+called concurrently and rely on lexical order. Choosing an "intimidating name"
+is not the mechanism, but a hint to improve readability and be explicit about
+the effect of that call. We rewrote this paragraph.
+We also rewrote parts of S.2.4.3 as discussed below (with other comments for
+this section).
+%%%
 
 > The treatment of first-class timers is unconvincing. It is trivial to let
 > users write "await 10ms" in the text of a program, but how should such
@@ -369,7 +386,7 @@ In this case, different tick lengths generate different sets of inputs.
 
 %%%
 We haven't formalized the interaction of the language with the environment yet.
-The formal semantics of Céu specifies a reaction to a single event [3] (i.e.,
+The formal semantics of Céu specifies a reaction to a single event [2] (i.e.,
 the queue is external to the formal language, as illustrated in S.3.6).
 In S.3.5, we mention previous work with the implementation of a radio driver
 running in parallel with time-consuming tasks (e.g. computing hashes) [1].
@@ -432,21 +449,35 @@ However, from our experience, the simple checks are efficient and good enough
 in practice.
 %%%
 
-§2.4
-- How does the compiler know that an "fopen" requires a later "fclose"?
-Where is this expressed in the program or interface files?
+> §2.4
+> - How does the compiler know that an "fopen" requires a later "fclose"?
+> Where is this expressed in the program or interface files?
+>
+> -Why present the example in Figure 9 if it does not work properly? Is there
+> not a way to make this example work properly in CÉU?
+>
+> -I was lost in this section. The informal descriptions and examples are
+> insufficient to understand how the scheme is supposed to work in general.
 
--Why present the example in Figure 9 if it does not work properly? Is there
-not a way to make this example work properly in CÉU?
-
--I was lost in this section. The informal descriptions and examples are
-insufficient to understand how the scheme is supposed to work in general.
+%%%
+We propose an integration with existing C APIs and enforce safe behavior
+without pre-existing work or interface files.
+In the case of <<fopen>>/<<fclose>>, what we do in practice is to handle the
+system calls and finalization inside an abstraction [3] and expose that as a
+library for programming with files in pure Céu.
+In the case of <<lock>> in Figure 9, we could make the compiler complain
+about any non-annotated function.
+We rewrote this subsection more precisely and removed the <<lock>> example to
+avoid confusion.
+TODO: more precisely
+%%%
 
 > §2.5
 > - Is the description of the example correct? I would have expected the
 > program to terminate with v = 2.
 
 %%%
+TODO
 Yes, the description is correct:
   - The first trail awakes first (10+1 > 12) and terminates the <<par/or>>.
   - The second trail is aborted and never awakes.
@@ -548,12 +579,15 @@ look them up from references in the text.
 [1] Francisco Sant’Anna, Noemi Rodriguez, Roberto Ierusalimschy, Olaf
     Landsiedel, and Philippas Tsigas. 2013. Safe System-level Concurrency on
     Resource-Constrained Nodes. In Proceedings of SenSys’13. ACM.
-[2] https://github.com/HandelSM/Ceu-arduino
-[3] Francisco Sant’Anna. 2013. Safe System-level Concurrency on
+[2] Francisco Sant’Anna. 2013. Safe System-level Concurrency on
     Resource-Constrained Nodes with Céu. Ph.D. Dissertation. PUC–Rio.
+[3] Francisco Sant’Anna, Noemi Rodriguez, and Roberto Ierusalimschy. 2015.
+    Structured Synchronous Reactive Programming with Céu. In Proceedings of
+    Modularity’15
 [4] Weil, Daniel, et al. "Efficient compilation of Esterel for real-time
     embedded systems." Proceedings of the 2000 international conference on
     Compilers, architecture, and synthesis for embedded systems. ACM, 2000.
+[5] https://github.com/HandelSM/Ceu-arduino
 
 --------------------------------------------------------------------------------
 
