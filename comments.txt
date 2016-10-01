@@ -7,11 +7,11 @@
 > e.g., ''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
 > Maybe it can be renamed as "static concurrency analysis".
 
-To also address the comments of Referee 3, we renamed as "concurrency checks".
-Please, see below for additional comments.
+To also address the comments of "Referee 3", we renamed the term as
+"concurrency checks".
 
-> 2. Furthermore, lexical order is used to schedule the concurrent statements in
-> this work. What happens if there are data dependencies in the concurrent
+> 2. Furthermore, lexical order is used to schedule the concurrent statements
+> in this work. What happens if there are data dependencies in the concurrent
 > statements? Please discuss the proposed scheduling with the existing
 > sequentialization techniques for Esterel compilation (e.g., a CFG-based
 > compilation).
@@ -20,21 +20,22 @@ The idea of data dependency is inherent to Esterel since it supports emitting
 and testing the presence of a signal in the same cycle.
 Due to the "coherence law", Esterel also requires that an <<emit>> must precede
 a <<present>> test.
-Therefore, CFG-based compilers create an acyclic graph respecting topological
-order to satisfy these constraints.
+CFG-based compilers create acyclic graphs respecting topological in order to
+satisfy these constraints.
 
-Section 2.2 discusses internal events and describes that if an <<await>> and
-<<emit>> occur simultaneously in parallel trails, the <<await>> does not awake.
+S.2.2 (Stack-Based Internal Events) discusses internal events and describes
+that if an <<await>> and <<emit>> occur simultaneously in parallel trails, the
+<<await>> does not awake.
 Delayed awaits eliminate the idea of data dependency in Céu but are less
 expressive. We discuss the tradeoffs in the paper.
-In Section 3.3, we mention a field in the trail structure to deal with delayed
+In S.3.3, we mention a field in the trail structure to deal with delayed
 awaits in the implementation.
 
-In this revision, we extended Sections 2.2 and 4 (related work) to clarify
-this discussion.
+TODO:
+We extended S.2.2 and S.4 (related work) to include this discussion.
 
-> 3. The authors mentioned that "Unfortunately, most real applications in Esterel
-> seems to be closed source". However, the Estbench (available at
+> 3. The authors mentioned that "Unfortunately, most real applications in
+> Esterel seems to be closed source". However, the Estbench (available at
 > http://www1.cs.columbia.edu/~sedwards/software.html) can be used to
 > perform the comparison and evaluation.
 
@@ -51,12 +52,11 @@ a standard benchmark language for evaluating embedded systems.
 An Esterel implementation that compiles to sequential C code with similar
 techniques "generates code less than 10% larger the original manually-sequenced
 code" [4].
-We have a student working on Esterel's "wristwatch" example [5] and plan to
-extend our evaluation with industrial-quality applications in the future.
+We plan to extend our evaluation with industrial-quality applications in future
+work.
 
-We rewrote the 2nd paragraph of Section 3 with the justification above and
+We rewrote the 2nd paragraph of S.3 with the justification above and
 moved this discussion to S.3.5 (Single-Threaded Dispatching)
-TODO: see reviewer.3
 
 -------------------------------------------------------------------------------
 
@@ -69,7 +69,6 @@ TODO
 
 > On the whole, I would have preferred a more neutral style (some parts of the
 > paper read like a sales pitch)...
->
 > ... a fairer evaluation of Esterel (there are good reasons for its design
 > choices), ...
 > ... The solutions embodied in Céu are well motivated but involve trade-offs
@@ -93,17 +92,13 @@ reactions might be enough.
 However, hard real-time systems require a more robust approach such as
 determining fixed-length ticks that can be statically verified."
 
-"We present the design and implementation of Céu, a synchronous reactive 
-language inspired by Esterel with event-driven semantics and more fine-grained 
-control for intra-reaction execution.
-On the one hand, this approach is familiar to programmers in general,
-abstracting tick sampling with reactions to unique events from their
-application domain.
+"We present the design and implementation of Céu, ...
+On the one hand, this approach ...
 On the other hand, this level of abstraction does not suit systems with
 hard-real time requirements, in which interacting directly with a concrete
 notion of tick is more robust."
 
-We also proof-read the paper and removed/renamed many non-neutral terms:
+We also proof-read the paper and removed/renamed many non-neutral terms, e.g.:
 "overly complex semantics", "drawback", "loose execution", "all-inclusive"
 "has a simple semantics", "only possible", "seamless", "easily trackable",
 "goes one step further", "unique"
@@ -113,9 +108,9 @@ We also proof-read the paper and removed/renamed many non-neutral terms:
 > syntax -- I just noticed that the original submission included this
 > definition in Figure 10; ...).
 
-In S.2 (Figure 2), we present the subset of the concrete syntax of Céu used in
-the paper as a quick reference.
-We also reference "the formal specification of the semantics of Céu with a
+We now present the subset of the concrete syntax of Céu used in the paper as a
+quick reference (S.2, Figure 2).
+We also point to "the formal specification of the semantics of Céu with a
 simplified abstract syntax in a separate paper [ref]".
 
 > * The queueing of external events and the stacking of internal ones
@@ -152,14 +147,13 @@ TODO
 > is not a thorough solution: surely it is possible to do better than that!
 
 The discussion about dangling pointers and memory leaks (S.2.4.3) is not
-related to the <<@safe>> annotation (S.2.4.3).
+related to the <<@safe>> annotation and names (S.2.4.3).
 The proposed solution is to require the programmer to annotate the function as
 <<@safe>>. The annotation tells the compiler to allow this function to be
 called concurrently and rely on lexical order. Choosing an "intimidating name"
-is not the mechanism, but a hint to improve readability and be explicit about
+is not a mechanism, but a hint to improve readability and be explicit about
 the effect of that call. We rewrote this paragraph.
-We also rewrote parts of S.2.4.3 as discussed below (with other comments for
-this section).
+We also rewrote parts of S.2.4.3 as discussed below.
 
 > The treatment of first-class timers is unconvincing. It is trivial to let
 > users write "await 10ms" in the text of a program, but how should such
@@ -205,7 +199,7 @@ timers in parallel:
 The two trails always terminate together regardless of imprecise measurements
 passed to the Céu runtime.
 These conflicts are not resolved "based on comparing parallel delays", but as
-consequence of "delta" compensation.
+consequence of "delta compensation".
 The example with timers in parallel illustrates that the abstract reasoning for
 "1+1+1 == 3" always work in practice.
 We rewrote the phrase that suggests that comparing parallel delays is a special
@@ -226,7 +220,7 @@ case.
 
 We removed the term "overly".
 Although we maintain that Esterel is more complex than Céu, we agree that it
-applies to other domains.
+applies to more domains.
 As commented above, we repositioned the paper as targeting soft real-time
 systems.
 
@@ -237,12 +231,13 @@ systems.
 > Where is the evidence for this assertion? If there is none, please remove it.
 
 The cited references in the same paragraph discuss many approaches to deal with
-the semantics of Esterel, but they do not necessarily generate "incompatible
-and non-compliant implementations".
+the semantics of Esterel, but we agree that they do not necessarily generate
+"incompatible and non-compliant implementations".
 We rewrote this sentence as "A complex semantics not only challenges the
 analysis and compilation of programs, but also affects the programmer's
 understanding about the code, who, ultimately, has to solve the errors when
-facing corner cases."
+facing corner cases" (removed the assertion and joined with the phrase in
+sequence).
 
 > §2.1
 
@@ -254,10 +249,10 @@ facing corner cases."
 > §4.4.4. The discussion in §2.1 should thus compare implementation schemes
 > rather than languages.
 
-We now discuss Esterel's input relations and comment that making all inputs
-exclusive and adopting the "variable-length ticks" is equivalent to Céu's
-"unique input" notion of time (i.e., Céu imposes a restriction on the semantics
-of Esterel).
+We now discuss these Esterel's input relations and comment that making all
+inputs exclusive and adopting the "variable-length ticks" is equivalent to
+Céu's "unique input" notion of time (i.e., Céu imposes a restriction on the
+semantics of Esterel).
 
 > - What you term "fixed-length ticks" is normally called "sample-driven
 > execution" (see, e.g., Benveniste et al, Proc IEEE, fig. 1).
@@ -288,7 +283,7 @@ Since this concept applies to synchronous systems with zero-delay
 communication, our paper uses the "Real World" box (S.2.1) as an absolute and
 concrete time reference.
 We consider that an Esterel tick is concrete only when its length is realized
-into an implementation but not at the specification time.
+into an implementation, but not at the specification time.
 If we log the absolute observation and execute it in Esterel implementations
 with different tick lengths, the behaviors might diverge.
 One can still use the tick length as meta information in the timeline, but
@@ -297,8 +292,8 @@ The proposed scheme can fail to meet deadlines (S.2.1), but timestamped inputs
 can be simulated at any speed in Céu with the same behavior
 (we use this technique in automated tests for the language implementation).
 
-We included this discussion in the paper and change the term "abstract" for
-Esterel ticks (in favor of "implementation dependent").
+We included this discussion in the paper and changed the term "abstract" for
+Esterel ticks (in favor of "implementation dependent ticks").
 
 > The choice made for CÉU seems reasonable. As for any other choice it comes
 > with its own advantages and disadvantages. Why not just argue that this
@@ -309,7 +304,7 @@ Esterel ticks (in favor of "implementation dependent").
 Before justifying the choice for queue-based semantics, we counterpoint that
 tick-based reactions are simpler and map directly to hardware implementations
 (e.g., no runtime queues).
-We now consider the soft real time application domain of Céu.
+We now take into account the soft real-time application domain of Céu.
 We also reduced the conceptual discussion.
 
 > - "the two approaches for Esterel [...] lead to different behaviors for the
@@ -370,11 +365,12 @@ TODO: merged 3.5/3.6?
 > MathWorks Stateflow tool. These models also try to treat events one by
 > one, but not in exactly the same way.
 
-In Statemate, "reactions to external and internal events (...) can be sensed only
-after completion of the step", implying queue-based execution.
+In Statemate, "reactions to external and internal events (...) can be sensed
+only after completion of the step", implying queue-based execution.
 In Stateflow, "the receiving state (of the event) acts here as a function",
 which is similar to Céu's stack-based execution.
-These references are relevant and we included a comparison in S.4 (Related Work).
+These references are relevant and we included a comparison in S.4 (Related
+Work).
 
 > - "same-cycle bi-directional communication" is also called an "instantaneous
 > dialogue" (Halbwachs Book, 1993, §2.4.3).
@@ -390,8 +386,8 @@ We included this remark in the text and cited the reference.
 > subthread, - If the variable is written by some thread, then it can
 > neither be read nor be written by concurrent threads".
 
-We now include this sentence in this paper (we used this very same sentence in
-previous work).
+We now include this sentence in this paper (we have already used this very same
+sentence in previous work).
 
 > - I did not understand why this simple static check is called a "temporal
 > analysis".
@@ -400,8 +396,7 @@ The term probably raises a different expectation to the reader, so we now use
 "concurrency checks" instead of "temporal analysis".
 As a justification for the term "analysis", the checks evolved from a
 compile-time simulation with more precise results and also detection of
-non-terminating statements, conflicting termination of "par/or", and some other
-checks.
+non-terminating statements, conflicting termination of "par/or", etc.
 However, from our experience, the simple checks are efficient and good enough
 in practice.
 
@@ -416,10 +411,10 @@ in practice.
 > insufficient to understand how the scheme is supposed to work in general.
 
 We propose an integration with existing C APIs and enforce safe behavior
-without pre-existing work or interface files.
-In the case of <<fopen>>/<<fclose>>, what we do in practice is to handle the
-system calls and finalization inside an abstraction [3] and expose that as a
-library for programming with files in pure Céu.
+without pre-existing work on interface files.
+In the case of <<fopen>>/<<fclose>>, what we would do in practice is to handle
+the system calls and finalization inside an abstraction [3] and expose that as
+a library for programming with files in pure Céu.
 In the case of <<lock>> in Figure 9, we could make the compiler complain
 about any non-annotated function.
 We rewrote this subsection more precisely and removed the <<lock>> example to
@@ -471,8 +466,8 @@ Please, refer to the comments for "Referee 1" at the top of the file.
 > of the language.
 
 We removed the formal runtime semantics after the first review.
-We plan to describe it in future work and extend with the static semantics as
-well.
+We plan to describe it in future work and extend it with the static semantics
+as well.
 
 > The rule for sequence nodes is unclear: isn't it possible to put awaits in
 > sequence, e.g., await A; await B; await C? How can I_n = O_n-1 in this
@@ -535,7 +530,6 @@ removed some sentences, and made text improvements and clarifications.
 [4] Weil, Daniel, et al. "Efficient compilation of Esterel for real-time
     embedded systems." Proceedings of the 2000 international conference on
     Compilers, architecture, and synthesis for embedded systems. ACM, 2000.
-[5] https://github.com/HandelSM/Ceu-arduino
 
 --------------------------------------------------------------------------------
 
