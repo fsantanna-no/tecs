@@ -917,12 +917,14 @@ another during the same cycle due to mutual signal dependencies
 valid for the next reaction, i.e., if an \code{await} and \code{emit} occur 
 simultaneously in parallel trails, the \code{await} does not awake.
 %
-These \emph{delayed awaits} avoid corner cases of instantaneous termination and 
-re-execution of statements in the same reaction (known as \emph{schizophrenic 
-statements}~\cite{esterel.constructive}).
-
-TODO: mesmo sem mutual dependency, falar de semantica construtiva e lei da
-coerencia
+This approach avoids any form of graph construction or data dependency analysis
+as required in Esterel, e.g.:
+``set or reset of a signal must always precede any test of this signal (signal
+coherence law and constructivity''~\cite{esterel.saxort}.
+%
+Also, these \emph{delayed awaits} avoid corner cases of instantaneous
+termination and re-execution of statements in the same reaction (known as
+\emph{schizophrenic statements}~\cite{esterel.constructive}).
 
 \begin{figure}
 \begin{lstlisting}[numbers=left,xleftmargin=2em]
@@ -2676,12 +2678,11 @@ Among the software-based approaches,
 \emph{SAXO--RT}~\cite{esterel.saxort,esterel.efficient} is the closest to our
 implementation with respect to trail allocation and scheduling:
 the compiler slices programs into ``control points'' (analogous to our ``entry 
-points'') and rearranges them into a directed acyclic graph respecting the 
-constructive semantics of Esterel.
+points'') and rearranges them into a directed acyclic graph.
 Then, it flattens the graph into sequential code in \C suitable for static 
 scheduling.
-
-TODO: compilação mais sofisticada, tem que lidar com data dependency
+Esterel compilation is more sophisticated since it involves solving data
+dependency relations to comply with its constructive semantics.
 
 %\subsection{VM}
 

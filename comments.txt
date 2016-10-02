@@ -27,11 +27,10 @@ S.2.2 (Stack-Based Internal Events) discusses internal events and describes
 that if an <<await>> and <<emit>> occur simultaneously in parallel trails, the
 <<await>> does not awake.
 Delayed awaits eliminate the idea of data dependency in Céu but are less
-expressive. We discuss the tradeoffs in the paper.
-In S.3.3, we mention a field in the trail structure to deal with delayed
-awaits in the implementation.
+expressive. We discuss the tradeoffs in this section.
+In S.3.3 (Static and Lightweight Trail Allocation), we mention a field in the
+trail structure to deal with delayed awaits in the implementation.
 
-TODO:
 We extended S.2.2 and S.4 (related work) to include this discussion.
 
 > 3. The authors mentioned that "Unfortunately, most real applications in
