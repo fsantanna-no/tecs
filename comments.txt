@@ -529,8 +529,3 @@ removed some sentences, and made text improvements and clarifications.
 [4] Weil, Daniel, et al. "Efficient compilation of Esterel for real-time
     embedded systems." Proceedings of the 2000 international conference on
     Compilers, architecture, and synthesis for embedded systems. ACM, 2000.
-
---------------------------------------------------------------------------------
-
-TODO: regarding
-TODO: simplifies
