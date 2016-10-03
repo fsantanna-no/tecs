@@ -137,10 +137,19 @@ worst-case reaction times is non trivial with our semantics.
 > optimization by compilers.
 > ...
 > More sophisticated treatments of these ideas are attempted in the
-> "sequential constructiveness" of von Hanxleden et al in PDLI'14 [OK], and in
-> the "scheduling policies" of Caspi et al in LCTES'09 [OK].
+> "sequential constructiveness" of von Hanxleden et al in PDLI'14, and in
+> the "scheduling policies" of Caspi et al in LCTES'09.
 
-TODO:
+We extended S.4 (Related Work) citing SCCharts since it is closer to our
+approach:
+"SCCharts [ref] proposes sequentially constructive programs that allow ``shared
+variables to have multiple values per tick as long as these values are
+explicitly ordered by sequential statements'' [ref].
+This relaxes Esterel's restriction for read-after-write accesses only (e.g., a
+signal must be emitted to be present) and permits write-after-read accesses
+typical in imperative programs (e.g., test and set).
+Although this approach still restricts concurrent accesses, it does not impose
+strict deterministic scheduling such as in Céu."
 
 > I did not really understand how the analysis of dangling pointers and memory
 > leaks (§2.4) is supposed to work. Giving function calls "intimidating names"

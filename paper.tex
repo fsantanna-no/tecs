@@ -2461,6 +2461,7 @@ bytecode images dynamically.
 This approach aims to combine the flexibility of remotely uploading code with 
 the expressiveness and safety guarantees of \CEU.
 
+TODO:
 \begin{figure}[!htb]
  \centering
  %\includegraphics[width=0.5\columnwidth]{terra}
@@ -2638,6 +2639,16 @@ on deterministic scheduling.
 %
 %These languages have a tick-based notion of time similar to Esterel, which 
 %prevents the concurrency checks of \CEU.
+\emph{SCCharts}~\cite{sccharts.1} proposes \emph{sequentially constructive
+programs} that allow ``shared variables to have multiple values per tick as
+long as these values are explicitly ordered by sequential
+statements''~\cite{sccharts.2}.
+This relaxes Esterel's restriction for \emph{read-after-write} accesses only
+(e.g., a signal must be emitted to be present) and permits
+\emph{write-after-read} accesses typical in imperative programs (e.g., test and
+set).
+Although this approach still restricts concurrent accesses, it does not impose
+strict deterministic scheduling such as in \CEU.
 
 \emph{Esterel+Delay}~\cite{esterel.delays} is a non-intrusive extension to
 Esterel to program in terms of physical time with \code{delay} statements.
