@@ -919,8 +919,8 @@ simultaneously in parallel trails, the \code{await} does not awake.
 %
 This approach avoids any form of graph construction or data dependency analysis
 as required in Esterel, e.g.:
-``set or reset of a signal must always precede any test of this signal (signal
-coherence law and constructivity''~\cite{esterel.saxort}.
+\emph{``set or reset of a signal must always precede any test of this signal
+(signal coherence law and constructivity''}~\cite{esterel.saxort}.
 %
 Also, these \emph{delayed awaits} avoid corner cases of instantaneous
 termination and re-execution of statements in the same reaction (known as
@@ -1032,15 +1032,15 @@ Hence, an important goal of \CEU is to ensure a reliable behavior for programs
 with concurrent lines of execution sharing memory and interacting with the 
 environment.
 
-Esterel is only deterministic with respect to external behavior: ``the same 
-sequence of inputs always produces the same sequence of 
-outputs''~\cite{esterel.primer}.
+Esterel is only deterministic with respect to external behavior: \emph{``the
+same sequence of inputs always produces the same sequence of 
+outputs''}~\cite{esterel.primer}.
 %
 However, the execution order for operations within a reaction is 
-non-deterministic: ``if there is no control dependency, as in
+non-deterministic: \emph{``if there is no control dependency, as in
 \code{(call~f1()~||~call~f2())},
 the order is unspecified and it would be an error to rely on 
-it''~\cite{esterel.primer}.
+it''}~\cite{esterel.primer}.
 %
 For this reason, Esterel, does not support shared-memory concurrency:
 \emph{``if a variable is written by some thread, then it can neither be read
@@ -2337,8 +2337,8 @@ In future work, we plan to perform an equivalent throughout analysis in
 comparison to industrial-quality code bases in Esterel.
 %
 An Esterel implementation that compiles to sequential C code with similar
-techniques also generates ``code less than $10\%$ larger the original
-manually-sequenced code'' for an industrial-size
+techniques also generates \emph{``code less than $10\%$ larger the original
+manually-sequenced code''} for an industrial-size
 application~\cite{esterel.efficient}.
 %
 %Unfortunately, most real applications in Esterel seem to be closed source.
@@ -2610,14 +2610,14 @@ Some variants of Statecharts~\cite{statecharts} also distinguish internal from
 external events~\cite{statecharts.variants}.
 %Some variants of Statecharts support local events which imply handling intra
 %reactions like \CEU.
-In Statemate, ``reactions to external and internal events (...) can be sensed only
-after completion of the step''~\cite{statecharts.statemate}, implying queue-based
-execution.
-In Stateflow, ``the receiving state (of the event) acts here as a
-function''~\cite{statecharts.stateflow}, which is similar to \CEU's stack-based
-execution.
-To avoid recursion, \CEU adopts delayed awaits, while in Statemate, ``loops in
-the broadcasting of events (between states) are forbidden''.
+In Statemate, \emph{``reactions to external and internal events (...) can be
+sensed only after completion of the step''}~\cite{statecharts.statemate},
+implying queue-based execution.
+In Stateflow, \emph{``the receiving state (of the event) acts here as a
+function''}~\cite{statecharts.stateflow}, which is similar to \CEU's
+stack-based execution.
+To avoid recursion, \CEU adopts delayed awaits, while in Statemate,
+\emph{``loops in the broadcasting of events (between states) are forbidden''}.
 
 Like \CEU, many synchronous languages rely on deterministic scheduling to 
 preserve intra-reaction determinism (%
@@ -2639,9 +2639,9 @@ on deterministic scheduling.
 %These languages have a tick-based notion of time similar to Esterel, which 
 %prevents the concurrency checks of \CEU.
 \emph{SCCharts}~\cite{sccharts.1} proposes \emph{sequentially constructive
-programs} that allow ``shared variables to have multiple values per tick as
-long as these values are explicitly ordered by sequential
-statements''~\cite{sccharts.2}.
+programs} that allow \emph{``shared variables to have multiple values per tick
+as long as these values are explicitly ordered by sequential
+statements''}~\cite{sccharts.2}.
 This relaxes Esterel's restriction for \emph{read-after-write} accesses only
 (e.g., a signal must be emitted to be present) and permits
 \emph{write-after-read} accesses typical in imperative programs (e.g., test and
