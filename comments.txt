@@ -1,3 +1,11 @@
+SUMMARY:
+
+- focus
+- diff
+
+- WHAT WE DID:
+- COMMENTS:
+
 -------------------------------------------------------------------------------
 
 > Referee: 1
@@ -7,8 +15,9 @@
 > e.g., ''Performance Debugging of Esterel Specifications'' in RTS Journal, 2012
 > Maybe it can be renamed as "static concurrency analysis".
 
-To also address the comments of "Referee 3", we renamed the term as
-"concurrency checks".
+WHAT WE DID:
+To address these concerns as well as the comments of "Referee 3", we renamed
+the term as "concurrency checks".
 
 > 2. Furthermore, lexical order is used to schedule the concurrent statements
 > in this work. What happens if there are data dependencies in the concurrent
@@ -16,28 +25,35 @@ To also address the comments of "Referee 3", we renamed the term as
 > sequentialization techniques for Esterel compilation (e.g., a CFG-based
 > compilation).
 
+WHAT WE DID:
+We extended S.2.2 (Stack-Based Internal Events, A:7, 2nd paragraph)
+and S.4 (Related Work, pg. A:22, 3rd paragraph) to include the comments
+below.
+
+COMMENTS:
 The idea of data dependency is inherent to Esterel since it supports emitting
 and testing the presence of a signal in the same cycle.
 Due to the "coherence law", Esterel also requires that an <<emit>> must precede
 a <<present>> test.
 CFG-based compilers create acyclic graphs respecting topological in order to
 satisfy these constraints.
-
-S.2.2 (Stack-Based Internal Events) discusses internal events and describes
-that if an <<await>> and <<emit>> occur simultaneously in parallel trails, the
-<<await>> does not awake.
+S.2.2 already discusses internal events and describes that if an <<await>> and
+<<emit>> occur simultaneously in parallel trails, the <<await>> does not awake.
 Delayed awaits eliminate the idea of data dependency in Céu but are less
 expressive. We discuss the tradeoffs in this section.
-In S.3.3 (Static and Lightweight Trail Allocation), we mention a field in the
-trail structure to deal with delayed awaits in the implementation.
-
-We extended S.2.2 and S.4 (Related Work) to include this discussion.
+In S.3.3 (Static and Lightweight Trail Allocation), we already mention a field
+in the trail structure to deal with delayed awaits in the implementation.
 
 > 3. The authors mentioned that "Unfortunately, most real applications in
 > Esterel seems to be closed source". However, the Estbench (available at
 > http://www1.cs.columbia.edu/~sedwards/software.html) can be used to
 > perform the comparison and evaluation.
 
+WHAT WE DID:
+We rewrote S.3 (Implementation) with the justification below and moved it to
+S.3.5 (Single-Threaded Dispatching, A:18, 2nd paragraph).
+
+COMMENTS:
 Maybe "widely-used applications" would be a more accurate term to use.
 The TinyOS drivers and protocols (which we ported to Céu) are industrial-level
 applications and serve as basis for a considerable amount of work in the
@@ -53,9 +69,6 @@ techniques "generates code less than 10% larger the original manually-sequenced
 code" [4].
 We plan to extend our evaluation with industrial-quality applications in future
 work.
-
-We rewrote the 2nd paragraph of S.3 (Implementation) with the justification
-above and moved this discussion to S.3.5 (Single-Threaded Dispatching).
 
 -------------------------------------------------------------------------------
 
@@ -73,30 +86,27 @@ TODO:
 > ... The solutions embodied in Céu are well motivated but involve trade-offs
 > that could be more thoroughly discussed in the paper.
 
+WHAT WE DID:
 We re-positioned Céu as targeting soft real-time systems only.
 This changes the tone of the paper as less ambitious in comparison to Esterel
 for a fairer evaluation.
 We rewrote parts of the Abstract, S.1 (Introduction), S.3.5 (Single-Threaded
 Dispatching), and S.5 (Conclusion), e.g.:
-
 "The semantics of Céu implies an implementation with a runtime stack and a
 sequential scheduler.
 In contrast with Esterel's semantics, this prevents programs to be compiled
 directly and efficiently to hardware [ref].
 It also makes difficult to statically determine worst-case reaction times
 for hard real-time systems [ref]."
-
 "For soft real-time systems, accumulating delays and occasionally postponing
 reactions might be enough.
 However, hard real-time systems require a more robust approach such as
 determining fixed-length ticks that can be statically verified."
-
 "We present the design and implementation of Céu, ...
 On the one hand, this approach ...
 On the other hand, this level of abstraction does not suit systems with
 hard-real time requirements, in which interacting directly with a concrete
 notion of tick is more robust."
-
 We also proof-read the paper and removed/renamed many non-neutral terms, e.g.:
 "overly complex semantics", "imposed", "drawback", "loose execution",
 "all-inclusive" "simple semantics", "only possible", "seamless",
@@ -107,10 +117,11 @@ We also proof-read the paper and removed/renamed many non-neutral terms, e.g.:
 > syntax -- I just noticed that the original submission included this
 > definition in Figure 10; ...).
 
+WHAT WE DID:
 We now present the subset of the concrete syntax of Céu used in the paper as a
 quick reference (S.2, The Design of Céu, Figure 2).
 We also point to "the formal specification of the semantics of Céu with a
-simplified abstract syntax in a separate paper [ref]".
+simplified abstract syntax in a separate paper [ref]" (A:2, last paragraph).
 
 > * The queueing of external events and the stacking of internal ones
 > simplifies compilation and static analysis but complicates the formal
@@ -122,12 +133,15 @@ simplified abstract syntax in a separate paper [ref]".
 > subtle than for an Esterel or Lustre program with simultaneous external
 > events.
 
-In S.2.1 (Unique and Queue-Based External Events), we state that when the
-synchronous hypothesis does not hold in Céu, "the application continuously
-accumulates delays between the real occurrence and actual reaction of a given
-event".
+WHAT WE DID:
 We now reposition Céu as soft real time and acknowledge that determining
 worst-case reaction times is non trivial with our semantics.
+
+COMMENTS:
+In S.2.1 (Unique and Queue-Based External Events), we already state that when
+the synchronous hypothesis does not hold in Céu, "the application continuously
+accumulates delays between the real occurrence and actual reaction of a given
+event".
 
 > * The ordering of side-effects amounts to respecting the lexical ordering in
 > the program and possibly warning if program behavior may depend on this
@@ -140,8 +154,9 @@ worst-case reaction times is non trivial with our semantics.
 > "sequential constructiveness" of von Hanxleden et al in PDLI'14, and in
 > the "scheduling policies" of Caspi et al in LCTES'09.
 
-We extended S.4 (Related Work) citing SCCharts since it is closer to our
-approach:
+WHAT WE DID:
+We extended S.4 (Related Work, A:21, 2nd paragraph) citing SCCharts since it is
+closer to our approach:
 "SCCharts [ref] proposes sequentially constructive programs that allow ``shared
 variables to have multiple values per tick as long as these values are
 explicitly ordered by sequential statements'' [ref].
@@ -155,14 +170,18 @@ strict deterministic scheduling such as in Céu."
 > leaks (§2.4) is supposed to work. Giving function calls "intimidating names"
 > is not a thorough solution: surely it is possible to do better than that!
 
+WHAT WE DID:
+We rewrote this paragraph.
+We also rewrote parts of S.2.4.3 (Finalization) as discussed TODO.
+
+COMMENTS:
 The discussion about dangling pointers and memory leaks (S.2.4.3, Finalization)
 is not related to the <<@safe>> annotation and names (S.2.4.2, Annotations).
 The proposed solution is to require the programmer to annotate the function as
 <<@safe>>. The annotation tells the compiler to allow this function to be
 called concurrently and rely on lexical order. Choosing an "intimidating name"
 is not a mechanism, but a hint to improve readability and be explicit about
-the effect of that call. We rewrote this paragraph.
-We also rewrote parts of S.2.4.3 (Finalization) as discussed below.
+the effect of that call.
 
 > The treatment of first-class timers is unconvincing. It is trivial to let
 > users write "await 10ms" in the text of a program, but how should such
@@ -176,43 +195,43 @@ We also rewrote parts of S.2.4.3 (Finalization) as discussed below.
 > independent formal model? Bourke and Sowmya comment on some of these
 > issues in SYNCHRON'09.
 
+WHAT WE DID:
 We included this reference in the paper and acknowledge their contributions.
+We rewrote the phrase that suggests that comparing parallel delays is a special
+case.
+We also extended S.4 (Related Work, A:21, 3nd paragraph) with the discussion
+below.
+
+COMMENTS:
 In fact, our proposal is very close to theirs:
     - "program in terms of physical time"
     - "delay expressions should not unduly bias the mechanisms with which they
        are eventually realised"
     - "possible to program initially in ideal terms"
-
 Their proposal transforms a <<delay time>> statement into appropriate Esterel
 statements based on a hardware description given as a program declaration.
 Our proposal makes physical time a special input event that feeds the runtime
 with an associated time to count. Both proposals encompass sample and
 interrupt-based timers.
-We extend S.4 (Related Work) with this discussion.
-
 About "faithful" fist-class timers, the scheduler of Céu runs reactions to
 completion and possibly on top of some operating system.
 For this reason, <<await time>> means awaiting *at least* <<time>>.
-In the paper, we mention that the "interaction between system clocks and
-programs is not absolutely precise".
+In the paper, we already mention that the "interaction between system clocks
+and programs is not absolutely precise".
 We make this assumption more explicit in the paper.
 That said, the runtime of Céu does not accumulate errors and is accurate about
 timers in parallel:
-
     par/and do
         await 1us; await 1us; await 1us;
     with
         await 3us;
     end
-
 The two trails always terminate together regardless of imprecise measurements
 passed to the Céu runtime.
 These conflicts are not resolved "based on comparing parallel delays", but as
 consequence of "delta compensation".
 The example with timers in parallel illustrates that the abstract reasoning for
 "1+1+1 == 3" always work in practice.
-We rewrote the phrase that suggests that comparing parallel delays is a special
-case.
 
 > Other comments
 > --------------
@@ -227,9 +246,10 @@ case.
 > without losing this intimate connection to an important class of digital
 > circuits?
 
+WHAT WE DID:
 We removed the term "overly".
-Although we maintain that Esterel is more complex than Céu, we agree that it
-applies to more domains.
+
+COMMENTS:
 As commented above, we repositioned the paper as targeting soft real-time
 systems.
 
@@ -239,14 +259,17 @@ systems.
 > 
 > Where is the evidence for this assertion? If there is none, please remove it.
 
-The cited references in the same paragraph discuss many approaches to deal with
-the semantics of Esterel, but we agree that they do not necessarily generate
-"incompatible and non-compliant implementations".
+WHAT WE DID:
 We rewrote this sentence as "A complex semantics not only challenges the
 analysis and compilation of programs, but also affects the programmer's
 understanding about the code, who, ultimately, has to solve the errors when
 facing corner cases" (removed the assertion and joined with the phrase in
 sequence).
+
+COMMENTS:
+The cited references in the same paragraph discuss many approaches to deal with
+the semantics of Esterel, but we agree that they do not necessarily generate
+"incompatible and non-compliant implementations".
 
 > §2.1
 
@@ -258,6 +281,7 @@ sequence).
 > §4.4.4. The discussion in §2.1 should thus compare implementation schemes
 > rather than languages.
 
+WHAT WE DID:
 We now discuss these Esterel's input relations and comment that making all
 inputs exclusive and adopting the "variable-length ticks" is equivalent to
 Céu's "unique input" notion of time (i.e., Céu imposes a restriction on the
@@ -266,7 +290,10 @@ semantics of Esterel).
 > - What you term "fixed-length ticks" is normally called "sample-driven
 > execution" (see, e.g., Benveniste et al, Proc IEEE, fig. 1).
 
+WHAT WE DID:
 We now make this remark in the text.
+
+COMMENTS:
 We avoided the term because we have seen "adaptive/variable sample frequency/rate"
 in other software contexts (e.g., games).
 The term is also symmetric with "variable-length ticks" in our comparison.
@@ -285,12 +312,17 @@ The term is also symmetric with "variable-length ticks" in our comparison.
 > 1997, Chapter 3), but I do not see how this intrinsic problem is solved by
 > the proposed execution scheme.
 
+WHAT WE DID:
+We included the discussion below in S.2.1 (Unique and Queue-Based External
+Events, A:4-6, many places) and changed the term "abstract" for Esterel ticks
+(in favor of "implementation dependent ticks").
+
+COMMENTS:
 The suggested reference describes the concept of an "omniscient external
 observer with an absolute reference clock that can generate precise timestamps
 for all relevant events".
 Since this concept applies to synchronous systems with zero-delay
-communication, our paper uses the "Real World" box (S.2.1, Unique and
-Queue-Based External Events) as an absolute and concrete time reference.
+communication, our paper uses the "Real World" box (S.2.1) as an absolute and concrete time reference.
 We consider that an Esterel tick is concrete only when its length is realized
 into an implementation, but not at the specification time.
 If we log the absolute observation and execute it in Esterel implementations
@@ -301,18 +333,16 @@ The proposed scheme can fail to meet deadlines (S.2.1), but timestamped inputs
 can be simulated at any speed in Céu with the same behavior
 (we use this technique in automated tests for the language implementation).
 
-We included this discussion in the paper and changed the term "abstract" for
-Esterel ticks (in favor of "implementation dependent ticks").
-
 > The choice made for CÉU seems reasonable. As for any other choice it comes
 > with its own advantages and disadvantages. Why not just argue that this
 > choice is suitable for the applications of interest? There is no need for
 > a sort of pseudo-philosophical discussion, nor to argue that the choices
 > made in the design of Esterel are bad.
 
-Before justifying the choice for queue-based semantics, we counterpoint that
-tick-based reactions are simpler and map directly to hardware implementations
-(e.g., no runtime queues).
+WHAT WE DID:
+Before justifying the choice for queue-based semantics (A:5, 5th paragraph), we
+now counterpoint that tick-based reactions are simpler and map directly to
+hardware implementations (e.g., no runtime queues).
 We now take into account the soft real-time application domain of Céu.
 We also reduced the conceptual discussion.
 
@@ -327,8 +357,9 @@ We also reduced the conceptual discussion.
 > and time of events. But this is not properly formalized or resolved in
 > your paper.
 
-As commented above, the paper discusses an absolute timeline with events and
-timestamps.
+COMMENTS:
+As commented above, the paper now discusses an absolute timeline with events
+and timestamps.
 In this case, different tick lengths generate different sets of inputs.
 
 > - "The synchronous hypothesis for CÉU holds if the reactions run faster than
@@ -354,18 +385,21 @@ In this case, different tick lengths generate different sets of inputs.
 > language, CÉU requires CPU times for reactions to be negligible in
 > comparison to the rate of incoming events."
 
+WHAT WE DID:
+As commented above, we repositioned the paper as targeting soft real-time
+systems.
+In S.2.6 (Summary), we referenced S.3.5 and S.3.6 with the comments below.
+
+COMMENTS:
 We haven't formalized the interaction of the language with the environment yet.
 The formal semantics of Céu specifies a reaction to a single event [2] (i.e.,
 the queue is external to the formal language, as illustrated in S.3.6
 (Interaction with the Environment)).
-In S.3.5 (Single-Threaded Dispatching), we mention previous work with the
-implementation of a radio driver running in parallel with time-consuming tasks
-(e.g. computing hashes) [1].
+In S.3.5 (Single-Threaded Dispatching), we already mention previous work with
+the implementation of a radio driver running in parallel with time-consuming
+tasks (e.g. computing hashes) [1].
 We argue that "(hard real-time systems) requires careful testing to avoid
 undersized hardware deployment without proper formalization".
-As commented above, we repositioned the paper as targeting soft real-time
-systems.
-In S.2.6 (Summary), we referenced S.3.5 and S.3.6 with the comments above.
 
 > §2.2
 > - A comparison can be made between the model of "Stack-Based Internal
@@ -373,16 +407,20 @@ In S.2.6 (Summary), we referenced S.3.5 and S.3.6 with the comments above.
 > MathWorks Stateflow tool. These models also try to treat events one by
 > one, but not in exactly the same way.
 
+WHAT WE DID:
+These references are relevant and we included a comparison in S.4 (Related
+Work, A:20, last paragraph).
+
+COMMENTS:
 In Statemate, "reactions to external and internal events (...) can be sensed
 only after completion of the step", implying queue-based execution.
 In Stateflow, "the receiving state (of the event) acts here as a function",
 which is similar to Céu's stack-based execution.
-These references are relevant and we included a comparison in S.4 (Related
-Work).
 
 > - "same-cycle bi-directional communication" is also called an "instantaneous
 > dialogue" (Halbwachs Book, 1993, §2.4.3).
 
+WHAT WE DID:
 We included this remark in the text and cited the reference.
 
 > §2.3
@@ -394,14 +432,18 @@ We included this remark in the text and cited the reference.
 > subthread, - If the variable is written by some thread, then it can
 > neither be read nor be written by concurrent threads".
 
+WHAT WE DID:
 We now include this sentence in this paper (we have already used this very same
 sentence in previous work).
 
 > - I did not understand why this simple static check is called a "temporal
 > analysis".
 
+WHAT WE DID:
 The term probably raises a different expectation to the reader, so we now use
 "concurrency checks" instead of "temporal analysis".
+
+COMMENTS:
 As a justification for the term "analysis", the checks evolved from a
 compile-time simulation with more precise results and also detection of
 non-terminating statements, conflicting termination of "par/or", etc.
@@ -418,35 +460,40 @@ in practice.
 > -I was lost in this section. The informal descriptions and examples are
 > insufficient to understand how the scheme is supposed to work in general.
 
-We propose an integration with existing C APIs and enforce safe behavior
-without pre-existing work on interface files.
-In the case of <<fopen>>/<<fclose>>, what we would do in practice is to handle
-the system calls and finalization inside an abstraction [3] and expose that as
-a library for programming with files in pure Céu.
-In the case of <<lock>> in Figure 9, we could make the compiler complain
-about any non-annotated function.
+WHAT WE DID:
 We rewrote this subsection more precisely and removed the <<lock>> example to
 avoid confusion.
 We also included a note that "The compiler only enforces the programmer to
 write the finalization clause, but cannot check if it actually handles the
 resource properly."
-
 TODO: more precisely
+
+COMMENTS:
+We already propose an integration with existing C APIs and enforce safe
+behavior without pre-existing work on interface files.
+In the case of <<fopen>>/<<fclose>>, what we would do in practice is to handle
+the system calls and finalization inside an abstraction [3] and expose that as
+a library for programming with files in pure Céu.
+In the case of <<lock>> in Figure 9, we could make the compiler complain
+about any non-annotated function.
 
 > §2.5
 > - Is the description of the example correct? I would have expected the
 > program to terminate with v = 2.
 
+WHAT WE DID:
+We extended the text with the explanation below.
+
+COMMENTS:
 Yes, the description is correct:
   - The first trail awakes first (10+1 > 12) and terminates the <<par/or>>.
   - The second trail is aborted and never awakes.
-We extended the text with this explanation.
 
 > - "which is a huge amount of time for a language-defined tick": this
 > statement is subjective and lacks precision. 200 milliseconds may not be
 > much time at all for some applications.
 
-Ok, but many applications require much smaller sampling ticks.
+WHAT WE DID:
 We rewrote the sentence.
 
 > §2.6
@@ -456,9 +503,11 @@ We rewrote the sentence.
 > figure out what a given program does. It can be harder to state and reason
 > using invariants in such circumstances.
 
+WHAT WE DID:
 Stack execution and lexical order are deterministic and familiar to
-programmers. We rewrote as "Programmers can figure out which statement executes
-next, helping runtime analysis and debugging".
+programmers.
+We rewrote as "Programmers can figure out which statement executes next,
+helping runtime analysis and debugging".
 
 > §3
 > - "Unfortunately, most real applications in Esterel seem to be closed
@@ -469,6 +518,7 @@ next, helping runtime analysis and debugging".
 > - Edward's estbench suite:
 > ...
 
+WHAT WE DID:
 Please, refer to the comments for "Referee 1" at the top of the file.
 
 > §3.1
@@ -476,6 +526,7 @@ Please, refer to the comments for "Referee 1" at the top of the file.
 > concurrent statements, i.e., deduction rules following the abstract syntax
 > of the language.
 
+WHAT WE DID:
 We removed the formal runtime semantics after the first review.
 We plan to describe it in future work and extend it with the static semantics
 as well.
@@ -484,6 +535,7 @@ as well.
 > sequence, e.g., await A; await B; await C? How can I_n = O_n-1 in this
 > case?
 
+COMMENTS:
 In this case, the sequence node has three children:
     1: <<await A>> has I={boot}
                        O={A}
@@ -498,6 +550,7 @@ In this case, the sequence node has three children:
 > Could this algorithm be made modular? Or is it necessarily a "whole
 > program" analysis? I wonder how it would scale to large programs.
 
+COMMENTS:
 Once we compare nested parallel statements, we can reduce them to the union
 of all side-effect nodes (i.e., the symbol, operation, and reaching inputs).
 Removing the hierarchy saves space but preserves the quadratic behavior.
@@ -509,18 +562,22 @@ We did not evaluate the performance of the concurrency checks though.
 > Or are you able to take advantage of the hierarchical structure of a
 > program to minimize the computation needed at each reaction?
 
+WHAT WE DID:
+We included the analysis below in the paper.
+
+COMMENTS:
 Yes, the language runtime is flat and has no hierarchy information.
 All trails, active or inactive, are traversed in all reactions.
 We believe that this makes worst-case reaction times lower (i.e., if all trails
 are active, traversing a hierarchy would make a reaction even slower).
 It also makes all reaction times to be more predictable.
 However, we did not investigate these assumptions.
-We included this analysis in the paper.
 
 > Minor details
 > -------------
 > ...
 
+WHAT WE DID:
 As suggested, we made the listing background lighter, corrected many typos,
 removed some sentences, made text improvements and clarifications, and fixed
 the references.
