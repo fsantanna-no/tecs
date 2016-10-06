@@ -335,8 +335,8 @@ packets~\cite{ceu.terra}.
 
 The semantics of \CEU implies an implementation with a runtime stack and a
 sequential scheduler.
-In contrast with Esterel's semantics, this prevents programs to be compiled
-directly and efficiently to hardware~\cite{esterel.constructive}.
+Unlike Esterel's semantics, this prevents programs to be compiled directly and
+efficiently to hardware~\cite{esterel.constructive}.
 It also makes difficult to statically determine worst-case reaction times
 towards hard real-time systems~\cite{esterel.fixed}.
 
@@ -920,7 +920,7 @@ These \emph{delayed awaits} avoid corner cases of instantaneous
 termination and re-execution of statements in the same reaction (known as
 \emph{schizophrenic statements}~\cite{esterel.constructive}).
 %
-Also, this approach does not require data dependency analysis like Esterel
+Also, unlike Esterel, this approach does not require data dependency analysis
 (e.g., \emph{``(set or reset of a signal must always precede any test of this
 signal (signal coherence law and constructivity)''}~\cite{esterel.saxort}).
 
@@ -1746,12 +1746,15 @@ parallelism.
 The compilation process of programs in \CEU is composed of three main phases:
 the \emph{parsing phase} converts the source code in \CEU to an abstract syntax 
 tree (\emph{AST});
-the \emph{concurrency checks phase} detects inconsistencies in programs, such as 
-unbounded loops and suspicious concurrent statements;
+the \emph{concurrency checks phase} detects inconsistencies in programs, such
+as unbounded loops and suspicious concurrent statements;
 the \emph{code generation phase} converts the \emph{AST} to standard \C code 
-and augments it with platform-dependent functionality (e.g., system calls) and the 
-runtime of \CEU, compiling everything with \emph{gcc} to generate the final 
+and augments it with platform-dependent functionality (e.g., system calls) and
+the runtime of \CEU, compiling everything with \emph{gcc} to generate the final 
 binary.
+%
+An alternative implementation generates bytecode for an embedded virtual
+machine, which can disseminate and install programs dynamically.
 
 In the subsections that follow, we discuss implementation details specific to 
 \CEU:
@@ -2278,13 +2281,13 @@ single-CPU embedded systems, but also because \CEU imposes deterministic
 execution for intra-reaction statements.
 
 Note that, as discussed in Section~\ref{sec.ceu.checks}, the concurrency 
-checks of \CEU infer precisely trails that are concurrent and yet do not 
-share resources.
+checks of \CEU detect trails that are concurrent and yet do not share
+resources.
 Hence, these non-conflicting trails could potentially execute with real 
 parallelism in multiple cores.
 %
 However, our experiments with multi-core execution are actually slower than 
-single-core execution in the same system.
+single-core execution on the same system.
 Considering that we use \CEU primarily in control-dominated applications, this 
 result is not surprising and also appears in related 
 work~\cite{esterel.multicore.1,esterel.multicore.2}.
@@ -2456,14 +2459,14 @@ original application in \CEU (\code{ceu\_app.h} and \code{ceu\_app.c}) for the
 Terra is a system for programming wireless sensor network applications which 
 uses \CEU as its scripting language~\cite{ceu.terra}.
 %
+This approach aims to combine the flexibility of remotely uploading code with 
+the expressiveness and safety guarantees of \CEU.
+%
 Figure \ref{fig.terra} shows the three basic elements of Terra:
 \CEU as the scripting language,
 a set of customized pre-built components,
 and the embedded virtual-machine engine which can disseminate and install 
 bytecode images dynamically.
-%
-This approach aims to combine the flexibility of remotely uploading code with 
-the expressiveness and safety guarantees of \CEU.
 
 \begin{figure}[!htb]
     \centering
@@ -2591,11 +2594,11 @@ System calls use \code{VM.push} for immediate return values (ln. 16--22).
 
 %\subsection{Semantics}
 
-\CEU has a strong influence from Esterel but differ in the most fundamental 
+\CEU was strongly influenced by Esterel but they differ in the most fundamental 
 aspect of the notion of time.
 %
-In \CEU, instead of clock ticks, atomic external event occurrences that define 
-time units.
+In \CEU, instead of clock ticks, atomic external event occurrences define time
+units.
 %
 The event-driven approach of \CEU is widespread~\cite{sync_async.whynotthreads} 
 and popular in many software communities, such as web frameworks (e.g., 
@@ -2604,74 +2607,79 @@ and popular in many software communities, such as web frameworks (e.g.,
 and Games~\cite{gamepatterns}.
 %
 \CEU encrusts this event-triggered notion of time in the core of the language,
-which is a prerequisite for the concurrency checks that enable safe
-shared-memory concurrency.
+and is a prerequisite for the concurrency checks that enable safe shared-memory
+concurrency.
 
 In \CEU, internal events support stack-based micro reactions within external
 reactions, providing more fine-grained control for intra-reaction execution.
 %
-Some variants of Statecharts also distinguish internal from external
-events~\cite{statecharts.variants}.
+Some variants of the Statecharts synchronous visual language also distinguish
+internal from external events~\cite{statecharts.variants}.
 %Some variants of Statecharts support local events which imply handling intra
 %reactions like \CEU.
-In Statemate, \emph{``reactions to external and internal events (...) can be
-sensed only after completion of the step''}~\cite{statecharts.statemate},
+In Statemate~\cite{statecharts.statemate}, \emph{``reactions to external and
+internal events (...) can be sensed only after completion of the step''},
 implying queue-based execution.
-In Stateflow, \emph{``the receiving state (of the event) acts here as a
-function''}~\cite{statecharts.stateflow}, which is similar to \CEU's
+In Stateflow~\cite{statecharts.stateflow}, \emph{``the receiving state (of the
+event) acts here as a function''}, which is similar to \CEU's
 stack-based execution.
 To avoid recursion, \CEU adopts delayed awaits, while in Statemate,
 \emph{``loops in the broadcasting of events (between states) are forbidden''}.
 
-Like \CEU, many synchronous languages rely on deterministic scheduling to 
-preserve intra-reaction determinism (%
-\emph{Reactive C}~\cite{rp.rc},                 % 1991
-\emph{Protothreads}~\cite{wsn.protothreads},    % 2006
-\emph{SOL}~\cite{wsn.sol},                      % 2007
-\emph{SC}~\cite{rp.synchc},                     % 2009
-and
-\emph{PRET-C}~\cite{rp.pretc}).                 % 2010
+Like other synchronous languages
+(%
+    \emph{Reactive C}~\cite{rp.rc},                 % 1991
+    \emph{Protothreads}~\cite{wsn.protothreads},    % 2006
+    \emph{SOL}~\cite{wsn.sol},                      % 2007
+    \emph{SC}~\cite{rp.synchc},                     % 2009
+    and
+    \emph{PRET-C}~\cite{rp.pretc}%                  % 2010
+),
+\CEU also relies on deterministic scheduling to preserve intra-reaction
+determinism.
 %
 %It is the responsibility of the programmer to specify the execution order for 
 %threads, based on either explicit priorities, or source code lexical order 
 %(similar to \CEU).
 %
-In addition, \CEU also performs concurrency checks to detect trails that, when
+In addition, it also performs concurrency checks to detect trails that, when
 reordered, change the observable behavior of the program, i.e., trails that
 actually rely on deterministic scheduling.
 %
 %These languages have a tick-based notion of time similar to Esterel, which 
 %prevents the concurrency checks of \CEU.
-\emph{SCCharts}~\cite{sccharts.1} proposes \emph{sequentially constructive
-programs} that allow \emph{``shared variables to have multiple values per tick
-as long as these values are explicitly ordered by sequential
+The \emph{SCCharts} formalism~\cite{sccharts.1} proposes \emph{sequentially
+constructive programs} that allow \emph{``shared variables to have multiple
+values per tick as long as these values are explicitly ordered by sequential
 statements''}~\cite{sccharts.2}.
 This relaxes Esterel's restriction for \emph{read-after-write} accesses only
 (e.g., a signal must be emitted to be present) and permits
 \emph{write-after-read} accesses typical in imperative programs (e.g., test and
 set).
-Although this approach still restricts concurrent accesses, it does not impose
-strict deterministic scheduling like in \CEU.
+This approach still restricts concurrent accesses but does not impose
+strict deterministic scheduling as \CEU does.
 
 \emph{Esterel+Delay}~\cite{esterel.delays} is a non-intrusive extension to
 Esterel to program in terms of physical time with \code{delay} statements.
-The global transformation relies on a special platform statement the describes
-the available timers in the system (e.g., sample-driven or interrupt-driven).
+The global transformation relies on a special platform statement that describes
+available timers in the system (e.g., sample-driven or interrupt-driven).
 It then expands \code{delay} statements into existing Esterel statements in a
 way that the desired semantics can be realised in the platform.
 %
-\CEU makes physical time a special input event that feeds the runtime with an
-associated time to elapse, which is decremented from all awaiting trails.
+In contrast, \CEU makes physical time a special input event that feeds the
+runtime with an associated time to elapse, which is decremented from all
+awaiting trails.
 The compensation scheme of \CEU guarantees that trails awake in the correct
 order and that errors are not propagated on subsequent awaits.
 Interrupt-driven timers are also supported with a hook callback that the
-runtime calls whenever the program awaits an earlier timer.
+runtime calls whenever the program awaits on an earlier timer.
 
 Regarding resource management, Esterel supports a finalization mechanism to 
 unconditionally execute a series of statements on abortion.
 %
-In addition, \CEU also tracks pointers representing resources that cross \C 
-boundaries and forces the programmer to provide associated finalizers.
+As a complement to finalization, \CEU also tracks pointers representing
+resources that cross \C boundaries and forces the programmer to provide
+associated finalizers.
 
 ReactiveML~\cite{rml} and \emph{URBI}~\cite{rp.urbi} extend the synchronous 
 model with dynamic lines of execution.
@@ -2780,7 +2788,7 @@ style of \CEU and can implement non-trivial concurrent applications in a few
 weeks.
 %
 More recently, a company specialized in embedded systems (not related to our 
-research group) released a product based on \CEU.
+research group) has released a product based on \CEU.
 
 % Bibliography
 \bibliographystyle{ACM-Reference-Format-Journals}
