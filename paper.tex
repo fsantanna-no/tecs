@@ -1366,7 +1366,7 @@ The finalization ensures that the file closes properly (ln. 6).
 In both cases, the code does not compile without the \code{finalize}
 construct.%
 \footnote{
-The compiler only enforces the programmer to write the finalization clause, but
+The compiler only forces the programmer to write the finalization clause, but
 cannot check if it actually handles the resource properly.
 }
 
@@ -1676,8 +1676,8 @@ concurrency checks of \CEU.
 Determinism in \CEU does not depend on additional levels of static analysis.
 It encompasses the whole language, including memory accesses, system calls, and 
 stack-based internal events.
-Programmers can figure out which statement executes next following clear linear
-rules.
+Programmers can figure out which statement executes next following clear
+sequential rules.
 %
 \item \emph{Static concurrency checks.}
 Although execution is deterministic, the \CEU compiler still advises about 

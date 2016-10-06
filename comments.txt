@@ -1,7 +1,9 @@
 SUMMARY:
 
 - focus
-- diff
+
+- diff do github
+- numerar refs
 
 - WHAT WE DID:
 - COMMENTS:
@@ -54,7 +56,7 @@ We rewrote S.3 (Implementation) with the justification below and moved it to
 S.3.5 (Single-Threaded Dispatching, A:18, 2nd paragraph).
 
 COMMENTS:
-Maybe "widely-used applications" would be a more accurate term to use.
+Maybe "widely-used applications" would be a more accurate term for us to use.
 The TinyOS drivers and protocols (which we ported to Céu) are industrial-level
 applications and serve as basis for a considerable amount of work in the
 Wireless Sensor Network academic community (e.g., ACM SenSys, ACM IPSN,
@@ -196,7 +198,8 @@ the effect of that call.
 > issues in SYNCHRON'09.
 
 WHAT WE DID:
-We included this reference in the paper and acknowledge their contributions.
+We included this reference in the paper and acknowledge their contributions
+(which we were not aware).
 We rewrote the phrase that suggests that comparing parallel delays is a special
 case.
 We also extended S.4 (Related Work, A:21, 3nd paragraph) with the discussion
@@ -313,9 +316,9 @@ The term is also symmetric with "variable-length ticks" in our comparison.
 > the proposed execution scheme.
 
 WHAT WE DID:
-We included the discussion below in S.2.1 (Unique and Queue-Based External
-Events, A:4-6, many places) and changed the term "abstract" for Esterel ticks
-(in favor of "implementation dependent ticks").
+We included the discussion below and changed the term "abstract" for Esterel
+ticks (in favor of "implementation dependent ticks").
+(All in S.2.1, Unique and Queue-Based External Events, A:4-6, many places.)
 
 COMMENTS:
 The suggested reference describes the concept of an "omniscient external
@@ -388,16 +391,17 @@ In this case, different tick lengths generate different sets of inputs.
 WHAT WE DID:
 As commented above, we repositioned the paper as targeting soft real-time
 systems.
-In S.2.6 (Summary), we referenced S.3.5 and S.3.6 with the comments below.
+In S.2.6 (Summary, A:12), we referenced S.3.5 and S.3.6 with the comments
+below.
 
 COMMENTS:
 We haven't formalized the interaction of the language with the environment yet.
 The formal semantics of Céu specifies a reaction to a single event [2] (i.e.,
 the queue is external to the formal language, as illustrated in S.3.6
 (Interaction with the Environment)).
-In S.3.5 (Single-Threaded Dispatching), we already mention previous work with
-the implementation of a radio driver running in parallel with time-consuming
-tasks (e.g. computing hashes) [1].
+Regarding minimum arrival times, in S.3.5 (Single-Threaded Dispatching), we
+already mention previous work with the implementation of a radio driver running
+in parallel with time-consuming tasks (e.g. computing hashes) [1].
 We argue that "(hard real-time systems) requires careful testing to avoid
 undersized hardware deployment without proper formalization".
 
@@ -421,7 +425,8 @@ which is similar to Céu's stack-based execution.
 > dialogue" (Halbwachs Book, 1993, §2.4.3).
 
 WHAT WE DID:
-We included this remark in the text and cited the reference.
+We included this remark in the text and cited the reference (S.2.2, Stack-Based
+Internal Events, A:7, 2nd paragraph).
 
 > §2.3
 > - It is worth noting that Esterel does impose restrictions on variable reads
@@ -433,14 +438,15 @@ We included this remark in the text and cited the reference.
 > neither be read nor be written by concurrent threads".
 
 WHAT WE DID:
-We now include this sentence in this paper (we have already used this very same
-sentence in previous work).
+We now include this sentence in this paper (S.2.3, Static Concurrency Checks,
+A:8, 3rd paragraph).
+(We have already used this very same sentence in previous work.)
 
 > - I did not understand why this simple static check is called a "temporal
 > analysis".
 
 WHAT WE DID:
-The term probably raises a different expectation to the reader, so we now use
+The term raises a different expectation to the reader, so we now use
 "concurrency checks" instead of "temporal analysis".
 
 COMMENTS:
@@ -463,7 +469,7 @@ in practice.
 WHAT WE DID:
 We rewrote this subsection more precisely and removed the <<lock>> example to
 avoid confusion.
-We also included a note that "The compiler only enforces the programmer to
+We also included a note that "The compiler only forces the programmer to
 write the finalization clause, but cannot check if it actually handles the
 resource properly."
 TODO: more precisely
@@ -471,7 +477,7 @@ TODO: more precisely
 COMMENTS:
 We already propose an integration with existing C APIs and enforce safe
 behavior without pre-existing work on interface files.
-In the case of <<fopen>>/<<fclose>>, what we would do in practice is to handle
+In the case of <<fopen>>/<<fclose>>, what we could do in practice is to handle
 the system calls and finalization inside an abstraction [3] and expose that as
 a library for programming with files in pure Céu.
 In the case of <<lock>> in Figure 9, we could make the compiler complain
@@ -506,8 +512,8 @@ We rewrote the sentence.
 WHAT WE DID:
 Stack execution and lexical order are deterministic and familiar to
 programmers.
-We rewrote as "Programmers can figure out which statement executes next,
-helping runtime analysis and debugging".
+We rewrote as "Programmers can figure out which statement executes next
+following clear sequential rules."
 
 > §3
 > - "Unfortunately, most real applications in Esterel seem to be closed
@@ -563,7 +569,7 @@ We did not evaluate the performance of the concurrency checks though.
 > program to minimize the computation needed at each reaction?
 
 WHAT WE DID:
-We included the analysis below in the paper.
+We included the analysis below in the paper (S.3.4, A:16, 5th paragraph).
 
 COMMENTS:
 Yes, the language runtime is flat and has no hierarchy information.
