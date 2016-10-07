@@ -1,12 +1,17 @@
 SUMMARY:
 
-- focus
+The main change in this revision is repositioning our work as targeting
+soft real-time systems only.
+We also went through all comments and enumerate the changes one by one.
+For each referee comment, we provide corresponding "WHAT WE DID" and "COMMENTS"
+paragraphs.
 
-- diff do github
-- numerar refs
+All changes in this revision in comparison wiht the previous one can be seen
+side-by-side in the link that follows (clicking on the "Files changed" tab):
 
-- WHAT WE DID:
-- COMMENTS:
+https://github.com/fsantanna-no/tecs/compare/403bfa297ae15ec2963cc6a413b64ad528296d46...master
+
+We also thank the referees for the thoughtful review.
 
 -------------------------------------------------------------------------------
 
