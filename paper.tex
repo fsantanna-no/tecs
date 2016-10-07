@@ -1655,8 +1655,8 @@ simple expansions to a \code{par/and} and \code{par/or} for better readability.
 \subsection{Summary}
 \label{sec.ceu.summary}
 
-\CEU aims to offer a simpler semantics than Esterel with more determinism and 
-fine-grained control over program execution.
+\CEU aims to offer a simple semantics with internal determinism and
+fine-grained control over execution.
 %
 The following list summarizes the contributions of our design in this 
 direction:
@@ -1693,15 +1693,15 @@ resources.
 %
 \item \emph{First-class timers with dedicated syntax and automatic 
 synchronization.}
-Given the omnipresence of timers in embedded systems, a dedicated syntax can 
-simplify the development and readability of programs.
+Given the demand of timers in embedded systems, a dedicated syntax can simplify
+the development and readability of programs.
 Furthermore, automatic synchronization releases the programmer from the burden 
 of adjusting timers in sequence and in parallel.
 %
 \end{itemize}
 
-Our synchronous and deterministic approach also leads to some limitations as 
-follows:
+Our approach for synchronous and deterministic execution also leads to some
+limitations as follows:
 %
 \begin{itemize}
 \item \emph{Execution is purely reactive as result of event-triggered 
