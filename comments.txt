@@ -85,7 +85,11 @@ work.
 > The subsections on Single-Threaded Dispatching (§3.5) and
 > the Terra Virtual Machine (§3.7) are uninformative.
 
-TODO:
+WHAT WE DID:
+We extended S.3.5 with the evaluation in comparison to C and with the
+discussion about soft vs real-time requirements.
+We rewrote the first paragraph of S.3.7 and introduced it in the beginning of
+S.3.
 
 > On the whole, I would have preferred a more neutral style (some parts of the
 > paper read like a sales pitch)...
