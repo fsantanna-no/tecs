@@ -1509,7 +1509,7 @@ Without explicit manipulation, the recurrent use of timed activities in a row
 incorrect behavior in programs.
 
 The \code{await} statement of \CEU supports wall-clock time and handles deltas 
-automatically, resulting in more robust applications.
+automatically. %, resulting in more robust applications.
 In the example in Figure~\ref{lst.timers}.a, suppose that after the first 
 \code{await} request, the underlying system gets busy%
 \footnote{Due to platform overheads (e.g., OS scheduling) and occasional slow
@@ -1576,6 +1576,50 @@ because $10+1 < 12$.
 A similar program in a language without first-class support for timers would 
 depend on the execution timings for the code marked as \code{<...>}, making the 
 reasoning about the execution behavior more difficult.
+
+The \code{await} statement for timers returns the current \emph{delta}, as
+illustrated in Figure~\ref{lst.delta}.
+Figure~\ref{lst.delta}.a is a variation of Figure~\ref{lst.timers}.a in which
+the second \code{await} adds the current delta to annul it and guarantee that
+\code{v} remains set to \code{1} during 1 millisecond.
+Figure~\ref{lst.delta}.b deals with the possible case in which a small $1us$
+timer in a loop never ``catches up'' with the external clock, resulting in a
+\emph{delta} that increases indefinitely.
+
+\begin{figure}
+\begin{minipage}[t]{0.50\linewidth}
+\begin{lstlisting}
+var int v;
+var int late = await 10ms;
+v = 1;
+await (late+1000)us;
+v = 2;
+
+
+.
+\end{lstlisting}
+\centering\small{\ax}
+\end{minipage}
+%
+\begin{minipage}[t]{0.50\linewidth}
+\begin{lstlisting}
+loop do
+    var int late = await 1us;
+    if late > 1000 then     // I am late 1000x 1us?
+        <...>               // abnormal behavior
+    else
+        <...>               // normal behavior
+    end
+end
+\end{lstlisting}
+\centering\small{\bx}
+\end{minipage}
+%\rule{8.5cm}{0.37pt}
+\caption{ The \code{await} statement for timers returns the current
+\emph{delta} in microseconds.
+\label{lst.delta}
+}
+\end{figure}
 
 In Section~\ref{sec.ceu.exts}, we argue that event occurrences are 
 infinitesimal and can never be absolutely simultaneous.
