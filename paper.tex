@@ -1590,7 +1590,7 @@ timer in a loop never ``catches up'' with the external clock, resulting in a
 \emph{delta} that increases indefinitely.
 
 \begin{figure}
-\begin{minipage}[t]{0.50\linewidth}
+\begin{minipage}[t]{0.45\linewidth}
 \begin{lstlisting}
 var int v;
 var int late = await 10ms;
@@ -1604,7 +1604,7 @@ v = 2;
 \centering\small{\ax}
 \end{minipage}
 %
-\begin{minipage}[t]{0.50\linewidth}
+\begin{minipage}[t]{0.55\linewidth}
 \begin{lstlisting}
 loop do
     var int late = await 1us;
